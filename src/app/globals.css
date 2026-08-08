@@ -1,0 +1,54 @@
+@import "tailwindcss";
+
+/* Design tokens carried over from yuno-crm v1. The palette there lived as
+   raw hex literals repeated across every component; here it is declared once
+   as Tailwind theme colours, so the same visual language is available as
+   `bg-brand-500`, `border-brand-200`, `bg-canvas` etc. Changing a shade is a
+   one-line edit instead of a project-wide find-and-replace. */
+@theme {
+  /* Lavender-violet accent. 500 is the brand colour, 600 its hover state. */
+  --color-brand-50: #f7f5ff;
+  --color-brand-100: #eeebff;
+  --color-brand-150: #e9e4fc;
+  --color-brand-200: #e4dffc;
+  --color-brand-300: #ddd6fa;
+  --color-brand-500: #5b4fe9;
+  --color-brand-600: #4b3fe0;
+
+  /* App background — a near-white with a violet cast, so white cards read as
+     raised against it without needing a heavier border. */
+  --color-canvas: #fcfbff;
+
+  /* The soft brand-tinted drop shadow used by the login card and any surface
+     that should float rather than sit flat. */
+  --shadow-brand: 0 20px 60px -15px rgba(91, 79, 233, 0.25);
+}
+
+body {
+  background: var(--color-canvas);
+  color: #171717;
+}
+
+/* Empty-state icons fade up on mount. Every section of the app is empty until
+   the forms ship, so this is the state users see most — a static grey block
+   reads as a failed load, a settling one reads as "nothing here yet". */
+@keyframes rise-in {
+  from {
+    opacity: 0;
+    transform: translateY(6px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.rise-in {
+  animation: rise-in 260ms ease-out both;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .rise-in {
+    animation: none;
+  }
+}
