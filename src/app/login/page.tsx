@@ -1,3 +1,4 @@
+import { ParticleField } from "@/components/particle-field";
 import { Wordmark } from "@/components/wordmark";
 import { LoginForm } from "./login-form";
 
@@ -15,8 +16,10 @@ export default async function LoginPage({ searchParams }: PageProps<"/login">) {
   const target = typeof next === "string" ? next : "/dashboard";
 
   return (
-    <main className="flex min-h-dvh items-center justify-center bg-gradient-to-br from-brand-100 via-brand-50 to-white px-4 py-8">
-      <div className="w-full max-w-md rounded-3xl bg-white/80 p-7 shadow-brand backdrop-blur-sm sm:p-10">
+    <main className="relative flex min-h-dvh items-center justify-center overflow-hidden bg-gradient-to-br from-brand-100 via-brand-50 to-white px-4 py-8">
+      <ParticleField className="pointer-events-none absolute inset-0 h-full w-full" />
+
+      <div className="relative z-10 w-full max-w-md rounded-3xl bg-white/80 p-7 shadow-brand backdrop-blur-sm sm:p-10">
         <div className="mb-8 text-center">
           <Wordmark className="text-2xl" />
           <h1 className="mt-6 text-3xl font-semibold tracking-tight text-gray-900">

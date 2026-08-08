@@ -1,0 +1,113 @@
+"use client";
+
+import { useEffect, useRef } from "react";
+import {
+  createNodes,
+  linkOpacity,
+  stepNodes,
+  LINK_DISTANCE,
+  NODE_ALPHA,
+  NODE_RGB,
+  type Node,
+} from "./particle-field-core";
+
+/**
+ * The dots-and-lines constellation from yunoai.io's hero, on a canvas behind
+ * the page. Geometry and constants live in ./particle-field-core.ts; this
+ * component owns only the canvas, the animation loop and resize handling.
+ *
+ * Under `prefers-reduced-motion` the field is drawn once and left static.
+ */
+export function ParticleField({ className = "" }: { className?: string }) {
+  const canvasRef = useRef<HTMLCanvasElement>(null);
+
+  useEffect(() => {
+    const element = canvasRef.current;
+    const context = element?.getContext("2d");
+    if (!element || !context) return;
+
+    // Re-bound to non-nullable locals: the function declarations below are
+    // hoisted, so TypeScript will not carry the null check above into them.
+    const el: HTMLCanvasElement = element;
+    const ctx: CanvasRenderingContext2D = context;
+
+    const reduceMotion = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+    let nodes: Node[] = [];
+    let width = 0;
+    let height = 0;
+    let frame = 0;
+
+    /** Matches the backing store to the element's css size and the pixel ratio. */
+    function resizeCanvas() {
+      const rect = el.getBoundingClientRect();
+      width = rect.width;
+      height = rect.height;
+
+      const dpr = window.devicePixelRatio || 1;
+      el.width = Math.round(width * dpr);
+      el.height = Math.round(height * dpr);
+      ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+    }
+
+    function draw() {
+      ctx.clearRect(0, 0, width, height);
+
+      // Links first, so the nodes sit on top of them.
+      ctx.lineWidth = 1;
+      for (let i = 0; i < nodes.length; i++) {
+        for (let j = i + 1; j < nodes.length; j++) {
+          const dx = nodes[i].x - nodes[j].x;
+          const dy = nodes[i].y - nodes[j].y;
+          // Cheap rejection before the hypot — most pairs are far apart.
+          if (Math.abs(dx) > LINK_DISTANCE || Math.abs(dy) > LINK_DISTANCE) continue;
+          const alpha = linkOpacity(Math.hypot(dx, dy));
+          if (alpha === 0) continue;
+          ctx.strokeStyle = `rgba(${NODE_RGB}, ${alpha})`;
+          ctx.beginPath();
+          ctx.moveTo(nodes[i].x, nodes[i].y);
+          ctx.lineTo(nodes[j].x, nodes[j].y);
+          ctx.stroke();
+        }
+      }
+
+      ctx.fillStyle = `rgba(${NODE_RGB}, ${NODE_ALPHA})`;
+      for (const n of nodes) {
+        ctx.beginPath();
+        ctx.arc(n.x, n.y, n.r, 0, Math.PI * 2);
+        ctx.fill();
+      }
+    }
+
+    function tick() {
+      stepNodes(nodes, width, height);
+      draw();
+      frame = requestAnimationFrame(tick);
+    }
+
+    resizeCanvas();
+    nodes = createNodes(width, height);
+    draw();
+    if (!reduceMotion) frame = requestAnimationFrame(tick);
+
+    /**
+     * Only a width change (rotation, a resized desktop window) is worth
+     * regenerating the field for. Mobile browsers fire resize whenever the
+     * URL bar slides away, changing height alone — re-seeding on that would
+     * make the whole constellation visibly jump mid-scroll.
+     */
+    function handleResize() {
+      const previousWidth = width;
+      resizeCanvas();
+      if (Math.abs(width - previousWidth) > 1) nodes = createNodes(width, height);
+      draw();
+    }
+    window.addEventListener("resize", handleResize);
+
+    return () => {
+      cancelAnimationFrame(frame);
+      window.removeEventListener("resize", handleResize);
+    };
+  }, []);
+
+  return <canvas ref={canvasRef} aria-hidden className={className} />;
+}

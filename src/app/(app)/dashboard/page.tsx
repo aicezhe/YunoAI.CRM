@@ -1,4 +1,5 @@
 import { LayoutGrid } from "lucide-react";
+import { ParticleField } from "@/components/particle-field";
 import { EmptyState } from "@/components/ui/empty-state";
 import { PageHeader } from "@/components/ui/page-header";
 import { getCurrentUser } from "@/lib/auth/current-user";
@@ -18,18 +19,26 @@ export default async function DashboardPage() {
   const user = await getCurrentUser();
 
   return (
-    <main className="mx-auto max-w-5xl px-5 py-8 sm:px-8 sm:py-10">
-      <PageHeader
-        title={`Hi, ${user?.name ?? "there"}`}
-        description="Your workspace at a glance."
-      />
-      <div className="mt-8">
-        <EmptyState
-          icon={LayoutGrid}
-          title="Coming soon"
-          description="Once organizations, people and deals are in, this is where their summary will live."
+    // The same constellation as the login screen, so signing in doesn't drop
+    // the backdrop. Only here, not in the shared layout: the other sections
+    // will fill up with tables and forms, where a moving background behind
+    // dense data is a distraction rather than a welcome.
+    <div className="relative min-h-dvh overflow-hidden">
+      <ParticleField className="pointer-events-none absolute inset-0 h-full w-full" />
+
+      <main className="relative z-10 mx-auto max-w-5xl px-5 py-8 sm:px-8 sm:py-10">
+        <PageHeader
+          title={`Hi, ${user?.name ?? "there"}`}
+          description="Your workspace at a glance."
         />
-      </div>
-    </main>
+        <div className="mt-8">
+          <EmptyState
+            icon={LayoutGrid}
+            title="Coming soon"
+            description="Once organizations, people and deals are in, this is where their summary will live."
+          />
+        </div>
+      </main>
+    </div>
   );
 }
