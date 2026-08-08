@@ -1,0 +1,10 @@
+-- Intentionally almost empty.
+--
+-- seed.sql only runs on a local `supabase db reset`; a remote project receives
+-- migrations and nothing else. The default pipeline stages are reference data
+-- the app cannot start without, so they live in migration 0010 instead and
+-- apply to both.
+--
+-- The first admin account cannot be seeded from SQL at all: public.users.id is
+-- a foreign key onto auth.users.id, and a row inserted into auth.users by hand
+-- has no usable password. See scripts/seed-admin.ts — `npm run seed:admin`.

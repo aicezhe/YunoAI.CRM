@@ -51,6 +51,41 @@ To exercise the admin role before the `users` table exists, edit that user's
 **App Metadata** and add `{ "role": "admin" }`. Settings shows the resolved
 role.
 
+## Database
+
+Eight tables in `supabase/migrations/`, numbered in dependency order — nothing
+references a table that a later file creates.
+
+| | |
+| --- | --- |
+| `0001` | `users` — profile for an auth account, plus the trigger that creates one |
+| `0002` | `pipeline_stages` |
+| `0003`–`0004` | `organizations`, `persons` |
+| `0005` | `deals` — the constraint-heavy one |
+| `0006`–`0008` | `stage_transitions`, `activities`, `contracts` |
+| `0009` | Row Level Security |
+| `0010` | default pipeline stages |
+
+Applying them:
+
+```bash
+supabase login
+supabase link --project-ref <ref>
+supabase db push
+```
+
+Then create the first admin — this cannot be SQL, because the account has to
+exist in `auth.users` with a real password hash first:
+
+```bash
+SEED_ADMIN_EMAIL=you@company.com SEED_ADMIN_PASSWORD='…' npm run seed:admin
+```
+
+Every rule lives in the database rather than in application code: role and
+status are `CHECK`ed, a lost deal must carry a reason, a deal must have an
+organization or a person, and the `ON DELETE` behaviour of each foreign key is
+chosen per relationship. The reasoning is in comments in each migration.
+
 ## Scripts
 
 | Command | |
