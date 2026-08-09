@@ -3,6 +3,7 @@
 import { redirect } from "next/navigation";
 import { revalidatePath } from "next/cache";
 import { createClient } from "@/lib/supabase/server";
+import { requireUser } from "@/lib/auth/current-user";
 
 /**
  * Tick an activity off from wherever it is listed.
@@ -129,4 +130,258 @@ export async function createContract(
   // Outside the error check on purpose: redirect() signals by throwing, and
   // catching it here would report a phantom save failure.
   redirect("/contracts");
+}
+
+export type OrganizationFormValues = {
+  name: string;
+  industry: string;
+  address: string;
+  website: string;
+  ownerId: string;
+};
+
+export type OrganizationFormState = { error: string | null; values: OrganizationFormValues };
+
+/** name is the only NOT NULL column (0004_organizations.sql) — everything
+ *  else, including the owner, is genuinely optional at creation. */
+export async function createOrganization(
+  _prevState: OrganizationFormState,
+  formData: FormData,
+): Promise<OrganizationFormState> {
+  const name = String(formData.get("name") ?? "").trim();
+  const industry = String(formData.get("industry") ?? "").trim();
+  const address = String(formData.get("address") ?? "").trim();
+  const website = String(formData.get("website") ?? "").trim();
+  const ownerId = String(formData.get("ownerId") ?? "");
+
+  const values: OrganizationFormValues = { name, industry, address, website, ownerId };
+
+  if (!name) return { error: "Enter a name.", values };
+
+  const supabase = await createClient();
+  const { data, error } = await supabase
+    .from("organizations")
+    .insert({
+      name,
+      industry: industry || null,
+      address: address || null,
+      website: website || null,
+      owner_id: ownerId || null,
+    })
+    .select("id")
+    .single();
+
+  if (error) {
+    console.error("[organizations] create failed:", error.message);
+    return { error: "Could not save this organization. Try again.", values };
+  }
+
+  revalidatePath("/", "layout");
+  // Straight to the new record, not back to the list — unlike contracts,
+  // which have no page of their own to land on.
+  redirect(`/contacts/organizations/${data.id}`);
+}
+
+export type PersonFormValues = {
+  name: string;
+  orgId: string;
+  email: string;
+  phone: string;
+  ownerId: string;
+};
+
+export type PersonFormState = { error: string | null; values: PersonFormValues };
+
+/** name is the only NOT NULL column (0005_persons.sql). org_id is nullable
+ *  by design — an individual with no company yet is a normal contact, not a
+ *  data-entry error (see the schema comment, and Federica Lombardi in the
+ *  demo data). */
+export async function createPerson(
+  _prevState: PersonFormState,
+  formData: FormData,
+): Promise<PersonFormState> {
+  const name = String(formData.get("name") ?? "").trim();
+  const orgId = String(formData.get("orgId") ?? "");
+  const email = String(formData.get("email") ?? "").trim();
+  const phone = String(formData.get("phone") ?? "").trim();
+  const ownerId = String(formData.get("ownerId") ?? "");
+
+  const values: PersonFormValues = { name, orgId, email, phone, ownerId };
+
+  if (!name) return { error: "Enter a name.", values };
+
+  const supabase = await createClient();
+  const { data, error } = await supabase
+    .from("persons")
+    .insert({
+      name,
+      org_id: orgId || null,
+      email: email || null,
+      phone: phone || null,
+      owner_id: ownerId || null,
+    })
+    .select("id")
+    .single();
+
+  if (error) {
+    console.error("[persons] create failed:", error.message);
+    return { error: "Could not save this contact. Try again.", values };
+  }
+
+  revalidatePath("/", "layout");
+  redirect(`/contacts/people/${data.id}`);
+}
+
+export type DealFormValues = {
+  title: string;
+  orgId: string;
+  personId: string;
+  stageId: string;
+  value: string;
+  expectedCloseDate: string;
+  ownerId: string;
+};
+
+export type DealFormState = { error: string | null; values: DealFormValues };
+
+/**
+ * Validation mirrors 0006_deals.sql: title is NOT NULL, value is CHECKed >=
+ * 0, and deals_has_counterparty requires an organization or a person — not
+ * necessarily both, and the form enforces exactly that, nothing stricter.
+ *
+ * status is never a form field: it defaults to 'open' at the database level,
+ * and every deal made here starts open by construction. Marking one won or
+ * lost is an edit to an existing deal, not something creation needs to
+ * express — lost_reason's two-way CHECK only becomes relevant there.
+ *
+ * stage_id is nullable in the schema, but leaving a deal off the board
+ * entirely is not a real workflow this app has, so the form defaults it to
+ * the first stage by position rather than leaving it unset — while still
+ * allowing "No stage" explicitly, so the schema's own flexibility isn't
+ * silently narrowed into a hard requirement.
+ */
+export async function createDeal(
+  _prevState: DealFormState,
+  formData: FormData,
+): Promise<DealFormState> {
+  const title = String(formData.get("title") ?? "").trim();
+  const orgId = String(formData.get("orgId") ?? "");
+  const personId = String(formData.get("personId") ?? "");
+  const stageId = String(formData.get("stageId") ?? "");
+  const rawValue = String(formData.get("value") ?? "").trim();
+  const expectedCloseDate = String(formData.get("expectedCloseDate") ?? "");
+  const ownerId = String(formData.get("ownerId") ?? "");
+
+  const values: DealFormValues = {
+    title,
+    orgId,
+    personId,
+    stageId,
+    value: rawValue,
+    expectedCloseDate,
+    ownerId,
+  };
+
+  if (!title) return { error: "Enter a title.", values };
+  if (!orgId && !personId) return { error: "Choose an organization or a contact.", values };
+
+  let value: number | null = null;
+  if (rawValue) {
+    value = Number(rawValue);
+    if (!Number.isFinite(value) || value < 0) {
+      return { error: "Value must be a positive number.", values };
+    }
+  }
+
+  const supabase = await createClient();
+  const { data, error } = await supabase
+    .from("deals")
+    .insert({
+      title,
+      org_id: orgId || null,
+      person_id: personId || null,
+      stage_id: stageId || null,
+      value,
+      expected_close_date: expectedCloseDate || null,
+      owner_id: ownerId || null,
+    })
+    .select("id")
+    .single();
+
+  if (error) {
+    console.error("[deals] create failed:", error.message);
+    return { error: "Could not save this deal. Try again.", values };
+  }
+
+  revalidatePath("/", "layout");
+  redirect(`/deals/${data.id}`);
+}
+
+export type ActivityFormValues = {
+  type: string;
+  subject: string;
+  dealId: string;
+  personId: string;
+  orgId: string;
+  dueAt: string;
+};
+
+export type ActivityFormState = { error: string | null; values: ActivityFormValues };
+
+/**
+ * Validation mirrors 0008_activities.sql: type and subject are NOT NULL, and
+ * activities_has_link requires at least one of deal/person/org — any one is
+ * enough, matching the schema comment's own reasoning (a call from a
+ * company's main line has no person to attach; a note on a deal has neither).
+ *
+ * created_by is not a form field — it is always the signed-in user. Letting
+ * someone log an activity "as" a colleague via a picker would misattribute
+ * it; requireUser() is the same authorization boundary every protected page
+ * already relies on. done is not a field either: every activity starts
+ * open (false) — ticking one off is a separate action once it exists.
+ *
+ * dueAt is the one field that changes shape: `datetime-local` inputs submit
+ * "2026-08-09T14:30" with no timezone, which Postgres would otherwise read
+ * as UTC. `new Date(...)` interprets that string in the server's own local
+ * time instead, which is what the picker showed the person filling it in.
+ */
+export async function createActivity(
+  _prevState: ActivityFormState,
+  formData: FormData,
+): Promise<ActivityFormState> {
+  const type = String(formData.get("type") ?? "");
+  const subject = String(formData.get("subject") ?? "").trim();
+  const dealId = String(formData.get("dealId") ?? "");
+  const personId = String(formData.get("personId") ?? "");
+  const orgId = String(formData.get("orgId") ?? "");
+  const dueAt = String(formData.get("dueAt") ?? "");
+
+  const values: ActivityFormValues = { type, subject, dealId, personId, orgId, dueAt };
+
+  if (!type) return { error: "Choose a type.", values };
+  if (!subject) return { error: "Enter a subject.", values };
+  if (!dealId && !personId && !orgId) {
+    return { error: "Link this to a deal, a contact or an organization.", values };
+  }
+
+  const user = await requireUser();
+
+  const supabase = await createClient();
+  const { error } = await supabase.from("activities").insert({
+    type,
+    subject,
+    deal_id: dealId || null,
+    person_id: personId || null,
+    org_id: orgId || null,
+    due_at: dueAt ? new Date(dueAt).toISOString() : null,
+    created_by: user.id,
+  });
+
+  if (error) {
+    console.error("[activities] create failed:", error.message);
+    return { error: "Could not save this activity. Try again.", values };
+  }
+
+  revalidatePath("/", "layout");
+  redirect("/activities/open");
 }

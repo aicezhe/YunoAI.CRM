@@ -18,7 +18,7 @@ export default async function PeoplePage() {
         icon={Users}
         title="No people yet"
         description="Contacts are the individuals you talk to. Add the first one and their deals and activities hang off it."
-        action={<AddButton label="Add your first contact" size="large" />}
+        action={<AddButton label="Add your first contact" size="large" href="/contacts/people/new" />}
       />
     );
   }

@@ -17,7 +17,7 @@ export default async function OpenActivitiesPage() {
         icon={CalendarCheck}
         title="Nothing open"
         description="Every activity is done. Completed ones move to the archive, where you can reopen or clear them."
-        action={<AddButton label="Add an activity" size="large" />}
+        action={<AddButton label="Add an activity" size="large" href="/activities/new" />}
       />
     );
   }

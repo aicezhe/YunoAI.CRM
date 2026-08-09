@@ -17,7 +17,7 @@ export default async function DealsPage() {
       <PageHeader
         title="Deals"
         description="Every opportunity and the stage it is in."
-        action={<AddButton label="Add deal" />}
+        action={<AddButton label="Add deal" href="/deals/new" />}
       />
 
       <div className="mt-8">
@@ -28,7 +28,7 @@ export default async function DealsPage() {
             icon={Handshake}
             title="No deals yet"
             description="A deal is one opportunity with one customer. Add the first and it starts moving through the pipeline."
-            action={<AddButton label="Add your first deal" size="large" />}
+            action={<AddButton label="Add your first deal" size="large" href="/deals/new" />}
           />
         ) : (
           <Table

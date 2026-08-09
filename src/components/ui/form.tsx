@@ -1,0 +1,148 @@
+"use client";
+
+import Link from "next/link";
+import { useState, type ReactNode } from "react";
+
+/** Same field treatment across every form in the app — text/date/number
+ *  inputs and selects alike, so a new form matches the others by using this
+ *  constant rather than re-deriving the look. */
+export const FIELD_CLASS =
+  "w-full rounded-2xl border border-gray-200 bg-white px-4 py-2.5 text-sm text-gray-900 placeholder-gray-400 outline-none transition focus:border-brand-500 focus:ring-4 focus:ring-brand-500/10";
+
+export const FORM_CARD_CLASS =
+  "space-y-5 rounded-3xl border border-brand-200/70 bg-white p-6 shadow-sm";
+
+export function Field({
+  id,
+  label,
+  optional,
+  children,
+}: {
+  id: string;
+  label: string;
+  optional?: boolean;
+  children: ReactNode;
+}) {
+  return (
+    <div>
+      <label htmlFor={id} className="mb-1.5 block text-sm font-medium text-gray-700">
+        {label} {optional && <span className="font-normal text-gray-400">(optional)</span>}
+      </label>
+      {children}
+    </div>
+  );
+}
+
+/**
+ * A controlled `<select>` — every select on every create form uses this
+ * rather than a plain `defaultValue`-based one.
+ *
+ * The reason: React re-walks a select's options on every render of the
+ * component that owns it and reasserts whatever value it had at mount,
+ * unlike a plain `<input>`, where an uncontrolled value is genuinely left
+ * alone after the first render. Found on the contract form — after a failed
+ * submission re-rendered it, a picked deal silently reverted to the
+ * placeholder even though `defaultValue` was fed the just-submitted id.
+ * Confirmed by hand, with native browser events, that date/number/text
+ * fields survive a failed round trip untouched and only the select did not.
+ * Fixing it once here means the next form doesn't rediscover the same bug.
+ */
+export function SelectField({
+  id,
+  name,
+  label,
+  defaultValue,
+  required,
+  optional,
+  options,
+  placeholder,
+}: {
+  id: string;
+  name: string;
+  label: string;
+  defaultValue: string;
+  required?: boolean;
+  optional?: boolean;
+  options: { value: string; label: string }[];
+  /** The first, unselectable option — for fields with no sensible default of
+   *  their own (an owner, a counterparty). A field that defaults to a real
+   *  choice (a deal's stage, defaulted to the first one) has no need for
+   *  one; the true default is just the first entry in `options`. */
+  placeholder?: string;
+}) {
+  const [value, setValue] = useState(defaultValue);
+
+  return (
+    <Field id={id} label={label} optional={optional}>
+      <select
+        id={id}
+        name={name}
+        required={required}
+        value={value}
+        onChange={(e) => setValue(e.target.value)}
+        className={FIELD_CLASS}
+      >
+        {placeholder && (
+          <option value="" disabled={required}>
+            {placeholder}
+          </option>
+        )}
+        {options.map((o) => (
+          <option key={o.value} value={o.value}>
+            {o.label}
+          </option>
+        ))}
+      </select>
+    </Field>
+  );
+}
+
+/** The Cancel/Submit row and the reserved-height error line, identical on
+ *  every create form. */
+export function FormActions({
+  error,
+  pending,
+  cancelHref,
+  submitLabel,
+  savingLabel = "Saving…",
+}: {
+  error: string | null;
+  pending: boolean;
+  cancelHref: string;
+  submitLabel: string;
+  savingLabel?: string;
+}) {
+  return (
+    <div className="flex flex-wrap items-center justify-end gap-3 pt-1">
+      {/* Reserves its line whether or not there's a message, so the form
+          doesn't jump when an error appears. */}
+      <p
+        role="alert"
+        aria-live="polite"
+        className={`min-h-5 flex-1 text-sm text-red-500 ${error ? "" : "invisible"}`}
+      >
+        {error ?? " "}
+      </p>
+
+      <Link
+        href={cancelHref}
+        className="inline-flex min-h-11 items-center rounded-2xl border border-gray-200 bg-white px-4 text-sm font-medium text-gray-600 transition hover:bg-gray-50"
+      >
+        Cancel
+      </Link>
+      <button
+        type="submit"
+        disabled={pending}
+        className="inline-flex min-h-11 items-center gap-2 rounded-2xl bg-brand-500 px-5 text-sm font-semibold text-white shadow-lg shadow-brand-500/30 transition hover:bg-brand-600 disabled:cursor-not-allowed disabled:opacity-60"
+      >
+        {pending && (
+          <span
+            aria-hidden
+            className="h-4 w-4 animate-spin rounded-full border-2 border-white/40 border-t-white"
+          />
+        )}
+        {pending ? savingLabel : submitLabel}
+      </button>
+    </div>
+  );
+}

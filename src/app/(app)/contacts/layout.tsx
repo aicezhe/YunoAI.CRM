@@ -1,15 +1,18 @@
 import { Tabs } from "@/components/ui/tabs";
 import { PageHeader } from "@/components/ui/page-header";
-import { AddButton } from "@/components/ui/add-button";
 import { createClient } from "@/lib/supabase/server";
+import { ContactsAddButton } from "./contacts-add-button";
 
 /**
  * Shared shell for both contact lists.
  *
  * The header and tabs live here rather than in each page so switching tabs
- * swaps only the table — the title, the counts and the action button do not
- * re-render or flicker, and a slow list shows its own skeleton underneath a
- * header that is already there.
+ * swaps only the table — the title and the counts don't re-fetch or flicker,
+ * and a slow list shows its own skeleton underneath a header that's already
+ * there. The one exception is the action button: People and Organizations
+ * are different entities with different forms, so it has to know which tab
+ * it's on — see ContactsAddButton, a small client component rather than
+ * this whole layout.
  */
 async function getCounts(): Promise<{ people: number; organizations: number }> {
   const supabase = await createClient();
@@ -33,7 +36,7 @@ export default async function ContactsLayout({ children }: { children: React.Rea
       <PageHeader
         title="Contacts"
         description="The people and companies you sell to."
-        action={<AddButton label="Add contact" />}
+        action={<ContactsAddButton />}
       />
 
       <div className="mt-6">

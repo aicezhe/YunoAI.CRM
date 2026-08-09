@@ -71,6 +71,20 @@ export async function listDeals(): Promise<Result<DealRow[]>> {
   return ok(rows);
 }
 
+export type StageOption = { id: string; name: string };
+
+/** For the deal form's stage picker, in board order. */
+export async function listStages(): Promise<Result<StageOption[]>> {
+  const supabase = await createClient();
+  const { data, error } = await supabase
+    .from("pipeline_stages")
+    .select("id, name")
+    .order("position");
+
+  if (error) return fail("listStages", error.message);
+  return ok(data);
+}
+
 export async function getDeal(id: string): Promise<Result<DealRow | null>> {
   const supabase = await createClient();
   const { data, error } = await supabase

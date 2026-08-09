@@ -16,7 +16,7 @@ export default async function ActivitiesLayout({ children }: { children: React.R
       <PageHeader
         title="Activities"
         description="Calls, meetings, tasks and notes across every record."
-        action={<AddButton label="Add activity" />}
+        action={<AddButton label="Add activity" href="/activities/new" />}
       />
 
       <div className="mt-6">

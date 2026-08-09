@@ -17,7 +17,9 @@ export default async function OrganizationsPage() {
         icon={Building2}
         title="No organizations yet"
         description="Organizations are the companies you sell to. Add one and you can attach its people, deals and contracts."
-        action={<AddButton label="Add your first organization" size="large" />}
+        action={
+          <AddButton label="Add your first organization" size="large" href="/contacts/organizations/new" />
+        }
       />
     );
   }
