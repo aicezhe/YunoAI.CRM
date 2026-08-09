@@ -9,7 +9,7 @@ export default function PeoplePage() {
       icon={Users}
       title="People"
       description="Contacts, and the organizations they belong to."
-      emptyDescription="Adding contacts by hand arrives with the next step, together with the database migrations."
+      emptyDescription="Adding contacts by hand is the next step — the tables are already in place."
     />
   );
 }

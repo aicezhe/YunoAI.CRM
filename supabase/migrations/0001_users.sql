@@ -39,7 +39,7 @@ returns trigger
 language plpgsql
 security definer
 set search_path = ''
-as $$
+as $fn$
 begin
   insert into public.users (id, email, name, role)
   values (
@@ -56,7 +56,7 @@ begin
   on conflict (id) do nothing;
   return new;
 end;
-$$;
+$fn$;
 
 create trigger on_auth_user_created
   after insert on auth.users

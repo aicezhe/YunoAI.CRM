@@ -9,7 +9,7 @@ export default function DealsPage() {
       icon={Handshake}
       title="Deals"
       description="Opportunities and the stage each one is in."
-      emptyDescription="Creating and moving deals by hand arrives with the next step, together with the database migrations."
+      emptyDescription="Creating and moving deals by hand is the next step — the tables are already in place."
     />
   );
 }

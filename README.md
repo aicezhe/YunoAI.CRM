@@ -41,15 +41,25 @@ the browser bundle. `src/lib/supabase/env.ts` is marked `server-only`, which
 turns an accidental import from a Client Component into a build error rather
 than a leak.
 
-### First user
+### Accounts
 
-There is no sign-up screen — accounts are created by an admin. Add one in the
-Supabase Dashboard under **Authentication → Users → Add user**, with
-*Auto Confirm User* enabled, then sign in with it.
+There is no sign-up screen — accounts are created by an admin. `npm run seed:users`
+creates four demo logins, one per role, listed at the top of
+`scripts/seed-users.ts`:
 
-To exercise the admin role before the `users` table exists, edit that user's
-**App Metadata** and add `{ "role": "admin" }`. Settings shows the resolved
-role.
+| | Role | |
+| --- | --- | --- |
+| Camillo | admin | `camillo@yunocrm.test` |
+| Anna, Marco, Giulia | member | `anna@…`, `marco@…`, `giulia@…` |
+
+Passwords are in that file. They are throwaway logins for a demo database and
+are checked in deliberately, so the app can be tried without credentials being
+sent around separately. Delete these accounts before pointing the schema at
+anything real.
+
+Accounts can also be added by hand in the Supabase Dashboard under
+**Authentication → Users → Add user** with *Auto Confirm User* enabled; the
+trigger from migration `0001` writes the matching profile row as a `member`.
 
 ## Database
 
@@ -74,11 +84,20 @@ supabase link --project-ref <ref>
 supabase db push
 ```
 
-Then create the first admin — this cannot be SQL, because the account has to
-exist in `auth.users` with a real password hash first:
+If `db push` cannot connect, the direct database host (`db.<ref>.supabase.co`)
+is IPv6-only and some networks have no route to it. Use the regional session
+pooler instead, which answers on IPv4 — the connection string is in the
+dashboard under **Connect → Session pooler**:
 
 ```bash
-SEED_ADMIN_EMAIL=you@company.com SEED_ADMIN_PASSWORD='…' npm run seed:admin
+supabase db push --db-url "postgresql://postgres.<ref>:<password>@aws-1-<region>.pooler.supabase.com:5432/postgres"
+```
+
+Then the demo accounts — these cannot be SQL, because each one has to exist in
+`auth.users` with a real password hash before a profile row can reference it:
+
+```bash
+npm run seed:users
 ```
 
 Every rule lives in the database rather than in application code: role and
@@ -94,6 +113,7 @@ chosen per relationship. The reasoning is in comments in each migration.
 | `npm run build` | Production build |
 | `npm run typecheck` | `tsc --noEmit` |
 | `npm run lint` | ESLint |
+| `npm run seed:users` | Create the demo accounts |
 
 ## How auth fits together
 

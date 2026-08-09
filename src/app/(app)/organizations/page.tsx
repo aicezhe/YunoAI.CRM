@@ -9,7 +9,7 @@ export default function OrganizationsPage() {
       icon={Building2}
       title="Organizations"
       description="The companies you work with."
-      emptyDescription="Adding organizations by hand arrives with the next step, together with the database migrations."
+      emptyDescription="Adding organizations by hand is the next step — the tables are already in place."
     />
   );
 }

@@ -45,7 +45,7 @@ export default async function SettingsPage() {
         <EmptyState
           icon={SettingsIcon}
           title="Coming soon"
-          description="Editing your profile and managing teammates arrive once the users table is migrated."
+          description="Editing your profile and managing teammates are the next step. Roles are already enforced by the database."
         />
       </div>
     </main>

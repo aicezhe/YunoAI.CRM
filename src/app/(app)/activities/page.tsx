@@ -9,7 +9,7 @@ export default function ActivitiesPage() {
       icon={CalendarCheck}
       title="Activities"
       description="Calls, meetings and tasks logged against your records."
-      emptyDescription="Logging activities by hand arrives with the next step, together with the database migrations."
+      emptyDescription="Logging activities by hand is the next step — the tables are already in place."
     />
   );
 }

@@ -9,7 +9,7 @@ export default function ContractsPage() {
       icon={FileText}
       title="Contracts"
       description="Signed agreements and their terms."
-      emptyDescription="Recording contracts by hand arrives with the next step, together with the database migrations."
+      emptyDescription="Recording contracts by hand is the next step — the tables are already in place."
     />
   );
 }

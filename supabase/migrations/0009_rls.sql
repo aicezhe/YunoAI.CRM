@@ -20,14 +20,14 @@ language sql
 stable
 security definer
 set search_path = ''
-as $$
+as $fn$
   select exists (
     select 1
     from public.users
     where id = (select auth.uid())
       and role = 'admin'
   );
-$$;
+$fn$;
 
 alter table public.users enable row level security;
 alter table public.pipeline_stages enable row level security;
