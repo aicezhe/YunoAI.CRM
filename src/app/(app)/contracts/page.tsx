@@ -3,7 +3,7 @@ import { AddButton } from "@/components/ui/add-button";
 import { PageHeader } from "@/components/ui/page-header";
 import { EmptyState, ErrorState } from "@/components/ui/states";
 import { Blank, Cell, Row, RowLink, Table } from "@/components/ui/table";
-import { listContracts } from "@/lib/data/activities";
+import { listContracts } from "@/lib/data/contracts";
 import { formatDate, formatMoney } from "@/lib/format";
 
 export const metadata = { title: "Contracts · YunoCRM" };
@@ -16,7 +16,7 @@ export default async function ContractsPage() {
       <PageHeader
         title="Contracts"
         description="Signed agreements, newest first."
-        action={<AddButton label="Add contract" />}
+        action={<AddButton label="Add contract" href="/contracts/new" />}
       />
 
       <div className="mt-8">
@@ -27,7 +27,7 @@ export default async function ContractsPage() {
             icon={FileText}
             title="No contracts yet"
             description="A contract records what was actually signed against a deal — the date, the amount and the terms worth remembering."
-            action={<AddButton label="Add your first contract" size="large" />}
+            action={<AddButton label="Add your first contract" size="large" href="/contracts/new" />}
           />
         ) : (
           <Table columns={["Deal", "Signed", "Value", "Notes"]}>
