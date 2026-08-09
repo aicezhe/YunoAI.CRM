@@ -29,6 +29,60 @@ body {
   color: #171717;
 }
 
+/* Loading skeletons — a brand-tinted bar with a light sweeping across it,
+   rather than Tailwind's default `animate-pulse` (the whole block fading
+   opacity in sync). Two things were wrong with the pulse: it was plain
+   Tailwind grey, the one surface in the app not using the lavender palette,
+   so a loading screen looked like a different, cheaper product bolted on;
+   and every bar dimming and brightening together in lockstep reads as the
+   screen blinking at you, not as work in progress. A sweep reads as
+   "something is actually happening" — closer to what the real content's own
+   staggered `.enter` arrival already promises.
+
+   `.skeleton` is the more prominent bar (titles, primary values); `.skeleton-
+   soft` is the fainter one (secondary text) — the same two-weight system the
+   old bg-gray-200/bg-gray-100 pairing used, just in the app's own colours. */
+.skeleton,
+.skeleton-soft {
+  position: relative;
+  overflow: hidden;
+}
+
+.skeleton {
+  background-color: var(--color-brand-150);
+}
+
+.skeleton-soft {
+  background-color: var(--color-brand-100);
+}
+
+.skeleton::after,
+.skeleton-soft::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  transform: translateX(-100%);
+  background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.8), transparent);
+  animation: skeleton-sweep 1.8s ease-in-out infinite;
+}
+
+@keyframes skeleton-sweep {
+  100% {
+    transform: translateX(100%);
+  }
+}
+
+/* Every bar shares one animation with no per-bar delay, so they all sweep in
+   the same instant — one surface catching the light, not a sequence of
+   items revealing themselves (that's what .enter's stagger is for, on the
+   real content this becomes). */
+@media (prefers-reduced-motion: reduce) {
+  .skeleton::after,
+  .skeleton-soft::after {
+    animation: none;
+  }
+}
+
 /* Empty-state icons fade up on mount. Every section of the app is empty until
    the forms ship, so this is the state users see most — a static grey block
    reads as a failed load, a settling one reads as "nothing here yet". */

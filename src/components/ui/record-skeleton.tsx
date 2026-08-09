@@ -11,9 +11,9 @@
  */
 export function RecordSkeleton({ cards = 2, rows = 4 }: { cards?: number; rows?: number }) {
   return (
-    <div className="mx-auto max-w-3xl animate-pulse">
-      <div className="h-4 w-28 rounded bg-gray-200" />
-      <div className="mt-5 h-9 w-72 max-w-full rounded-lg bg-gray-200" />
+    <div className="mx-auto max-w-3xl">
+      <div className="skeleton h-4 w-28 rounded" />
+      <div className="skeleton mt-5 h-9 w-72 max-w-full rounded-lg" />
 
       <div className="mt-8 space-y-5">
         {Array.from({ length: cards }).map((_, c) => (
@@ -26,8 +26,8 @@ export function RecordSkeleton({ cards = 2, rows = 4 }: { cards?: number; rows?:
                 key={r}
                 className="flex items-center justify-between gap-8 border-b border-brand-200/40 py-3.5 last:border-0"
               >
-                <div className="h-3.5 w-24 rounded bg-gray-100" />
-                <div className="h-3.5 w-40 max-w-[45%] rounded bg-gray-200" />
+                <div className="skeleton-soft h-3.5 w-24 rounded" />
+                <div className="skeleton h-3.5 w-40 max-w-[45%] rounded" />
               </div>
             ))}
           </div>

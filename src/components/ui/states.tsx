@@ -52,10 +52,10 @@ export function ErrorState({ message }: { message: string }) {
  *  so the layout does not jump when the data lands. */
 export function TableSkeleton({ rows = 6, columns = 5 }: { rows?: number; columns?: number }) {
   return (
-    <div className="animate-pulse overflow-hidden rounded-3xl border border-brand-200/70 bg-white shadow-sm">
+    <div className="overflow-hidden rounded-3xl border border-brand-200/70 bg-white shadow-sm">
       <div className="flex gap-6 border-b border-brand-200/70 px-5 py-4">
         {Array.from({ length: columns }).map((_, i) => (
-          <div key={i} className="h-3 flex-1 rounded bg-gray-200" />
+          <div key={i} className="skeleton h-3 flex-1 rounded" />
         ))}
       </div>
       {Array.from({ length: rows }).map((_, r) => (
@@ -63,7 +63,7 @@ export function TableSkeleton({ rows = 6, columns = 5 }: { rows?: number; column
           {Array.from({ length: columns }).map((_, c) => (
             <div
               key={c}
-              className={`h-3.5 flex-1 rounded ${c === 0 ? "bg-gray-200" : "bg-gray-100"}`}
+              className={`h-3.5 flex-1 rounded ${c === 0 ? "skeleton" : "skeleton-soft"}`}
             />
           ))}
         </div>
@@ -75,12 +75,12 @@ export function TableSkeleton({ rows = 6, columns = 5 }: { rows?: number; column
 /** Header skeleton — title plus the action button's footprint. */
 export function HeaderSkeleton() {
   return (
-    <div className="flex animate-pulse flex-wrap items-start justify-between gap-4">
+    <div className="flex flex-wrap items-start justify-between gap-4">
       <div>
-        <div className="h-8 w-44 rounded-lg bg-gray-200" />
-        <div className="mt-3 h-3.5 w-64 max-w-full rounded bg-gray-100" />
+        <div className="skeleton h-8 w-44 rounded-lg" />
+        <div className="skeleton-soft mt-3 h-3.5 w-64 max-w-full rounded" />
       </div>
-      <div className="h-11 w-40 rounded-2xl bg-gray-200" />
+      <div className="skeleton h-11 w-40 rounded-2xl" />
     </div>
   );
 }

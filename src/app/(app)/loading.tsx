@@ -5,10 +5,10 @@
  */
 export default function AppLoading() {
   return (
-    <div className="mx-auto max-w-5xl animate-pulse px-5 py-8 sm:px-8 sm:py-10">
-      <div className="h-9 w-48 rounded-lg bg-gray-200" />
-      <div className="mt-3 h-4 w-64 max-w-full rounded bg-gray-100" />
-      <div className="mt-8 h-64 rounded-3xl bg-white shadow-sm" />
+    <div className="mx-auto max-w-5xl px-5 py-8 sm:px-8 sm:py-10">
+      <div className="skeleton h-9 w-48 rounded-lg" />
+      <div className="skeleton-soft mt-3 h-4 w-64 max-w-full rounded" />
+      <div className="skeleton mt-8 h-64 rounded-3xl" />
     </div>
   );
 }
