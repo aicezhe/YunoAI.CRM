@@ -26,7 +26,7 @@ export function BottomNav({ isAdmin }: { isAdmin: boolean }) {
     >
       <div className="flex items-stretch justify-around overflow-x-auto px-1">
         {items.map((item) => {
-          const active = isActive(pathname, item.href);
+          const active = isActive(pathname, item);
           const Icon = item.icon;
           return (
             <Link

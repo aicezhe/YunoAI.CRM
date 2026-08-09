@@ -52,7 +52,6 @@ export function ActivityIcon({ type, className = "" }: { type: ActivityType; cla
   const Icon = ACTIVITY_ICONS[type];
   return (
     <span
-      title={type}
       className={`inline-flex h-8 w-8 shrink-0 items-center justify-center rounded-xl bg-brand-100 text-brand-500 ${className}`}
     >
       <Icon className="h-4 w-4" strokeWidth={1.75} aria-hidden />

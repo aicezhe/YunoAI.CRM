@@ -1,31 +1,9 @@
 "use client";
 
-import Link, { useLinkStatus } from "next/link";
+import Link from "next/link";
 import { usePathname } from "next/navigation";
 
 export type Tab = { href: string; label: string; count?: number };
-
-/**
- * Marks a tab as selected the instant it is clicked, before the new page
- * arrives.
- *
- * Without this the highlight only moves once the server responds, so a click
- * looked like it had been ignored for a few hundred milliseconds and people
- * clicked again. useLinkStatus reports the pending state of the Link this is
- * rendered inside, which is why it lives in a child component — the hook has
- * to be under the Link, not beside it.
- */
-function PendingHighlight() {
-  const { pending } = useLinkStatus();
-  if (!pending) return null;
-
-  return (
-    <span
-      aria-hidden
-      className="absolute inset-0 -z-10 rounded-xl bg-white/70 shadow-sm"
-    />
-  );
-}
 
 /**
  * Segmented tabs, used by Contacts to hold People and Organizations in one
@@ -53,13 +31,12 @@ export function Tabs({ tabs }: { tabs: Tab[] }) {
             role="tab"
             aria-selected={active}
             className={
-              "relative isolate inline-flex min-h-9 items-center gap-2 rounded-xl px-4 text-sm transition-colors " +
+              "inline-flex min-h-9 items-center gap-2 rounded-xl px-4 text-sm transition-colors " +
               (active
                 ? "bg-white font-semibold text-brand-500 shadow-sm"
                 : "font-medium text-gray-500 hover:text-gray-900")
             }
           >
-            <PendingHighlight />
             {tab.label}
             {tab.count !== undefined && (
               <span

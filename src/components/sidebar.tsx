@@ -37,7 +37,7 @@ export function Sidebar({
 
       <nav className="flex-1 space-y-1 overflow-y-auto px-3" aria-label="Primary">
         {items.map((item) => {
-          const active = isActive(pathname, item.href);
+          const active = isActive(pathname, item);
           const Icon = item.icon;
           return (
             <Link

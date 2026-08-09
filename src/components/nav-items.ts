@@ -10,6 +10,10 @@ import {
 
 export type NavItem = {
   href: string;
+  /** Prefix that decides the active state, when it differs from href.
+   *  Contacts links straight at its first tab to save a redirect, but must
+   *  still light up on the other one. */
+  match?: string;
   label: string;
   /** Bottom-nav label, where six tabs share a phone's width. */
   shortLabel?: string;
@@ -33,14 +37,22 @@ export type NavItem = {
 export const NAV_ITEMS: NavItem[] = [
   { href: "/dashboard", label: "Dashboard", shortLabel: "Home", icon: LayoutGrid },
   { href: "/deals", label: "Deals", icon: Handshake },
-  { href: "/contacts", label: "Contacts", icon: Users },
-  { href: "/activities", label: "Activities", shortLabel: "Activity", icon: CalendarCheck },
+  { href: "/contacts/people", match: "/contacts", label: "Contacts", icon: Users },
+  { href: "/activities/open", match: "/activities", label: "Activities", shortLabel: "Activity", icon: CalendarCheck },
   { href: "/contracts", label: "Contracts", icon: FileText },
   { href: "/settings", label: "Settings", icon: Settings },
 ];
 
-/** True when `pathname` is the item's own route or anything nested under it,
- *  so /contacts/people still lights up Contacts. */
-export function isActive(pathname: string, href: string): boolean {
-  return pathname === href || pathname.startsWith(href + "/");
+/**
+ * True when `pathname` is the item's own route or anything nested under it,
+ * so /contacts/organizations still lights up Contacts.
+ *
+ * Takes the whole item rather than a href because the two differ for the
+ * sections that link straight at a tab: pointing Contacts at /contacts would
+ * cost a redirect on every click, and pointing it at /contacts/people alone
+ * would leave the nav unlit while the Organizations tab is open.
+ */
+export function isActive(pathname: string, item: NavItem): boolean {
+  const base = item.match ?? item.href;
+  return pathname === base || pathname.startsWith(base + "/");
 }

@@ -23,7 +23,6 @@ export function AddButton({
     <button
       type="button"
       disabled
-      title="Forms arrive in the next step"
       className={`inline-flex shrink-0 items-center gap-2 rounded-2xl bg-brand-500 font-semibold text-white shadow-lg shadow-brand-500/30 transition hover:bg-brand-600 disabled:cursor-not-allowed disabled:opacity-55 ${sizing}`}
     >
       <Plus className={size === "large" ? "h-5 w-5" : "h-4 w-4"} strokeWidth={2.25} aria-hidden />
