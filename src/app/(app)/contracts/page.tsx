@@ -31,8 +31,8 @@ export default async function ContractsPage() {
           />
         ) : (
           <Table columns={["Deal", "Signed", "Value", "Notes"]}>
-            {contracts.map((contract) => (
-              <Row key={contract.id}>
+            {contracts.map((contract, i) => (
+              <Row key={contract.id} index={i} count={contracts.length}>
                 <RowLink href={`/deals/${contract.dealId}`}>
                   {contract.dealTitle ?? "Deal"}
                 </RowLink>

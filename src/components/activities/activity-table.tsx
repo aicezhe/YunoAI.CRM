@@ -36,10 +36,10 @@ export function ActivityTable({
 }) {
   return (
     <Table columns={["Type", "Subject", "Related to", archived ? "Completed" : "Due", "Done"]}>
-      {activities.map((activity) => {
+      {activities.map((activity, i) => {
         const related = relatedTo(activity);
         return (
-          <Row key={activity.id}>
+          <Row key={activity.id} index={i} count={activities.length}>
             <Cell className="w-16">
               <ActivityIcon type={activity.type} />
             </Cell>

@@ -21,12 +21,12 @@ export default async function PersonPage({ params }: PageProps<"/contacts/people
     <div className="mx-auto max-w-3xl">
       <BackLink href="/contacts/people" label="People" />
 
-      <h1 className="mt-4 text-2xl font-semibold tracking-tight text-gray-900 sm:text-3xl">
+      <h1 className="enter mt-4 text-2xl font-semibold tracking-tight text-gray-900 sm:text-3xl">
         {person.name}
       </h1>
 
       <div className="mt-8">
-        <RecordCard>
+        <RecordCard index={0}>
           <dl>
             <Field label="Organization">
               {person.organizationId ? (

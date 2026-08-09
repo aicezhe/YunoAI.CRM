@@ -25,8 +25,8 @@ export default async function PeoplePage() {
 
   return (
     <Table columns={["Name", "Organization", "Email", "Phone", "Owner"]}>
-      {people.map((person) => (
-        <Row key={person.id}>
+      {people.map((person, i) => (
+        <Row key={person.id} index={i} count={people.length}>
           <RowLink href={`/contacts/people/${person.id}`}>{person.name}</RowLink>
 
           <Cell muted>

@@ -34,8 +34,8 @@ export default async function DealsPage() {
           <Table
             columns={["Title", "With", "Stage", "Value", "Owner", "Expected close"]}
           >
-            {deals.map((deal) => (
-              <Row key={deal.id}>
+            {deals.map((deal, i) => (
+              <Row key={deal.id} index={i} count={deals.length}>
                 <RowLink href={`/deals/${deal.id}`}>{deal.title}</RowLink>
 
                 {/* One column for both counterparties: the schema allows

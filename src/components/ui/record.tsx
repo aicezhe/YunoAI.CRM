@@ -27,9 +27,48 @@ export function Field({ label, children }: { label: string; children: React.Reac
   );
 }
 
-export function RecordCard({ title, children }: { title?: string; children: React.ReactNode }) {
+/** Fixed step between a record page's cards — see the comment on RecordCard.
+ *  Exported so a page can offset its own non-card elements (e.g. the
+ *  context line under a dashboard's task lists) onto the same beat instead
+ *  of picking an unrelated number. */
+export const CARD_STAGGER_MS = 90;
+
+/**
+ * A record page's card sections settle in one after another rather than
+ * appearing at once — the heading arrives first (delay 0, animated
+ * separately at each call site), then each card a beat behind it, leading
+ * the eye down the page in reading order. Pass `index` (0 for the first
+ * card, 1 for the second, …) to opt in; the delay is `(index + 1) *
+ * CARD_STAGGER_MS`, one step past the heading's own delay of 0, so the
+ * first card visibly follows the heading rather than arriving with it.
+ *
+ * A flat step rather than the count-aware budget `staggerDelayMs` gives
+ * table rows: that budget exists so a thirty-row table doesn't take
+ * noticeably longer to finish revealing than a three-row one, but a record
+ * page only ever has two or three cards, so there is no long-list case to
+ * protect against — a fixed, clearly-felt gap is simply the better fit.
+ */
+export function RecordCard({
+  title,
+  children,
+  index,
+}: {
+  title?: string;
+  children: React.ReactNode;
+  index?: number;
+}) {
+  const animated = index !== undefined;
   return (
-    <section className="rounded-3xl border border-brand-200/70 bg-white p-6 shadow-sm">
+    <section
+      className={
+        "rounded-3xl border border-brand-200/70 bg-white p-6 shadow-sm" + (animated ? " enter" : "")
+      }
+      style={
+        animated
+          ? ({ "--enter-delay": `${(index + 1) * CARD_STAGGER_MS}ms` } as React.CSSProperties)
+          : undefined
+      }
+    >
       {title && <h2 className="mb-2 text-base font-semibold text-gray-900">{title}</h2>}
       {children}
     </section>

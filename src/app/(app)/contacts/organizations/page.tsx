@@ -24,8 +24,8 @@ export default async function OrganizationsPage() {
 
   return (
     <Table columns={["Name", "Industry", "Address", "People", "Owner"]}>
-      {organizations.map((org) => (
-        <Row key={org.id}>
+      {organizations.map((org, i) => (
+        <Row key={org.id} index={i} count={organizations.length}>
           <RowLink href={`/contacts/organizations/${org.id}`}>{org.name}</RowLink>
           <Cell muted>{org.industry ?? <Blank />}</Cell>
           <Cell muted>{org.address ?? <Blank />}</Cell>

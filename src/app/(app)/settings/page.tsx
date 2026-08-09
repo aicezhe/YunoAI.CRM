@@ -1,6 +1,7 @@
 import { Settings as SettingsIcon } from "lucide-react";
 import { EmptyState } from "@/components/ui/states";
 import { PageHeader } from "@/components/ui/page-header";
+import { CARD_STAGGER_MS } from "@/components/ui/record";
 import { requireUser } from "@/lib/auth/current-user";
 
 export const metadata = { title: "Settings · YunoCRM" };
@@ -19,7 +20,7 @@ export default async function SettingsPage() {
     <main className="mx-auto max-w-5xl px-5 py-8 sm:px-8 sm:py-10">
       <PageHeader title="Settings" description="Your account and workspace preferences." />
 
-      <section className="mt-8 rounded-3xl border border-brand-200/70 bg-white p-6 shadow-sm">
+      <section className="enter mt-8 rounded-3xl border border-brand-200/70 bg-white p-6 shadow-sm">
         <h2 className="text-base font-semibold text-gray-900">Account</h2>
         <dl className="mt-4 space-y-3 text-sm">
           <div className="flex flex-wrap justify-between gap-2">
@@ -41,7 +42,7 @@ export default async function SettingsPage() {
         </dl>
       </section>
 
-      <div className="mt-6">
+      <div className="enter mt-6" style={{ "--enter-delay": `${CARD_STAGGER_MS}ms` } as React.CSSProperties}>
         <EmptyState
           icon={SettingsIcon}
           title="Coming soon"

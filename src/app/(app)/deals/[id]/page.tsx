@@ -26,7 +26,9 @@ export default async function DealPage({ params }: PageProps<"/deals/[id]">) {
     <main className="mx-auto max-w-3xl px-5 py-8 sm:px-8 sm:py-10">
       <BackLink href="/deals" label="Deals" />
 
-      <div className="mt-4 flex flex-wrap items-start justify-between gap-4">
+      {/* Staggered arrival, same rhythm as every other record page — heading
+          first, then each card a beat behind it. See RecordCard. */}
+      <div className="enter mt-4 flex flex-wrap items-start justify-between gap-4">
         <h1 className="text-2xl font-semibold tracking-tight text-gray-900 sm:text-3xl">
           {d.title}
         </h1>
@@ -34,7 +36,7 @@ export default async function DealPage({ params }: PageProps<"/deals/[id]">) {
       </div>
 
       <div className="mt-8 space-y-5">
-        <RecordCard>
+        <RecordCard index={0}>
           <dl>
             <Field label="Value">{formatMoney(d.value, d.currency)}</Field>
             <Field label="Organization">{d.organizationName ?? <Missing />}</Field>
@@ -44,7 +46,7 @@ export default async function DealPage({ params }: PageProps<"/deals/[id]">) {
           </dl>
         </RecordCard>
 
-        <RecordCard title="Activity">
+        <RecordCard title="Activity" index={1}>
           {!activities.ok ? (
             <p className="py-4 text-sm text-gray-500">{activities.error}</p>
           ) : activities.data.length === 0 ? (

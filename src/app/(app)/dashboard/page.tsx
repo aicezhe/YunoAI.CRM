@@ -1,11 +1,19 @@
 import Link from "next/link";
 import { Sun } from "lucide-react";
 import { OverdueGroup, TaskRow } from "@/components/dashboard/task-list";
+import { CARD_STAGGER_MS } from "@/components/ui/record";
 import { ErrorState } from "@/components/ui/states";
 import { getTodayBoard } from "@/lib/data/activities";
 import { getPipelineSummary } from "@/lib/data/deals";
 import { getCurrentUser } from "@/lib/auth/current-user";
 import { formatMoney } from "@/lib/format";
+
+/** `n`th content block after the greeting settles a beat behind it — same
+ *  rhythm every record page uses (see RecordCard), applied here by hand
+ *  because the dashboard's blocks are conditional rather than a fixed list. */
+function blockDelay(n: number): React.CSSProperties {
+  return { "--enter-delay": `${(n + 1) * CARD_STAGGER_MS}ms` } as React.CSSProperties;
+}
 
 export const metadata = { title: "Dashboard · YunoCRM" };
 
@@ -34,7 +42,7 @@ export default async function DashboardPage() {
   if (!board.ok) {
     return (
       <main className="mx-auto max-w-3xl px-5 py-8 sm:px-8 sm:py-10">
-        <h1 className="text-3xl font-semibold tracking-tight text-gray-900">Hi, {name}</h1>
+        <h1 className="enter text-3xl font-semibold tracking-tight text-gray-900">Hi, {name}</h1>
         <div className="mt-8">
           <ErrorState message={board.error} />
         </div>
@@ -45,9 +53,17 @@ export default async function DashboardPage() {
   const { overdue, today } = board.data;
   const outstanding = overdue.length + today.length;
 
+  // Counts only the blocks that actually render, so "today" still lands on
+  // the first beat (90ms) when there is no overdue group ahead of it, rather
+  // than always waiting for a slot that stayed empty.
+  let block = 0;
+
   return (
     <main className="mx-auto max-w-3xl px-5 py-8 sm:px-8 sm:py-10">
-      <header>
+      {/* The greeting settles in on its own at delay 0; everything below
+          follows a beat behind it, in reading order. See `.enter` in
+          globals.css and blockDelay() above. */}
+      <header className="enter">
         <h1 className="text-3xl font-semibold tracking-tight text-gray-900 sm:text-4xl">
           Hi, {name}
         </h1>
@@ -59,10 +75,17 @@ export default async function DashboardPage() {
       </header>
 
       <div className="mt-8 space-y-4">
-        <OverdueGroup tasks={overdue} />
+        {overdue.length > 0 && (
+          <div className="enter" style={blockDelay(block++)}>
+            <OverdueGroup tasks={overdue} />
+          </div>
+        )}
 
         {today.length > 0 && (
-          <section className="rounded-3xl border border-brand-200/70 bg-white p-2 shadow-sm sm:p-3">
+          <section
+            className="enter rounded-3xl border border-brand-200/70 bg-white p-2 shadow-sm sm:p-3"
+            style={blockDelay(block++)}
+          >
             <ul>
               {today.map((task) => (
                 <TaskRow key={task.id} task={task} />
@@ -74,8 +97,11 @@ export default async function DashboardPage() {
         {outstanding === 0 && (
           // Positive, not a void: an empty day is the goal, and the screen
           // should read as finished rather than broken.
-          <section className="flex flex-col items-center rounded-3xl border border-brand-200/70 bg-white px-6 py-16 text-center shadow-sm">
-            <span className="rise-in flex h-14 w-14 items-center justify-center rounded-2xl bg-brand-100 text-brand-500">
+          <section
+            className="enter flex flex-col items-center rounded-3xl border border-brand-200/70 bg-white px-6 py-16 text-center shadow-sm"
+            style={blockDelay(block++)}
+          >
+            <span className="flex h-14 w-14 items-center justify-center rounded-2xl bg-brand-100 text-brand-500">
               <Sun className="h-6 w-6" strokeWidth={1.75} aria-hidden />
             </span>
             <h2 className="mt-5 text-base font-semibold text-gray-900">Nothing due today</h2>
@@ -93,7 +119,7 @@ export default async function DashboardPage() {
         )}
       </div>
 
-      <ContextLine summary={summary} />
+      <ContextLine summary={summary} delay={blockDelay(block)} />
     </main>
   );
 }
@@ -105,7 +131,13 @@ export default async function DashboardPage() {
  * compete with the task list, and the screen goes back to being a report.
  * Every fragment is a link into the section that explains it.
  */
-function ContextLine({ summary }: { summary: Awaited<ReturnType<typeof getPipelineSummary>> }) {
+function ContextLine({
+  summary,
+  delay,
+}: {
+  summary: Awaited<ReturnType<typeof getPipelineSummary>>;
+  delay: React.CSSProperties;
+}) {
   if (!summary.ok) return null;
 
   const { openCount, openValue, staleCount } = summary.data;
@@ -114,7 +146,7 @@ function ContextLine({ summary }: { summary: Awaited<ReturnType<typeof getPipeli
   const link = "underline decoration-gray-300 underline-offset-2 transition hover:text-brand-600";
 
   return (
-    <p className="mt-10 text-sm text-gray-400">
+    <p className="enter mt-10 text-sm text-gray-400" style={delay}>
       <Link href="/deals" className={link}>
         {openCount} {openCount === 1 ? "deal" : "deals"} in progress
       </Link>

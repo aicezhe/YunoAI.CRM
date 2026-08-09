@@ -1,4 +1,5 @@
 import Link from "next/link";
+import { enterStyle } from "@/lib/stagger";
 
 /**
  * The list surface: a white rounded card holding a real <table>.
@@ -47,10 +48,30 @@ export function Table({ columns, children }: { columns: string[]; children: Reac
  * the whole row is the click target while the accessible name stays the one
  * meaningful label — better than an onClick on <tr>, which is invisible to
  * keyboards and screen readers.
+ *
+ * Passing `index`/`count` staggers the row's arrival in with the rest of the
+ * table — the same reveal every list in yuno-crm v1 used. Omit both and the
+ * row renders static, for the rare table that isn't a full page's content
+ * (nothing currently needs that, but the animation shouldn't be mandatory).
  */
-export function Row({ children }: { children: React.ReactNode }) {
+export function Row({
+  children,
+  index,
+  count,
+}: {
+  children: React.ReactNode;
+  index?: number;
+  count?: number;
+}) {
+  const animated = index !== undefined && count !== undefined;
   return (
-    <tr className="relative border-b border-brand-200/40 transition-colors last:border-0 hover:bg-brand-100/60 focus-within:bg-brand-100/60">
+    <tr
+      className={
+        "relative border-b border-brand-200/40 transition-colors last:border-0 hover:bg-brand-100/60 focus-within:bg-brand-100/60" +
+        (animated ? " enter" : "")
+      }
+      style={animated ? enterStyle(index, count) : undefined}
+    >
       {children}
     </tr>
   );
