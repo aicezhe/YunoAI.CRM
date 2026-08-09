@@ -36,18 +36,39 @@ function toActivityRow(row: RawActivity): ActivityRow {
   };
 }
 
-export async function listActivities(): Promise<Result<ActivityRow[]>> {
+/**
+ * Activities on one side of the done/not-done line.
+ *
+ * The two are separate screens rather than one list sorted by `done`: a
+ * finished call is history, and mixing it into the working list means the
+ * things still owed get pushed further down every time one is completed.
+ */
+export async function listActivities(done: boolean): Promise<Result<ActivityRow[]>> {
   const supabase = await createClient();
-  // Open first, then soonest due. Items with no due date sort last: they are
-  // notes and logged history, not work owed.
-  const { data, error } = await supabase
-    .from("activities")
-    .select(ACTIVITY_SELECT)
-    .order("done")
-    .order("due_at", { nullsFirst: false });
+
+  const query = supabase.from("activities").select(ACTIVITY_SELECT).eq("done", done);
+
+  // Open work reads soonest-first; the archive reads most-recently-finished
+  // first, because that is the item someone is looking for when they open it.
+  const { data, error } = done
+    ? await query.order("due_at", { ascending: false, nullsFirst: false })
+    : await query.order("due_at", { nullsFirst: false });
 
   if (error) return fail("listActivities", error.message);
   return ok((data as unknown as RawActivity[]).map(toActivityRow));
+}
+
+/** Tab badges. A failed count degrades to zero rather than taking the
+ *  section down — the lists below report their own failures. */
+export async function countActivities(): Promise<{ open: number; archived: number }> {
+  const supabase = await createClient();
+
+  const [open, archived] = await Promise.all([
+    supabase.from("activities").select("id", { count: "exact", head: true }).eq("done", false),
+    supabase.from("activities").select("id", { count: "exact", head: true }).eq("done", true),
+  ]);
+
+  return { open: open.count ?? 0, archived: archived.count ?? 0 };
 }
 
 export type TodayBoard = {

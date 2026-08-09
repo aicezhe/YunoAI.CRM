@@ -26,3 +26,39 @@ export async function setActivityDone(id: string, done: boolean): Promise<void> 
 
   revalidatePath("/", "layout");
 }
+
+/**
+ * Empties the archive: deletes every completed activity, for everyone.
+ *
+ * A hard delete, not a flag. An "archived" flag on top of `done` would mean
+ * three states for one boolean question and a third list to keep straight,
+ * and the point of clearing an archive is that the rows stop existing.
+ *
+ * Deliberately not scoped to the caller: activities are team-wide here (see
+ * the RLS policies in the migration), so clearing removes the team's finished
+ * history, not just your own. The button that calls this says so and asks
+ * twice — that confirmation is the only thing between a click and permanent
+ * loss, since there is no undo.
+ *
+ * Returns the number deleted so the caller can report it.
+ */
+export async function clearActivityArchive(): Promise<number> {
+  const supabase = await createClient();
+
+  // .select() makes the delete return the rows it removed, which is the only
+  // way to get a count back — Postgres gives no row count through PostgREST
+  // otherwise.
+  const { data, error } = await supabase
+    .from("activities")
+    .delete()
+    .eq("done", true)
+    .select("id");
+
+  if (error) {
+    console.error("[activities] clearing archive failed:", error.message);
+    throw new Error("Could not clear the archive.");
+  }
+
+  revalidatePath("/", "layout");
+  return data.length;
+}
