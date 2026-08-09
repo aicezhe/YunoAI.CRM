@@ -34,25 +34,37 @@ export type CurrentUser = {
 export const getCurrentUser = cache(async (): Promise<CurrentUser | null> => {
   const supabase = await createClient();
 
-  // getUser() revalidates the token against Supabase Auth. getSession() only
-  // decodes whatever cookie the browser sent, which is spoofable — never use
-  // it to decide whether someone is signed in.
-  const {
-    data: { user },
-  } = await supabase.auth.getUser();
+  // getClaims() verifies the JWT's signature locally against the project's
+  // public key; getUser() would post to Supabase Auth instead, a second
+  // network round-trip on top of the one proxy.ts already makes, on every
+  // page view. Verified either way — what changes is where.
+  //
+  // Never getSession(): that decodes the cookie without checking the
+  // signature, so a forged one would pass.
+  const { data } = await supabase.auth.getClaims();
+  const claims = data?.claims;
 
-  if (!user?.email) return null;
+  const id = typeof claims?.sub === "string" ? claims.sub : null;
+  const email = typeof claims?.email === "string" ? claims.email : null;
+  if (!id || !email) return null;
 
-  const profile = await getUserProfile(user.id);
+  const profile = await getUserProfile(id);
+
+  // The claims carry app_metadata and user_metadata as they stood when the
+  // token was issued, so a role changed in the last hour is stale here. That
+  // is only the fallback path: once the users table has a row, the profile
+  // lookup above wins and is always current.
+  const metadata = claims as { user_metadata?: unknown; app_metadata?: unknown };
+  const userMetaName =
+    typeof (metadata.user_metadata as { name?: unknown })?.name === "string"
+      ? ((metadata.user_metadata as { name: string }).name)
+      : null;
 
   return {
-    id: user.id,
-    email: user.email,
-    name:
-      profile?.name ??
-      (typeof user.user_metadata?.name === "string" ? user.user_metadata.name : null) ??
-      user.email.split("@")[0],
-    role: profile?.role ?? parseRole(user.app_metadata?.role),
+    id,
+    email,
+    name: profile?.name ?? userMetaName ?? email.split("@")[0],
+    role: profile?.role ?? parseRole((metadata.app_metadata as { role?: unknown })?.role),
   };
 });
 

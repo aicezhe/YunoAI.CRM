@@ -41,9 +41,22 @@ export async function proxy(request: NextRequest) {
     },
   );
 
-  const {
-    data: { user },
-  } = await supabase.auth.getUser();
+  // getClaims(), not getUser(). getUser() posts to Supabase Auth on every
+  // single request — and this runs on every navigation and every RSC fetch,
+  // so it was adding 130–390ms to each one, more than the page's own queries.
+  // getClaims() verifies the JWT's signature locally against the project's
+  // public key (cached after the first fetch), which is what the asymmetric
+  // keys exist for. It still refreshes an expired session through the cookie
+  // handlers above, so the reason this file exists is unaffected.
+  //
+  // Not getSession(): that decodes the cookie without verifying it, which is
+  // forgeable. The verification is the whole point.
+  //
+  // On a project still signing with a symmetric key, getClaims() falls back
+  // to getUser() by itself, so this is never less safe than what it replaced
+  // — only slower, exactly as before.
+  const { data } = await supabase.auth.getClaims();
+  const user = data?.claims ?? null;
 
   const path = request.nextUrl.pathname;
   const isPublic = PUBLIC_PATHS.some((p) => path === p || path.startsWith(p + "/"));
