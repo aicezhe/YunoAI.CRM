@@ -2,7 +2,7 @@ import Link from "next/link";
 import { Users } from "lucide-react";
 import { AddButton } from "@/components/ui/add-button";
 import { EmptyState, ErrorState } from "@/components/ui/states";
-import { Blank, Cell, Row, RowLink, Table } from "@/components/ui/table";
+import { Blank, Cell, EmailChip, PhoneLink, Row, RowLink, Table } from "@/components/ui/table";
 import { listPersons } from "@/lib/data/contacts";
 
 export const metadata = { title: "People · YunoCRM" };
@@ -44,8 +44,8 @@ export default async function PeoplePage() {
             )}
           </Cell>
 
-          <Cell muted>{person.email ?? <Blank />}</Cell>
-          <Cell muted>{person.phone ?? <Blank />}</Cell>
+          <Cell muted>{person.email ? <EmailChip email={person.email} /> : <Blank />}</Cell>
+          <Cell muted>{person.phone ? <PhoneLink phone={person.phone} /> : <Blank />}</Cell>
           <Cell muted>{person.ownerName ?? <Blank />}</Cell>
         </Row>
       ))}
