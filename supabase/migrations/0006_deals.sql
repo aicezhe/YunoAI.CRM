@@ -34,7 +34,7 @@ create table public.deals (
   -- real pipeline, and SET NULL would leave deals in no column at all.
   stage_id uuid references public.pipeline_stages (id) on delete restrict,
 
-  status text not null default 'open' check (status in ('open', 'won', 'lost')),
+  status public.deal_status not null default 'open',
 
   lost_reason text,
 
@@ -42,15 +42,29 @@ create table public.deals (
 
   created_at timestamptz not null default now(),
 
-  -- A lost deal must say why. This is the field that makes the loss report
-  -- worth anything, and it is exactly the field people skip when the form is
-  -- the only thing asking.
+  -- lost_reason belongs to exactly the lost deals, enforced in both
+  -- directions.
   --
-  -- Only the 'lost' direction is enforced: a leftover reason on a deal that
-  -- was reopened is untidy but harmless, whereas forbidding it would make
-  -- reopening fail unless the form also clears the field in the same update.
-  constraint deals_lost_reason_required check (
-    status <> 'lost' or (lost_reason is not null and length(trim(lost_reason)) > 0)
+  -- Forward: a lost deal must say why. That is the field the loss report is
+  -- built from, and exactly the one people skip when only a form asks.
+  --
+  -- Backward: any other status must leave it empty. Without this half, a deal
+  -- reopened from 'lost' back to 'open' keeps its old reason, and the row then
+  -- says two contradictory things at once. Worse, the reason is invisible in
+  -- the UI while the deal is open, so it resurfaces only if the deal is lost
+  -- again — showing a stale explanation for a new loss.
+  --
+  -- The cost is real and worth naming: reopening a lost deal must clear
+  -- lost_reason in the same UPDATE, or the write is rejected. That is one line
+  -- in the form handler, in exchange for a column that can never lie.
+  --
+  -- The emptiness test is trim(), not just NULL: '' and '   ' would satisfy
+  -- `is not null` and defeat the whole constraint.
+  constraint deals_lost_reason_matches_status check (
+    case
+      when status = 'lost' then lost_reason is not null and length(trim(lost_reason)) > 0
+      else lost_reason is null
+    end
   ),
 
   -- A deal has to be with someone. Either end is enough — an opportunity at a

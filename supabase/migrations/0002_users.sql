@@ -16,10 +16,11 @@ create table public.users (
   email text not null unique,
   name text not null,
 
-  -- Enforced in the database, not the app: the role decides authorization, so
-  -- a typo ('Admin', 'owner') must fail at write time rather than silently
-  -- under-granting at read time. src/lib/auth/roles.ts parses the same pair.
-  role text not null default 'member' check (role in ('admin', 'member')),
+  -- public.user_role, not text + CHECK — see 0001 for why. The role decides
+  -- authorization, so a typo ('Admin', 'owner') must fail at write time rather
+  -- than silently under-granting at read time. src/lib/auth/roles.ts parses
+  -- the same pair.
+  role public.user_role not null default 'member',
 
   created_at timestamptz not null default now()
 );

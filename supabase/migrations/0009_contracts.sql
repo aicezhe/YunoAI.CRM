@@ -8,13 +8,19 @@ create table public.contracts (
   -- available, which leaves the two extremes — and a signed contract is not
   -- something a stray click on a deal should be able to erase. Deleting a deal
   -- that has contracts is refused until they are dealt with explicitly.
+  -- The only link to a counterparty. The organization is reached through
+  -- deals.org_id, one join away.
+  --
+  -- An earlier draft also carried org_id here, denormalised, so a contract
+  -- would keep naming the company that signed even if the deal were later
+  -- re-pointed. Dropped in review, and rightly: two columns holding the same
+  -- fact drift, nothing here keeps them equal, and a contract silently naming
+  -- a different organization than its own deal is worse than the problem it
+  -- was meant to solve. If preserving the signatory against later edits turns
+  -- out to matter, the honest fix is to snapshot the name as text at signing
+  -- time — a fact frozen on purpose, not a second live foreign key pretending
+  -- to be one.
   deal_id uuid not null references public.deals (id) on delete restrict,
-
-  -- Denormalised from the deal on purpose: the counterparty on the paper is
-  -- who signed, and re-pointing the deal at a different organization later
-  -- must not silently rewrite history. SET NULL keeps the contract if the
-  -- organization record is removed.
-  org_id uuid references public.organizations (id) on delete set null,
 
   signed_date date not null,
 
@@ -27,4 +33,3 @@ create table public.contracts (
 );
 
 create index contracts_deal_id_idx on public.contracts (deal_id);
-create index contracts_org_id_idx on public.contracts (org_id);
