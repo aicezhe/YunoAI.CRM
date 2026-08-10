@@ -1,16 +1,21 @@
 import { notFound } from "next/navigation";
-import { DoneCheckbox } from "@/components/done-checkbox";
-import { ActivityIcon, StageBadge, StatusBadge } from "@/components/ui/badges";
+import { DealActivityCard } from "@/components/deals/deal-activity-card";
+import { StagePicker } from "@/components/deals/stage-picker";
 import { BackLink, Field, Missing, RecordCard, resolveBack } from "@/components/ui/record";
 import { ErrorState } from "@/components/ui/states";
 import { listActivitiesForDeal } from "@/lib/data/activities";
-import { getDeal } from "@/lib/data/deals";
-import { formatDate, formatDue, formatMoney } from "@/lib/format";
+import { getDeal, listStages, listStageTransitions } from "@/lib/data/deals";
+import { formatDate, formatMoney, formatTime } from "@/lib/format";
 
 export default async function DealPage({ params, searchParams }: PageProps<"/deals/[id]">) {
   const { id } = await params;
   const { from } = await searchParams;
-  const [deal, activities] = await Promise.all([getDeal(id), listActivitiesForDeal(id)]);
+  const [deal, activities, stages, transitions] = await Promise.all([
+    getDeal(id),
+    listActivitiesForDeal(id),
+    listStages(),
+    listStageTransitions(id),
+  ]);
 
   if (!deal.ok) {
     return (
@@ -29,12 +34,21 @@ export default async function DealPage({ params, searchParams }: PageProps<"/dea
       <BackLink href={back.href} label={back.label} />
 
       {/* Staggered arrival, same rhythm as every other record page — heading
-          first, then each card a beat behind it. See RecordCard. */}
-      <div className="enter mt-4 flex flex-wrap items-start justify-between gap-4">
+          first, then each card a beat behind it. See RecordCard.
+          relative z-10: .enter animates transform, which gives this row its
+          own stacking context — without an explicit z-index it still loses
+          to the RecordCards below in DOM-order stacking, trapping the stage
+          dropdown behind them. */}
+      <div className="enter relative z-10 mt-4 flex flex-wrap items-start justify-between gap-4">
         <h1 className="text-2xl font-semibold tracking-tight text-gray-900 sm:text-3xl">
           {d.title}
         </h1>
-        {d.status === "open" ? <StageBadge name={d.stageName} /> : <StatusBadge status={d.status} />}
+        <StagePicker
+          dealId={d.id}
+          stages={stages.ok ? stages.data : []}
+          initialStageId={d.stageId}
+          initialStageName={d.stageName}
+        />
       </div>
 
       <div className="mt-8 space-y-5">
@@ -48,30 +62,32 @@ export default async function DealPage({ params, searchParams }: PageProps<"/dea
           </dl>
         </RecordCard>
 
-        <RecordCard title="Activity" index={1}>
-          {!activities.ok ? (
-            <p className="py-4 text-sm text-gray-500">{activities.error}</p>
-          ) : activities.data.length === 0 ? (
-            <p className="py-4 text-sm text-gray-500">
-              Nothing logged against this deal yet.
-            </p>
+        <DealActivityCard
+          dealId={d.id}
+          personId={d.personId}
+          orgId={d.organizationId}
+          activities={activities}
+        />
+
+        <RecordCard title="Stage history" index={2}>
+          {!transitions.ok ? (
+            <p className="py-4 text-sm text-gray-500">{transitions.error}</p>
+          ) : transitions.data.length === 0 ? (
+            <p className="py-4 text-sm text-gray-500">No stage changes recorded yet.</p>
           ) : (
             <ul className="mt-2 divide-y divide-brand-200/40">
-              {activities.data.map((a) => (
-                <li key={a.id} className="flex items-center gap-3 py-3">
-                  <ActivityIcon type={a.type} />
-                  <div className="min-w-0 flex-1">
-                    <p
-                      className={
-                        "truncate text-sm " +
-                        (a.done ? "text-gray-400 line-through" : "text-gray-900")
-                      }
-                    >
-                      {a.subject}
-                    </p>
-                    <p className="text-xs text-gray-400">{formatDue(a.dueAt)}</p>
-                  </div>
-                  <DoneCheckbox id={a.id} done={a.done} label={a.subject} />
+              {transitions.data.map((t) => (
+                <li key={t.id} className="flex flex-wrap items-center justify-between gap-x-3 gap-y-1 py-3">
+                  <p className="text-sm text-gray-900">
+                    {t.fromStageName ?? <Missing />}
+                    <span className="mx-1.5 text-gray-400" aria-hidden>
+                      →
+                    </span>
+                    {t.toStageName}
+                  </p>
+                  <p className="text-xs text-gray-400">
+                    {t.changedByName ?? "Unknown"} · {formatDate(t.occurredAt)}, {formatTime(t.occurredAt)}
+                  </p>
                 </li>
               ))}
             </ul>

@@ -56,13 +56,24 @@ export type DealRow = {
   value: number | null;
   currency: string | null;
   status: DealStatus;
+  stageId: string | null;
   stageName: string | null;
   stagePosition: number | null;
   expectedCloseDate: string | null;
   ownerId: string | null;
   ownerName: string | null;
+  organizationId: string | null;
   organizationName: string | null;
+  personId: string | null;
   personName: string | null;
+};
+
+export type StageTransitionRow = {
+  id: string;
+  fromStageName: string | null;
+  toStageName: string;
+  changedByName: string | null;
+  occurredAt: string;
 };
 
 export type ActivityRow = {

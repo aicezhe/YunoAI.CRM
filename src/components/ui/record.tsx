@@ -67,10 +67,14 @@ export const CARD_STAGGER_MS = 90;
  */
 export function RecordCard({
   title,
+  action,
   children,
   index,
 }: {
   title?: string;
+  /** An optional control next to the title — e.g. the "+ Add activity"
+   *  button on a deal's Activity card. */
+  action?: React.ReactNode;
   children: React.ReactNode;
   index?: number;
 }) {
@@ -86,7 +90,12 @@ export function RecordCard({
           : undefined
       }
     >
-      {title && <h2 className="mb-2 text-base font-semibold text-gray-900">{title}</h2>}
+      {(title || action) && (
+        <div className="mb-2 flex items-center justify-between gap-3">
+          {title && <h2 className="text-base font-semibold text-gray-900">{title}</h2>}
+          {action}
+        </div>
+      )}
       {children}
     </section>
   );

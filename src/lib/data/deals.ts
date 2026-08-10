@@ -1,9 +1,9 @@
 import "server-only";
 import { createClient } from "@/lib/supabase/server";
-import { fail, ok, type DealRow, type Result } from "./types";
+import { fail, ok, type DealRow, type Result, type StageTransitionRow } from "./types";
 
 const DEAL_SELECT = `
-  id, title, value, currency, status, expected_close_date,
+  id, title, value, currency, status, stage_id, expected_close_date,
   stage:pipeline_stages(name, position),
   owner:users(id, name),
   organization:organizations(id, name),
@@ -16,6 +16,7 @@ type RawDeal = {
   value: string | number | null;
   currency: string | null;
   status: string;
+  stage_id: string | null;
   expected_close_date: string | null;
   stage: { name: string; position: number } | null;
   owner: { id: string; name: string } | null;
@@ -39,12 +40,15 @@ function toDealRow(row: RawDeal): DealRow {
     value: toNumber(row.value),
     currency: row.currency,
     status: row.status as DealRow["status"],
+    stageId: row.stage_id,
     stageName: row.stage?.name ?? null,
     stagePosition: row.stage?.position ?? null,
     expectedCloseDate: row.expected_close_date,
     ownerId: row.owner?.id ?? null,
     ownerName: row.owner?.name ?? null,
+    organizationId: row.organization?.id ?? null,
     organizationName: row.organization?.name ?? null,
+    personId: row.person?.id ?? null,
     personName: row.person?.name ?? null,
   };
 }
@@ -142,4 +146,45 @@ export async function getPipelineSummary(): Promise<Result<PipelineSummary>> {
     openValue: deals.reduce((sum, d) => sum + (toNumber(d.value as string | null) ?? 0), 0),
     staleCount: deals.filter((d) => !touched.has(d.id)).length,
   });
+}
+
+type RawStageTransition = {
+  id: string;
+  occurred_at: string;
+  from_stage: { name: string } | null;
+  to_stage: { name: string } | null;
+  changed_by_user: { name: string } | null;
+};
+
+/** A deal's move history for its "Stage history" card — newest first, since
+ *  that is the one someone just made and wants to confirm landed. Two FKs
+ *  from this table point at pipeline_stages (from_stage_id, to_stage_id), so
+ *  each embed names its own constraint — PostgREST can't otherwise tell
+ *  which one a bare `pipeline_stages(...)` should follow. */
+export async function listStageTransitions(dealId: string): Promise<Result<StageTransitionRow[]>> {
+  const supabase = await createClient();
+  const { data, error } = await supabase
+    .from("stage_transitions")
+    .select(
+      `
+      id, occurred_at,
+      from_stage:pipeline_stages!stage_transitions_from_stage_id_fkey(name),
+      to_stage:pipeline_stages!stage_transitions_to_stage_id_fkey(name),
+      changed_by_user:users!stage_transitions_changed_by_fkey(name)
+    `,
+    )
+    .eq("deal_id", dealId)
+    .order("occurred_at", { ascending: false });
+
+  if (error) return fail("listStageTransitions", error.message);
+
+  return ok(
+    (data as unknown as RawStageTransition[]).map((row) => ({
+      id: row.id,
+      fromStageName: row.from_stage?.name ?? null,
+      toStageName: row.to_stage?.name ?? "—",
+      changedByName: row.changed_by_user?.name ?? null,
+      occurredAt: row.occurred_at,
+    })),
+  );
 }
