@@ -124,8 +124,16 @@ export function DeleteRecordButton({
   );
 }
 
-/** The survivors, named — so "cannot be undone" doesn't read as though the
- *  attached people and logged calls go too. Silent when nothing is linked. */
+/**
+ * What survives and what does not — so "cannot be undone" doesn't read as
+ * though the attached people and logged calls go too, and, just as
+ * importantly, so the ones that *do* go are named.
+ *
+ * Activities split into two outcomes since 0017: those linked to something
+ * else survive with the link cleared, those linked only to this record are
+ * deleted with it. Stating one number for both would make the confirmation
+ * a half-truth in whichever direction it rounded.
+ */
 function Consequences({ kind, impact }: { kind: "organization" | "person"; impact: DeleteImpact }) {
   const parts: string[] = [];
 
@@ -139,7 +147,18 @@ function Consequences({ kind, impact }: { kind: "organization" | "person"; impac
       `${impact.activities === 1 ? "1 activity" : `${impact.activities} activities`} will keep ${impact.activities === 1 ? "its" : "their"} history, without the link`,
     );
   }
-  if (parts.length === 0) return null;
+  if (parts.length === 0 && impact.activitiesDeleted === 0) return null;
 
-  return <span className="mt-1 block text-gray-500">{parts.join("; ")}.</span>;
+  return (
+    <>
+      {parts.length > 0 && <span className="mt-1 block text-gray-500">{parts.join("; ")}.</span>}
+      {impact.activitiesDeleted > 0 && (
+        <span className="mt-1 block font-medium text-rose-700">
+          {impact.activitiesDeleted === 1
+            ? "1 activity is linked to nothing else and will be deleted too."
+            : `${impact.activitiesDeleted} activities are linked to nothing else and will be deleted too.`}
+        </span>
+      )}
+    </>
+  );
 }

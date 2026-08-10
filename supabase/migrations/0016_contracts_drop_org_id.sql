@@ -1,0 +1,16 @@
+-- Removes contracts.org_id, per schema review: "si può togliere, tanto
+-- contracts è già relazionato a organisations tramite il deal_id".
+--
+-- The column was denormalised — a contract already reaches its organization
+-- through deals.org_id, one join away. Keeping a second copy means two
+-- places that can disagree: move a deal to a different organization and
+-- every contract under it silently keeps pointing at the old one, with
+-- nothing in the schema to notice.
+--
+-- Safe to drop on this database: the column is NULL on every existing row
+-- and nothing in the application reads or writes it (contracts are selected
+-- with an embed on deal, never on org). Verified both before writing this.
+--
+-- Dropping the column takes its foreign key with it, so no separate
+-- `drop constraint` is needed.
+alter table public.contracts drop column if exists org_id;

@@ -149,22 +149,45 @@ async function countRows(
   return count ?? 0;
 }
 
+/** Activities linked to this record and to nothing else — the ones the
+ *  0017 triggers delete rather than unlink. The `.is()` filters mirror the
+ *  trigger's own WHERE clause exactly, so the number shown is the number
+ *  that actually goes. */
+async function countOrphanedActivities(
+  column: "person_id" | "org_id",
+  otherColumn: "person_id" | "org_id",
+  id: string,
+): Promise<number> {
+  const supabase = await createClient();
+  const { count } = await supabase
+    .from("activities")
+    .select("id", { count: "exact", head: true })
+    .eq(column, id)
+    .is("deal_id", null)
+    .is(otherColumn, null);
+  return count ?? 0;
+}
+
 /** See {@link DeleteImpact}. Read on the record page so its delete control
  *  can say what will happen — and re-read inside the delete action itself,
  *  which is the check that actually decides. */
 export async function getOrganizationDeleteImpact(id: string): Promise<DeleteImpact> {
-  const [deals, activities, people] = await Promise.all([
+  const [deals, activities, activitiesDeleted, people] = await Promise.all([
     countRows("deals", "org_id", id),
     countRows("activities", "org_id", id),
+    countOrphanedActivities("org_id", "person_id", id),
     countRows("persons", "org_id", id),
   ]);
-  return { deals, activities, people };
+  // The unlinked count is the remainder: everything linked here, minus the
+  // ones going away entirely.
+  return { deals, activities: activities - activitiesDeleted, activitiesDeleted, people };
 }
 
 export async function getPersonDeleteImpact(id: string): Promise<DeleteImpact> {
-  const [deals, activities] = await Promise.all([
+  const [deals, activities, activitiesDeleted] = await Promise.all([
     countRows("deals", "person_id", id),
     countRows("activities", "person_id", id),
+    countOrphanedActivities("person_id", "org_id", id),
   ]);
-  return { deals, activities, people: 0 };
+  return { deals, activities: activities - activitiesDeleted, activitiesDeleted, people: 0 };
 }

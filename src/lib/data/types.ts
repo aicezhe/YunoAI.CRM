@@ -67,7 +67,15 @@ export type PersonRow = {
  */
 export type DeleteImpact = {
   deals: number;
+  /** Activities that keep their history and only lose this link. */
   activities: number;
+  /**
+   * Activities whose *only* link is this record, so they are deleted with
+   * it rather than unlinked — see the triggers in
+   * 0017_activities_require_link.sql. Counted separately because the two
+   * outcomes are not the same promise to make in a confirmation dialog.
+   */
+  activitiesDeleted: number;
   /** Organizations only: people who would become unattached contacts. */
   people: number;
 };
