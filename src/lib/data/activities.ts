@@ -161,6 +161,18 @@ export async function getCompletedTodayByType(userId: string): Promise<Result<Co
   return ok(counts);
 }
 
+export async function getActivity(id: string): Promise<Result<ActivityRow | null>> {
+  const supabase = await createClient();
+  const { data, error } = await supabase
+    .from("activities")
+    .select(ACTIVITY_SELECT)
+    .eq("id", id)
+    .maybeSingle();
+
+  if (error) return fail("getActivity", error.message);
+  return ok(data ? toActivityRow(data as unknown as RawActivity) : null);
+}
+
 export async function listActivitiesForDeal(dealId: string): Promise<Result<ActivityRow[]>> {
   const supabase = await createClient();
   const { data, error } = await supabase

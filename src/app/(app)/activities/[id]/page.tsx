@@ -1,0 +1,86 @@
+import Link from "next/link";
+import { notFound } from "next/navigation";
+import { DoneCheckbox } from "@/components/done-checkbox";
+import { ActivityIcon } from "@/components/ui/badges";
+import { BackLink, Field, Missing, RecordCard } from "@/components/ui/record";
+import { ErrorState } from "@/components/ui/states";
+import { getActivity } from "@/lib/data/activities";
+import { formatDate, formatTime } from "@/lib/format";
+
+export default async function ActivityPage({ params }: PageProps<"/activities/[id]">) {
+  const { id } = await params;
+  const activity = await getActivity(id);
+
+  if (!activity.ok) {
+    return (
+      <main className="mx-auto max-w-3xl px-5 py-8 sm:px-8 sm:py-10">
+        <ErrorState message={activity.error} />
+      </main>
+    );
+  }
+  if (!activity.data) notFound();
+
+  const a = activity.data;
+
+  return (
+    <main className="mx-auto max-w-3xl px-5 py-8 sm:px-8 sm:py-10">
+      <BackLink href={a.done ? "/activities/archive" : "/activities/open"} label="Activities" />
+
+      <div className="enter mt-4 flex flex-wrap items-start justify-between gap-4">
+        <div className="flex items-center gap-3">
+          <ActivityIcon type={a.type} />
+          <h1
+            className={
+              "text-2xl font-semibold tracking-tight sm:text-3xl " +
+              (a.done ? "text-gray-400 line-through" : "text-gray-900")
+            }
+          >
+            {a.subject}
+          </h1>
+        </div>
+        <DoneCheckbox id={a.id} done={a.done} label={a.subject} />
+      </div>
+
+      <div className="mt-8">
+        <RecordCard index={0}>
+          <dl>
+            <Field label="Type">{a.type.charAt(0).toUpperCase() + a.type.slice(1)}</Field>
+            <Field label="Due">
+              {a.dueAt ? `${formatDate(a.dueAt)}, ${formatTime(a.dueAt)}` : <Missing />}
+            </Field>
+            <Field label="Deal">
+              {a.dealId ? (
+                <Link href={`/deals/${a.dealId}`} className="text-brand-600 hover:underline">
+                  {a.dealTitle}
+                </Link>
+              ) : (
+                <Missing />
+              )}
+            </Field>
+            <Field label="Contact">
+              {a.personId ? (
+                <Link href={`/contacts/people/${a.personId}`} className="text-brand-600 hover:underline">
+                  {a.personName}
+                </Link>
+              ) : (
+                <Missing />
+              )}
+            </Field>
+            <Field label="Organization">
+              {a.organizationId ? (
+                <Link
+                  href={`/contacts/organizations/${a.organizationId}`}
+                  className="text-brand-600 hover:underline"
+                >
+                  {a.organizationName}
+                </Link>
+              ) : (
+                <Missing />
+              )}
+            </Field>
+          </dl>
+        </RecordCard>
+      </div>
+    </main>
+  );
+}
