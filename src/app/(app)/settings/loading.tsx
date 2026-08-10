@@ -3,10 +3,10 @@ import { RecordSkeleton } from "@/components/ui/record-skeleton";
 
 export default function SettingsLoading() {
   return (
-    <div className="mx-auto max-w-5xl px-5 py-8 sm:px-8 sm:py-10">
+    <div className="mx-auto max-w-3xl px-5 py-8 sm:px-8 sm:py-10">
       <HeaderSkeleton />
       <div className="mt-8">
-        <RecordSkeleton cards={1} rows={3} />
+        <RecordSkeleton cards={3} rows={3} />
       </div>
     </div>
   );

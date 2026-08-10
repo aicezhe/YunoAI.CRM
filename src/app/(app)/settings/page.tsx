@@ -1,53 +1,66 @@
-import { Settings as SettingsIcon } from "lucide-react";
-import { EmptyState } from "@/components/ui/states";
 import { PageHeader } from "@/components/ui/page-header";
-import { CARD_STAGGER_MS } from "@/components/ui/record";
-import { requireUser } from "@/lib/auth/current-user";
+import { ErrorState } from "@/components/ui/states";
+import { RecordCard } from "@/components/ui/record";
+import { isAdmin, requireUser } from "@/lib/auth/current-user";
+import { listTeam } from "@/lib/data/users";
+import { ProfileNameForm } from "./profile-name-form";
+import { PasswordForm } from "./password-form";
+import { TeamRoster } from "./team-roster";
 
 export const metadata = { title: "Settings · YunoCRM" };
 
-/**
- * Placeholder like the rest, with one exception: it shows the resolved
- * account. That makes the role helper observable — change `app_metadata.role`
- * to "admin" in the Supabase Dashboard and the value here changes with it,
- * which is the only way to exercise admin/member before the `users` table
- * exists.
- */
 export default async function SettingsPage() {
-  const user = await requireUser();
+  const [user, admin, team] = await Promise.all([requireUser(), isAdmin(), listTeam()]);
 
   return (
-    <main className="mx-auto max-w-5xl px-5 py-8 sm:px-8 sm:py-10">
+    <main className="mx-auto max-w-3xl px-5 py-8 sm:px-8 sm:py-10">
       <PageHeader title="Settings" description="Your account and workspace preferences." />
 
-      <section className="enter mt-8 rounded-3xl border border-brand-200/70 bg-white p-6 shadow-sm">
-        <h2 className="text-base font-semibold text-gray-900">Account</h2>
-        <dl className="mt-4 space-y-3 text-sm">
-          <div className="flex flex-wrap justify-between gap-2">
-            <dt className="text-gray-500">Name</dt>
-            <dd className="font-medium text-gray-900">{user.name}</dd>
-          </div>
-          <div className="flex flex-wrap justify-between gap-2">
-            <dt className="text-gray-500">Email</dt>
-            <dd className="font-medium text-gray-900">{user.email}</dd>
-          </div>
-          <div className="flex flex-wrap items-center justify-between gap-2">
-            <dt className="text-gray-500">Role</dt>
-            <dd>
-              <span className="rounded-full bg-brand-100 px-2.5 py-0.5 text-xs font-semibold text-brand-500 uppercase">
-                {user.role}
-              </span>
-            </dd>
-          </div>
-        </dl>
-      </section>
+      <div className="mt-8 space-y-5">
+        <RecordCard title="Account" index={0}>
+          <div className="space-y-4">
+            <div>
+              <p className="mb-1.5 text-sm font-medium text-gray-700">Name</p>
+              <ProfileNameForm name={user.name} />
+            </div>
 
-      <div className="enter mt-6" style={{ "--enter-delay": `${CARD_STAGGER_MS}ms` } as React.CSSProperties}>
-        <EmptyState
-          icon={SettingsIcon}
-          title="Coming soon"
-          description="Editing your profile and managing teammates are the next step. Roles are already enforced by the database."
-        />
+            {/* Email and role are shown, never edited, here: email belongs to
+                Supabase Auth and changing it needs its own re-confirmation
+                flow this app doesn't have, and role is admin-only — see the
+                Team card below, where an admin can change anyone's but their
+                own. */}
+            <dl className="space-y-3 border-t border-brand-200/40 pt-4 text-sm">
+              <div className="flex flex-wrap justify-between gap-2">
+                <dt className="text-gray-500">Email</dt>
+                <dd className="font-medium text-gray-900">{user.email}</dd>
+              </div>
+              <div className="flex flex-wrap items-center justify-between gap-2">
+                <dt className="text-gray-500">Role</dt>
+                <dd>
+                  <span className="rounded-full bg-brand-100 px-2.5 py-0.5 text-xs font-semibold text-brand-500 uppercase">
+                    {user.role}
+                  </span>
+                </dd>
+              </div>
+            </dl>
+          </div>
+        </RecordCard>
+
+        <RecordCard title="Password" index={1}>
+          <p className="-mt-1 mb-4 text-sm text-gray-500">Update the password you sign in with.</p>
+          <PasswordForm />
+        </RecordCard>
+
+        <RecordCard title="Team" index={2}>
+          <p className="-mt-1 mb-4 text-sm text-gray-500">
+            {admin ? "Everyone with access, and their role." : "Everyone with access."}
+          </p>
+          {!team.ok ? (
+            <ErrorState message={team.error} />
+          ) : (
+            <TeamRoster members={team.data} currentUserId={user.id} canManage={admin} />
+          )}
+        </RecordCard>
       </div>
     </main>
   );
