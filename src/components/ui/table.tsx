@@ -17,6 +17,11 @@ import { enterStyle } from "@/lib/stagger";
  *
  * overflow-x-auto on the wrapper, not the page: a wide table scrolls inside
  * its own card on a phone instead of making the whole layout slide sideways.
+ *
+ * `hidden md:block` on top of that rather than relying on overflow-x-auto
+ * alone below md: sideways scroll works but reads as broken on a phone, and
+ * every caller now renders a Card/CardLink list (see below) for that width
+ * instead — this just has to get out of its way.
  */
 export function Table({
   columns,
@@ -29,7 +34,7 @@ export function Table({
   children: React.ReactNode;
 }) {
   return (
-    <div className="overflow-x-auto rounded-3xl border border-brand-200/70 bg-white shadow-sm">
+    <div className="hidden overflow-x-auto rounded-3xl border border-brand-200/70 bg-white shadow-sm md:block">
       <table className="w-full min-w-[44rem] border-collapse text-sm">
         <thead>
           {/* A tinted band rather than plain white — it anchors the top of the
@@ -158,4 +163,72 @@ export function PhoneLink({ phone }: { phone: string }) {
  *  says "nothing here" instead of leaving a hole. */
 export function Blank() {
   return <span className="text-gray-300">—</span>;
+}
+
+/**
+ * One record's mobile card — below md, this is the row: a table would need
+ * horizontal scroll to show the same columns, which reads as broken on a
+ * phone rather than merely inconvenient. Each row gets its own card, not one
+ * shared list with internal dividers, so spacing between them (the caller's
+ * `space-y-*` on the wrapping list) keeps them from blending together and
+ * touch targets stay unambiguous.
+ *
+ * A plain positioned shell rather than a link: for rows that need a second
+ * interactive element alongside the primary one (an email chip, a "related
+ * to" link), the caller places its own stretched link — `after:absolute
+ * after:inset-0 after:content-['']`, the same trick RowLink uses — plus any
+ * secondary links marked `relative z-10` to sit above it, exactly mirroring
+ * how RowLink and a Cell's z-10 link coexist as siblings in a table row. See
+ * CardLink below for the simpler, more common case.
+ */
+export function Card({
+  children,
+  index,
+  count,
+}: {
+  children: React.ReactNode;
+  index?: number;
+  count?: number;
+}) {
+  const animated = index !== undefined && count !== undefined;
+  return (
+    <div
+      className={
+        "relative rounded-2xl border border-brand-200/70 bg-white p-4 shadow-sm" +
+        (animated ? " enter" : "")
+      }
+      style={animated ? enterStyle(index, count) : undefined}
+    >
+      {children}
+    </div>
+  );
+}
+
+/** A whole card as one link — for rows where nothing inside needs its own
+ *  click target, so there's no reason to reach for Card's stretched-link
+ *  pattern. */
+export function CardLink({
+  href,
+  children,
+  index,
+  count,
+}: {
+  href: string;
+  children: React.ReactNode;
+  index?: number;
+  count?: number;
+}) {
+  const animated = index !== undefined && count !== undefined;
+  return (
+    <Link
+      href={href}
+      className={
+        "block rounded-2xl border border-brand-200/70 bg-white p-4 shadow-sm transition-colors hover:bg-brand-100/40 active:bg-brand-100/60" +
+        (animated ? " enter" : "")
+      }
+      style={animated ? enterStyle(index, count) : undefined}
+    >
+      {children}
+    </Link>
+  );
 }

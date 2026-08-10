@@ -48,27 +48,40 @@ export function ErrorState({ message }: { message: string }) {
   );
 }
 
-/** Table skeleton. Mirrors the real table's card, header band and row height
- *  so the layout does not jump when the data lands. */
+/** Table skeleton — desktop bars in a table-shaped card, mobile bars in
+ *  separate card shells, matching whichever of the two real layouts
+ *  (Table vs. Card/CardLink) is about to take its place. */
 export function TableSkeleton({ rows = 6, columns = 5 }: { rows?: number; columns?: number }) {
   return (
-    <div className="overflow-hidden rounded-3xl border border-brand-200/70 bg-white shadow-sm">
-      <div className="flex gap-6 border-b border-brand-200/70 px-5 py-4">
-        {Array.from({ length: columns }).map((_, i) => (
-          <div key={i} className="skeleton h-3 flex-1 rounded" />
-        ))}
-      </div>
-      {Array.from({ length: rows }).map((_, r) => (
-        <div key={r} className="flex gap-6 border-b border-brand-200/40 px-5 py-4 last:border-0">
-          {Array.from({ length: columns }).map((_, c) => (
-            <div
-              key={c}
-              className={`h-3.5 flex-1 rounded ${c === 0 ? "skeleton" : "skeleton-soft"}`}
-            />
+    <>
+      <div className="hidden overflow-hidden rounded-3xl border border-brand-200/70 bg-white shadow-sm md:block">
+        <div className="flex gap-6 border-b border-brand-200/70 px-5 py-4">
+          {Array.from({ length: columns }).map((_, i) => (
+            <div key={i} className="skeleton h-3 flex-1 rounded" />
           ))}
         </div>
-      ))}
-    </div>
+        {Array.from({ length: rows }).map((_, r) => (
+          <div key={r} className="flex gap-6 border-b border-brand-200/40 px-5 py-4 last:border-0">
+            {Array.from({ length: columns }).map((_, c) => (
+              <div
+                key={c}
+                className={`h-3.5 flex-1 rounded ${c === 0 ? "skeleton" : "skeleton-soft"}`}
+              />
+            ))}
+          </div>
+        ))}
+      </div>
+
+      <div className="space-y-3 md:hidden">
+        {Array.from({ length: rows }).map((_, r) => (
+          <div key={r} className="rounded-2xl border border-brand-200/70 bg-white p-4 shadow-sm">
+            <div className="skeleton h-4 w-2/3 rounded" />
+            <div className="skeleton-soft mt-2.5 h-3 w-2/5 rounded" />
+            <div className="skeleton-soft mt-3 h-3 w-1/3 rounded" />
+          </div>
+        ))}
+      </div>
+    </>
   );
 }
 

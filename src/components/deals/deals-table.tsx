@@ -4,7 +4,7 @@ import { useMemo, useState } from "react";
 import { ChevronDown, ChevronUp, Handshake } from "lucide-react";
 import { StageBadge, StatusBadge } from "@/components/ui/badges";
 import { EmptyState } from "@/components/ui/states";
-import { Blank, Cell, Row, RowLink, Table } from "@/components/ui/table";
+import { Blank, CardLink, Cell, Row, RowLink, Table } from "@/components/ui/table";
 import type { DealRow } from "@/lib/data/types";
 import { formatDate, formatMoney } from "@/lib/format";
 
@@ -97,7 +97,10 @@ export function DealsTable({ deals, currentUserId }: { deals: DealRow[]; current
 
   return (
     <>
-      <div className="mb-4 flex flex-wrap gap-2">
+      {/* Wraps on desktop; below md there isn't room for three chips to wrap
+          without pushing the table down, so they scroll sideways instead —
+          fine for a row of chips in a way it isn't for a table. */}
+      <div className="mb-4 flex gap-2 overflow-x-auto pb-1 md:flex-wrap md:overflow-visible md:pb-0">
         <FilterChip active={myDealsOnly} onClick={() => setMyDealsOnly((v) => !v)}>
           My deals
         </FilterChip>
@@ -159,44 +162,83 @@ export function DealsTable({ deals, currentUserId }: { deals: DealRow[]; current
             />,
           ]}
         >
-          {visible.map((deal, i) => {
-            const overdue =
-              deal.status === "open" && deal.expectedCloseDate !== null && deal.expectedCloseDate < today;
-            return (
-              <Row key={deal.id} index={i} count={visible.length}>
-                <RowLink href={`/deals/${deal.id}`}>{deal.title}</RowLink>
+          {visible.map((deal, i) => (
+            <Row key={deal.id} index={i} count={visible.length}>
+              <RowLink href={`/deals/${deal.id}`}>{deal.title}</RowLink>
 
-                {/* One column for both counterparties: the schema allows
-                    either, and two half-empty columns would read worse than
-                    one that always has something in it. */}
-                <Cell muted>
-                  {deal.organizationName ?? deal.personName ?? <Blank />}
-                  {deal.organizationName && deal.personName && (
-                    <span className="block text-xs text-gray-400">{deal.personName}</span>
-                  )}
-                </Cell>
+              {/* One column for both counterparties: the schema allows
+                  either, and two half-empty columns would read worse than
+                  one that always has something in it. */}
+              <Cell muted>
+                {deal.organizationName ?? deal.personName ?? <Blank />}
+                {deal.organizationName && deal.personName && (
+                  <span className="block text-xs text-gray-400">{deal.personName}</span>
+                )}
+              </Cell>
 
-                <Cell>
+              <Cell>
+                {deal.status === "open" ? (
+                  <StageBadge name={deal.stageName} />
+                ) : (
+                  <StatusBadge status={deal.status} />
+                )}
+              </Cell>
+
+              <Cell className="font-medium tabular-nums">{formatMoney(deal.value, deal.currency)}</Cell>
+
+              <Cell muted>{deal.ownerName ?? <Blank />}</Cell>
+              <Cell
+                muted
+                className={`tabular-nums ${isOverdue(deal, today) ? "font-semibold text-rose-600" : ""}`}
+              >
+                {formatDate(deal.expectedCloseDate)}
+              </Cell>
+            </Row>
+          ))}
+        </Table>
+      )}
+
+      {visible.length > 0 && (
+        <div className="space-y-3 md:hidden">
+          {visible.map((deal, i) => (
+            <CardLink key={deal.id} href={`/deals/${deal.id}`} index={i} count={visible.length}>
+              <div className="flex items-start justify-between gap-3">
+                <div className="min-w-0">
+                  <p className="truncate font-semibold text-gray-900">{deal.title}</p>
+                  <p className="mt-0.5 truncate text-sm text-gray-500">
+                    {deal.organizationName ?? deal.personName ?? <Blank />}
+                  </p>
+                </div>
+                <div className="shrink-0">
                   {deal.status === "open" ? (
                     <StageBadge name={deal.stageName} />
                   ) : (
                     <StatusBadge status={deal.status} />
                   )}
-                </Cell>
+                </div>
+              </div>
 
-                <Cell className="font-medium tabular-nums">{formatMoney(deal.value, deal.currency)}</Cell>
+              <p className="mt-3 text-lg font-semibold tabular-nums text-gray-900">
+                {formatMoney(deal.value, deal.currency)}
+              </p>
 
-                <Cell muted>{deal.ownerName ?? <Blank />}</Cell>
-                <Cell muted className={`tabular-nums ${overdue ? "font-semibold text-rose-600" : ""}`}>
+              <p className="mt-2 text-xs text-gray-400">
+                {deal.ownerName ?? "Unassigned"}
+                <span aria-hidden> · </span>
+                <span className={isOverdue(deal, today) ? "font-semibold text-rose-600" : ""}>
                   {formatDate(deal.expectedCloseDate)}
-                </Cell>
-              </Row>
-            );
-          })}
-        </Table>
+                </span>
+              </p>
+            </CardLink>
+          ))}
+        </div>
       )}
     </>
   );
+}
+
+function isOverdue(deal: DealRow, today: string): boolean {
+  return deal.status === "open" && deal.expectedCloseDate !== null && deal.expectedCloseDate < today;
 }
 
 function SortHeader({
@@ -238,7 +280,7 @@ function FilterChip({
       onClick={onClick}
       aria-pressed={active}
       className={
-        "inline-flex min-h-9 items-center rounded-2xl px-4 text-sm font-medium transition-colors " +
+        "inline-flex min-h-9 shrink-0 items-center rounded-2xl px-4 text-sm font-medium whitespace-nowrap transition-colors " +
         (active
           ? "bg-brand-500 text-white shadow-sm shadow-brand-500/25"
           : "border border-brand-200/70 bg-white text-gray-600 hover:bg-brand-100/60")
