@@ -1,4 +1,5 @@
 import type { LucideIcon } from "lucide-react";
+import { enterStyle } from "@/lib/stagger";
 import { AlertTriangle } from "lucide-react";
 
 /**
@@ -79,20 +80,31 @@ export function ErrorState({ message }: { message: string }) {
   );
 }
 
-/** Table skeleton — desktop bars in a table-shaped card, mobile bars in
- *  separate card shells, matching whichever of the two real layouts
- *  (Table vs. Card/CardLink) is about to take its place. */
+/**
+ * Table skeleton — desktop bars in a table-shaped card, mobile bars in
+ * separate card shells, matching whichever of the two real layouts
+ * (Table vs. Card/CardLink) is about to take its place.
+ *
+ * The rows cascade in with the same `.enter` stagger the real rows use, so
+ * a loading screen is the page arriving — the same movement, just in grey —
+ * rather than a flat grid that blinks on and gets swapped. The shimmer
+ * sweep then carries the "still working" signal while the rows sit.
+ */
 export function TableSkeleton({ rows = 6, columns = 5 }: { rows?: number; columns?: number }) {
   return (
     <>
-      <div className="hidden overflow-hidden rounded-2xl border border-brand-200/70 bg-white shadow-card md:block">
+      <div className="enter hidden overflow-hidden rounded-2xl border border-brand-200/70 bg-white shadow-card md:block">
         <div className="flex gap-6 border-b border-brand-200/70 px-5 py-4">
           {Array.from({ length: columns }).map((_, i) => (
             <div key={i} className="skeleton h-3 flex-1 rounded" />
           ))}
         </div>
         {Array.from({ length: rows }).map((_, r) => (
-          <div key={r} className="flex gap-6 border-b border-brand-200/40 px-5 py-4 last:border-0">
+          <div
+            key={r}
+            className="enter flex gap-6 border-b border-brand-200/40 px-5 py-4 last:border-0"
+            style={enterStyle(r, rows)}
+          >
             {Array.from({ length: columns }).map((_, c) => (
               <div
                 key={c}
@@ -105,7 +117,11 @@ export function TableSkeleton({ rows = 6, columns = 5 }: { rows?: number; column
 
       <div className="space-y-3 md:hidden">
         {Array.from({ length: rows }).map((_, r) => (
-          <div key={r} className="rounded-2xl border border-brand-200/70 bg-white p-4 shadow-card">
+          <div
+            key={r}
+            className="enter rounded-2xl border border-brand-200/70 bg-white p-4 shadow-card"
+            style={enterStyle(r, rows)}
+          >
             <div className="skeleton h-4 w-2/3 rounded" />
             <div className="skeleton-soft mt-2.5 h-3 w-2/5 rounded" />
             <div className="skeleton-soft mt-3 h-3 w-1/3 rounded" />
@@ -119,7 +135,7 @@ export function TableSkeleton({ rows = 6, columns = 5 }: { rows?: number; column
 /** Header skeleton — title plus the action button's footprint. */
 export function HeaderSkeleton() {
   return (
-    <div className="flex flex-wrap items-start justify-between gap-4">
+    <div className="enter flex flex-wrap items-start justify-between gap-4">
       <div>
         <div className="skeleton h-8 w-44 rounded-lg" />
         <div className="skeleton-soft mt-3 h-3.5 w-64 max-w-full rounded" />
