@@ -57,11 +57,11 @@ export function formatDue(value: string | null): string {
   return isToday ? TIME.format(d) : `${formatDate(value)}, ${TIME.format(d)}`;
 }
 
-/** "2 days ago" for the overdue block, where how late something is matters
- *  more than the timestamp it was due at. */
-export function formatOverdueBy(value: string): string {
+/** "yesterday" / "3 days ago" for the overdue strip, naming the moment
+ *  something was due rather than measuring the delay since. */
+export function formatRelativeDay(value: string): string {
   const days = Math.floor((Date.now() - new Date(value).getTime()) / 86_400_000);
   if (days < 1) return "earlier today";
-  if (days === 1) return "1 day late";
-  return `${days} days late`;
+  if (days === 1) return "yesterday";
+  return `${days} days ago`;
 }
