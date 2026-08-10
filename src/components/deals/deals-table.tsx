@@ -144,7 +144,7 @@ export function DealsTable({ deals, currentUserId }: { deals: DealRow[]; current
                   setClosingThisWeek(false);
                   setOpenOnly(false);
                 }}
-                className="inline-flex min-h-10 items-center rounded-2xl border border-brand-200 bg-brand-50 px-4 text-sm font-medium text-brand-600 transition hover:bg-brand-100"
+                className="inline-flex min-h-10 items-center rounded-xl border border-brand-200 bg-brand-50 px-4 text-sm font-medium text-brand-600 transition hover:bg-brand-100"
               >
                 Clear filters
               </button>
@@ -306,7 +306,7 @@ function SortPill({
       onClick={onClick}
       aria-pressed={active}
       className={
-        "inline-flex min-h-9 shrink-0 items-center gap-1 rounded-2xl px-4 text-sm font-medium whitespace-nowrap transition-colors md:hidden " +
+        "inline-flex min-h-9 shrink-0 items-center gap-1 rounded-full px-4 text-sm font-medium whitespace-nowrap transition-colors md:hidden " +
         (active
           ? "bg-brand-500 text-white shadow-sm shadow-brand-500/25"
           : "border border-brand-200/70 bg-white text-gray-600 hover:bg-brand-100/60")
@@ -333,7 +333,7 @@ function FilterChip({
       onClick={onClick}
       aria-pressed={active}
       className={
-        "inline-flex min-h-9 shrink-0 items-center rounded-2xl px-4 text-sm font-medium whitespace-nowrap transition-colors " +
+        "inline-flex min-h-9 shrink-0 items-center rounded-full px-4 text-sm font-medium whitespace-nowrap transition-colors " +
         (active
           ? "bg-brand-500 text-white shadow-sm shadow-brand-500/25"
           : "border border-brand-200/70 bg-white text-gray-600 hover:bg-brand-100/60")

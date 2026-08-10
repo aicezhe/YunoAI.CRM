@@ -19,6 +19,14 @@ export type NavItem = {
   icon: LucideIcon;
   /** Rendered only for admins — by both nav variants, from this one flag. */
   adminOnly?: boolean;
+  /**
+   * How prominently the sidebar draws the item. "primary" is the all-day
+   * working pair (Activities, Deals) — slightly larger and heavier, at the
+   * top. "secondary" is consulted rather than worked. "system" is Settings:
+   * muted, pinned to the bottom, visually apart from the work sections.
+   * BottomNav ignores this — six equal tabs is the right shape on a phone.
+   */
+  tier: "primary" | "secondary" | "system";
 };
 
 /**
@@ -37,11 +45,11 @@ export type NavItem = {
  * not worked.
  */
 export const NAV_ITEMS: NavItem[] = [
-  { href: "/activities/open", match: "/activities", label: "Activities", shortLabel: "Activity", icon: CalendarCheck },
-  { href: "/deals", label: "Deals", icon: Handshake },
-  { href: "/contacts/people", match: "/contacts", label: "Contacts", icon: Users },
-  { href: "/contracts", label: "Contracts", icon: FileText },
-  { href: "/settings", label: "Settings", icon: Settings },
+  { href: "/activities/open", match: "/activities", label: "Activities", shortLabel: "Activity", icon: CalendarCheck, tier: "primary" },
+  { href: "/deals", label: "Deals", icon: Handshake, tier: "primary" },
+  { href: "/contacts/people", match: "/contacts", label: "Contacts", icon: Users, tier: "secondary" },
+  { href: "/contracts", label: "Contracts", icon: FileText, tier: "secondary" },
+  { href: "/settings", label: "Settings", icon: Settings, tier: "system" },
 ];
 
 /**

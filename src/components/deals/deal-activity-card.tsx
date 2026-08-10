@@ -56,7 +56,7 @@ export function DealActivityCard({
           <button
             type="button"
             onClick={() => setOpen(true)}
-            className="inline-flex min-h-9 items-center gap-1.5 rounded-2xl bg-brand-500 px-3.5 text-xs font-semibold text-white shadow-sm shadow-brand-500/25 transition-colors hover:bg-brand-600"
+            className="inline-flex min-h-9 items-center gap-1.5 rounded-xl bg-brand-500 px-3.5 text-xs font-semibold text-white shadow-sm shadow-brand-500/25 transition-colors hover:bg-brand-600"
           >
             <Plus className="h-3.5 w-3.5" strokeWidth={2.5} aria-hidden />
             Add activity
@@ -69,7 +69,12 @@ export function DealActivityCard({
           <motion.div
             initial={{ opacity: 0, scale: 0.98, height: 0 }}
             animate={{ opacity: 1, scale: 1, height: "auto" }}
-            exit={{ opacity: 0, scale: 0.98, height: 0 }}
+            exit={{
+              opacity: 0,
+              scale: 0.98,
+              height: 0,
+              transition: { duration: 0.12, ease: [0.32, 0.72, 0, 1] },
+            }}
             transition={{ duration: 0.2, ease: [0.32, 0.72, 0, 1] }}
             className="overflow-hidden"
           >
@@ -114,7 +119,7 @@ export function DealActivityCard({
               <div className="min-w-0 flex-1">
                 <p
                   className={
-                    "truncate text-sm " + (a.done ? "text-gray-400 line-through" : "text-gray-900")
+                    "truncate text-sm transition-colors duration-200 " + (a.done ? "text-gray-400 line-through" : "text-gray-900")
                   }
                 >
                   {a.subject}
@@ -221,14 +226,14 @@ function MiniForm({
         <button
           type="button"
           onClick={onCancel}
-          className="inline-flex min-h-9 items-center rounded-2xl px-3 text-sm font-medium text-gray-500 transition-colors hover:bg-white"
+          className="inline-flex min-h-9 items-center rounded-xl px-3 text-sm font-medium text-gray-500 transition-colors hover:bg-white"
         >
           Cancel
         </button>
         <button
           type="submit"
           disabled={pending}
-          className="inline-flex min-h-9 items-center rounded-2xl bg-brand-500 px-4 text-sm font-semibold text-white shadow-sm shadow-brand-500/25 transition-colors hover:bg-brand-600 disabled:cursor-not-allowed disabled:opacity-60"
+          className="inline-flex min-h-9 items-center rounded-xl bg-brand-500 px-4 text-sm font-semibold text-white shadow-sm shadow-brand-500/25 transition-colors hover:bg-brand-600 disabled:cursor-not-allowed disabled:opacity-60"
         >
           {pending ? "Saving…" : "Save"}
         </button>

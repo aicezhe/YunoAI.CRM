@@ -12,8 +12,11 @@
  * reveal within REVEAL_BUDGET_MS regardless of length, while short lists
  * still get the full, noticeable MAX_STAGGER_MS between rows.
  */
-const REVEAL_BUDGET_MS = 500;
-const MAX_STAGGER_MS = 70;
+// The cap keeps a short list's stagger clearly visible (~55ms/row, squarely
+// in the 40-60ms band where a cascade reads as intentional); the budget
+// keeps a fifty-row table from spending seconds revealing itself.
+const REVEAL_BUDGET_MS = 600;
+const MAX_STAGGER_MS = 55;
 
 export function staggerDelayMs(index: number, count: number): number {
   const perRow = Math.min(MAX_STAGGER_MS, REVEAL_BUDGET_MS / Math.max(count, 1));

@@ -78,7 +78,7 @@ function TeamRow({
             disabled={pending}
             onChange={(e) => change(e.target.value)}
             aria-label={`Role for ${member.name}`}
-            className="rounded-xl border border-gray-200 bg-white px-2.5 py-1.5 text-xs font-semibold text-gray-700 uppercase outline-none transition focus:border-brand-500 focus:ring-4 focus:ring-brand-500/10 disabled:opacity-60"
+            className="rounded-xl border border-gray-200 bg-white px-2.5 py-1.5 text-xs font-semibold text-gray-700 uppercase outline-none transition-[border-color,box-shadow] duration-150 ease-out focus:border-brand-500 focus:ring-4 focus:ring-brand-500/15 disabled:opacity-60"
           >
             <option value="member">Member</option>
             <option value="admin">Admin</option>

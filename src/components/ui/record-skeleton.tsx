@@ -15,11 +15,11 @@ export function RecordSkeleton({ cards = 2, rows = 4 }: { cards?: number; rows?:
       <div className="skeleton h-4 w-28 rounded" />
       <div className="skeleton mt-5 h-9 w-72 max-w-full rounded-lg" />
 
-      <div className="mt-8 space-y-5">
+      <div className="mt-8 space-y-6">
         {Array.from({ length: cards }).map((_, c) => (
           <div
             key={c}
-            className="rounded-3xl border border-brand-200/70 bg-white p-6 shadow-card"
+            className="rounded-2xl border border-brand-200/70 bg-white p-7 shadow-card"
           >
             {Array.from({ length: rows }).map((_, r) => (
               <div

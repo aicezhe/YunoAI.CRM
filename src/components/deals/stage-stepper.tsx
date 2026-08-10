@@ -180,7 +180,7 @@ export function StageStepper({
               type="button"
               onClick={() => commit(won, null)}
               disabled={pending}
-              className="inline-flex min-h-9 items-center gap-1.5 rounded-2xl border border-emerald-200 bg-emerald-50 px-3 text-xs font-semibold text-emerald-700 transition-colors hover:bg-emerald-100 disabled:opacity-60"
+              className="inline-flex min-h-9 items-center gap-1.5 rounded-xl border border-emerald-200 bg-emerald-50 px-3 text-xs font-semibold text-emerald-700 transition-colors hover:bg-emerald-100 disabled:opacity-60"
             >
               <Check className="h-3.5 w-3.5" strokeWidth={2.5} aria-hidden />
               Mark as won
@@ -192,7 +192,7 @@ export function StageStepper({
               onClick={() => setLostPrompt(lostPrompt ? null : lost)}
               disabled={pending}
               aria-expanded={lostPrompt !== null}
-              className="inline-flex min-h-9 items-center gap-1.5 rounded-2xl border border-rose-200 bg-rose-50 px-3 text-xs font-semibold text-rose-700 transition-colors hover:bg-rose-100 disabled:opacity-60"
+              className="inline-flex min-h-9 items-center gap-1.5 rounded-xl border border-rose-200 bg-rose-50 px-3 text-xs font-semibold text-rose-700 transition-colors hover:bg-rose-100 disabled:opacity-60"
             >
               <X className="h-3.5 w-3.5" strokeWidth={2.5} aria-hidden />
               Mark as lost
@@ -204,8 +204,10 @@ export function StageStepper({
               <motion.div
                 initial={{ opacity: 0, scale: 0.96, y: -4 }}
                 animate={{ opacity: 1, scale: 1, y: 0 }}
-                exit={{ opacity: 0, scale: 0.96, y: -4 }}
-                transition={{ duration: 0.16, ease: EASE }}
+                // Leaving is quicker than arriving — a dismissed panel should
+                // get out of the way, not perform.
+                exit={{ opacity: 0, scale: 0.96, y: -4, transition: { duration: 0.1, ease: EASE } }}
+                transition={{ duration: 0.15, ease: EASE }}
                 style={{ originX: 1, originY: 0 }}
                 className="absolute top-full right-0 z-30 mt-2 w-72 rounded-2xl border border-brand-200/70 bg-white p-3 shadow-xl shadow-brand-500/10"
               >
@@ -222,7 +224,7 @@ export function StageStepper({
                   value={lostReason}
                   onChange={(e) => setLostReason(e.target.value)}
                   placeholder="Budget cut, went with a competitor…"
-                  className="w-full rounded-xl border border-gray-200 px-3 py-2 text-sm text-gray-900 outline-none transition focus:border-brand-500 focus:ring-4 focus:ring-brand-500/10"
+                  className="w-full rounded-xl border border-gray-200 px-3 py-2 text-sm text-gray-900 outline-none transition-[border-color,box-shadow] duration-150 ease-out focus:border-brand-500 focus:ring-4 focus:ring-brand-500/15"
                 />
                 <div className="mt-2 flex justify-end gap-2">
                   <button

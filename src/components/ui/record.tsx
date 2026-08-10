@@ -20,7 +20,7 @@ export function BackLink({ href, label }: { href: string; label: string }) {
  *  card shows what is missing rather than quietly omitting the row. */
 export function Field({ label, children }: { label: string; children: React.ReactNode }) {
   return (
-    <div className="flex flex-wrap items-baseline justify-between gap-2 border-b border-brand-200/40 py-3 last:border-0">
+    <div className="flex flex-wrap items-baseline justify-between gap-2 border-b border-brand-200/40 py-3.5 last:border-0">
       <dt className="text-sm text-gray-500">{label}</dt>
       <dd className="text-sm font-medium text-gray-900">{children}</dd>
     </div>
@@ -65,7 +65,7 @@ export function RecordCard({
   return (
     <section
       className={
-        "rounded-3xl border border-brand-200/70 bg-white p-6 shadow-card" + (animated ? " enter" : "")
+        "rounded-2xl border border-brand-200/70 bg-white p-7 shadow-card" + (animated ? " enter" : "")
       }
       style={
         animated
@@ -74,7 +74,7 @@ export function RecordCard({
       }
     >
       {(title || action) && (
-        <div className="mb-2 flex items-center justify-between gap-3">
+        <div className="mb-4 flex items-center justify-between gap-3">
           {title && <h2 className="text-base font-semibold text-gray-900">{title}</h2>}
           {action}
         </div>

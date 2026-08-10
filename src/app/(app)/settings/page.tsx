@@ -16,7 +16,7 @@ export default async function SettingsPage() {
     <main className="mx-auto max-w-3xl px-5 py-8 sm:px-8 sm:py-10">
       <PageHeader title="Settings" description="Your account and workspace preferences." />
 
-      <div className="mt-8 space-y-5">
+      <div className="mt-8 space-y-6">
         <RecordCard title="Account" index={0}>
           <div className="space-y-4">
             <div>

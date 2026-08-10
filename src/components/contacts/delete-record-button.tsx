@@ -56,7 +56,7 @@ export function DeleteRecordButton({
       <button
         type="button"
         onClick={() => setConfirming(true)}
-        className="inline-flex min-h-10 shrink-0 items-center gap-2 rounded-2xl border border-gray-200 bg-white px-4 text-sm font-medium text-gray-600 transition-colors hover:border-rose-200 hover:bg-rose-50 hover:text-rose-600"
+        className="inline-flex min-h-10 shrink-0 items-center gap-2 rounded-xl border border-gray-200 bg-white px-4 text-sm font-medium text-gray-600 transition-colors hover:border-rose-200 hover:bg-rose-50 hover:text-rose-600"
       >
         <Trash2 className="h-4 w-4" strokeWidth={1.75} aria-hidden />
         Delete
@@ -98,7 +98,7 @@ export function DeleteRecordButton({
             setError(null);
           }}
           disabled={pending}
-          className="min-h-10 rounded-2xl border border-gray-200 bg-white px-4 text-sm font-medium text-gray-600 transition-colors hover:bg-gray-50 disabled:opacity-60"
+          className="min-h-10 rounded-xl border border-gray-200 bg-white px-4 text-sm font-medium text-gray-600 transition-colors hover:bg-gray-50 disabled:opacity-60"
         >
           {blocked ? "Close" : "Cancel"}
         </button>
@@ -108,7 +108,7 @@ export function DeleteRecordButton({
             type="button"
             onClick={remove}
             disabled={pending}
-            className="inline-flex min-h-10 items-center gap-2 rounded-2xl bg-rose-600 px-4 text-sm font-semibold text-white transition-colors hover:bg-rose-700 disabled:cursor-not-allowed disabled:opacity-60"
+            className="inline-flex min-h-10 items-center gap-2 rounded-xl bg-rose-600 px-4 text-sm font-semibold text-white transition-colors hover:bg-rose-700 disabled:cursor-not-allowed disabled:opacity-60"
           >
             {pending && (
               <span

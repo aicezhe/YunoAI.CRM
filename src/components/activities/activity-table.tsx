@@ -74,7 +74,7 @@ export function ActivityTable({
               <RowLink href={`/activities/${activity.id}`}>
                 <span className="flex items-center gap-1.5">
                   <UrgentFlag activity={activity} />
-                  <span className={activity.done ? "text-gray-400 line-through" : undefined}>
+                  <span className={"transition-colors duration-200 " + (activity.done ? "text-gray-400 line-through" : "")}>
                     {activity.subject}
                   </span>
                 </span>
@@ -114,7 +114,7 @@ export function ActivityTable({
                   <Link
                     href={`/activities/${activity.id}`}
                     className={
-                      "min-w-0 truncate font-medium after:absolute after:inset-0 after:content-[''] " +
+                      "min-w-0 truncate font-medium transition-colors duration-200 after:absolute after:inset-0 after:content-[''] " +
                       (activity.done ? "text-gray-400 line-through" : "text-gray-900")
                     }
                   >

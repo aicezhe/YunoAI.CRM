@@ -8,10 +8,10 @@ import { useState, type ReactNode } from "react";
  *  inputs and selects alike, so a new form matches the others by using this
  *  constant rather than re-deriving the look. */
 export const FIELD_CLASS =
-  "w-full rounded-2xl border border-gray-200 bg-white px-4 py-2.5 text-sm text-gray-900 placeholder-gray-400 outline-none transition focus:border-brand-500 focus:ring-4 focus:ring-brand-500/10";
+  "w-full rounded-xl border border-gray-200 bg-white px-4 py-2.5 text-sm text-gray-900 placeholder-gray-400 outline-none transition-[border-color,box-shadow] duration-150 ease-out focus:border-brand-500 focus:ring-4 focus:ring-brand-500/15";
 
 export const FORM_CARD_CLASS =
-  "space-y-5 rounded-3xl border border-brand-200/70 bg-white p-6 shadow-card";
+  "space-y-5 rounded-2xl border border-brand-200/70 bg-white p-7 shadow-card";
 
 export function Field({
   id,
@@ -114,7 +114,7 @@ export function UrgentCheckbox({ id = "priority", defaultChecked }: { id?: strin
   return (
     <label
       htmlFor={id}
-      className="flex cursor-pointer items-start gap-3 rounded-2xl border border-brand-200/70 bg-brand-50/40 px-4 py-3 transition-colors hover:bg-brand-50"
+      className="flex cursor-pointer items-start gap-3 rounded-xl border border-brand-200/70 bg-brand-50/40 px-4 py-3 transition-colors hover:bg-brand-50"
     >
       <input
         id={id}
@@ -166,14 +166,14 @@ export function FormActions({
 
       <Link
         href={cancelHref}
-        className="inline-flex min-h-11 items-center rounded-2xl border border-gray-200 bg-white px-4 text-sm font-medium text-gray-600 transition hover:bg-gray-50"
+        className="inline-flex min-h-11 items-center rounded-xl border border-gray-200 bg-white px-4 text-sm font-medium text-gray-600 transition hover:bg-gray-50"
       >
         Cancel
       </Link>
       <button
         type="submit"
         disabled={pending}
-        className="inline-flex min-h-11 items-center gap-2 rounded-2xl bg-brand-500 px-5 text-sm font-semibold text-white shadow-lg shadow-brand-500/30 transition hover:bg-brand-600 disabled:cursor-not-allowed disabled:opacity-60"
+        className="inline-flex min-h-11 items-center gap-2 rounded-xl bg-brand-500 px-5 text-sm font-semibold text-white shadow-lg shadow-brand-500/30 transition hover:bg-brand-600 disabled:cursor-not-allowed disabled:opacity-60"
       >
         {pending && (
           <span

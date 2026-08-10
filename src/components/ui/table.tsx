@@ -34,7 +34,7 @@ export function Table({
   children: React.ReactNode;
 }) {
   return (
-    <div className="hidden overflow-x-auto rounded-3xl border border-brand-200/70 bg-white shadow-card md:block">
+    <div className="hidden overflow-x-auto rounded-2xl border border-brand-200/70 bg-white shadow-card md:block">
       <table className="w-full min-w-[44rem] border-collapse text-sm">
         <thead>
           {/* A tinted band rather than plain white — it anchors the top of the

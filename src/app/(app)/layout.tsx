@@ -3,6 +3,7 @@ import { Sidebar } from "@/components/sidebar";
 import { SignOutButton } from "@/components/sign-out-button";
 import { Wordmark } from "@/components/wordmark";
 import { requireUser } from "@/lib/auth/current-user";
+import { countActivities } from "@/lib/data/activities";
 
 /**
  * Shell for every signed-in route: a top bar + BottomNav below md, a Sidebar
@@ -18,6 +19,10 @@ import { requireUser } from "@/lib/auth/current-user";
 export default async function AppLayout({ children }: { children: React.ReactNode }) {
   const user = await requireUser();
   const isAdmin = user.role === "admin";
+  // For the sidebar's Activities badge. Deliberately not awaited in parallel
+  // with requireUser — requireUser is cache()'d and resolves first anyway,
+  // and a failed count degrades to zero inside countActivities itself.
+  const { open: openActivities } = await countActivities();
 
   return (
     <div className="min-h-dvh bg-canvas">
@@ -30,7 +35,13 @@ export default async function AppLayout({ children }: { children: React.ReactNod
         </div>
       </header>
 
-      <Sidebar isAdmin={isAdmin} name={user.name} email={user.email} role={user.role} />
+      <Sidebar
+        isAdmin={isAdmin}
+        name={user.name}
+        email={user.email}
+        role={user.role}
+        activityCount={openActivities}
+      />
 
       {/* pb clears the fixed BottomNav on mobile; md:ml clears the fixed
           Sidebar on desktop, where there is no bottom bar to clear. */}

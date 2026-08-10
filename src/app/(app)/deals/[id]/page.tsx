@@ -51,7 +51,7 @@ export default async function DealPage({ params }: PageProps<"/deals/[id]">) {
         />
       </div>
 
-      <div className="mt-8 space-y-5">
+      <div className="mt-8 space-y-6">
         <RecordCard index={0}>
           <dl>
             <Field label="Value">{formatMoney(d.value, d.currency)}</Field>

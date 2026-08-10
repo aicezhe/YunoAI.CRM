@@ -14,10 +14,13 @@ export function PageHeader({
   return (
     <div className="flex flex-wrap items-start justify-between gap-4">
       <div className="min-w-0">
-        <h1 className="text-2xl font-semibold tracking-tight text-gray-900 sm:text-3xl">
+        {/* Bold and a size up from where this started: the title is the one
+            element allowed to dominate its screen, and at semibold-2xl it
+            sat too close to the row text below to anchor anything. */}
+        <h1 className="text-3xl font-bold tracking-tight text-gray-900 sm:text-4xl">
           {title}
         </h1>
-        {description && <p className="mt-2 text-sm text-gray-500">{description}</p>}
+        {description && <p className="mt-2.5 text-sm text-gray-400">{description}</p>}
       </div>
       {action}
     </div>

@@ -45,13 +45,23 @@ export function DoneCheckbox({
       onClick={toggle}
       disabled={pending}
       className={
-        "relative z-10 flex h-6 w-6 shrink-0 items-center justify-center rounded-lg border-2 transition " +
+        "relative z-10 flex h-6 w-6 shrink-0 items-center justify-center rounded-lg border-2 transition-colors duration-150 ease-out " +
         (optimisticDone
           ? "border-brand-500 bg-brand-500 text-white"
           : "border-gray-300 bg-white text-transparent hover:border-brand-500")
       }
     >
-      <Check className="h-3.5 w-3.5" strokeWidth={3} aria-hidden />
+      {/* The tick pops in rather than tinting in: scale-50→100 alongside the
+          colour change reads as the mark being placed, not the box merely
+          changing shade. */}
+      <Check
+        className={
+          "h-3.5 w-3.5 transition-transform duration-150 ease-out " +
+          (optimisticDone ? "scale-100" : "scale-50")
+        }
+        strokeWidth={3}
+        aria-hidden
+      />
     </button>
   );
 }

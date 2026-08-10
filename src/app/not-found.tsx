@@ -19,7 +19,7 @@ export default function NotFound() {
       </p>
       <Link
         href="/login"
-        className="mt-6 inline-flex min-h-10 items-center rounded-2xl bg-brand-500 px-4 text-sm font-semibold text-white transition hover:bg-brand-600"
+        className="mt-6 inline-flex min-h-10 items-center rounded-xl bg-brand-500 px-4 text-sm font-semibold text-white transition hover:bg-brand-600"
       >
         Go to YunoCRM
       </Link>

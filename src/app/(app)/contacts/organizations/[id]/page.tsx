@@ -42,14 +42,14 @@ export default async function OrganizationPage({
         </h1>
         <Link
           href={`/contacts/organizations/${id}/edit`}
-          className="inline-flex min-h-10 shrink-0 items-center gap-2 rounded-2xl border border-brand-200 bg-brand-50 px-4 text-sm font-medium text-brand-600 transition hover:bg-brand-100"
+          className="inline-flex min-h-10 shrink-0 items-center gap-2 rounded-xl border border-brand-200 bg-brand-50 px-4 text-sm font-medium text-brand-600 transition hover:bg-brand-100"
         >
           <Pencil className="h-4 w-4" strokeWidth={1.75} aria-hidden />
           Edit
         </Link>
       </div>
 
-      <div className="mt-8 space-y-5">
+      <div className="mt-8 space-y-6">
         <RecordCard index={0}>
           <dl>
             <Field label="Industry">{org.data.industry ?? <Missing />}</Field>

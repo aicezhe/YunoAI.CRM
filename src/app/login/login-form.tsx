@@ -7,7 +7,7 @@ import { signIn, type SignInState } from "@/lib/auth/actions";
 const INITIAL: SignInState = { error: null };
 
 const FIELD_CLASS =
-  "w-full rounded-2xl border border-gray-200 bg-white px-4 py-3 text-base text-gray-900 placeholder-gray-400 outline-none transition focus:border-brand-500 focus:ring-4 focus:ring-brand-500/10 sm:text-sm";
+  "w-full rounded-xl border border-gray-200 bg-white px-4 py-3 text-base text-gray-900 placeholder-gray-400 outline-none transition-[border-color,box-shadow] duration-150 ease-out focus:border-brand-500 focus:ring-4 focus:ring-brand-500/15 sm:text-sm";
 
 /**
  * The sign-in form. Submits to the `signIn` Server Action through
@@ -74,7 +74,7 @@ export function LoginForm({ next }: { next: string }) {
       <button
         type="submit"
         disabled={pending}
-        className="flex w-full items-center justify-center gap-2 rounded-2xl bg-brand-500 px-4 py-3 text-sm font-semibold text-white shadow-lg shadow-brand-500/30 transition hover:bg-brand-600 disabled:cursor-not-allowed disabled:opacity-60"
+        className="flex w-full items-center justify-center gap-2 rounded-xl bg-brand-500 px-4 py-3 text-sm font-semibold text-white shadow-lg shadow-brand-500/30 transition hover:bg-brand-600 disabled:cursor-not-allowed disabled:opacity-60"
       >
         {pending && (
           <span

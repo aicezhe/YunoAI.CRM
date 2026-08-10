@@ -41,14 +41,14 @@ export default function AppError({
         <button
           type="button"
           onClick={reset}
-          className="inline-flex min-h-10 items-center gap-2 rounded-2xl bg-brand-500 px-4 text-sm font-semibold text-white transition hover:bg-brand-600"
+          className="inline-flex min-h-10 items-center gap-2 rounded-xl bg-brand-500 px-4 text-sm font-semibold text-white transition hover:bg-brand-600"
         >
           <RotateCcw className="h-4 w-4" strokeWidth={2} aria-hidden />
           Try again
         </button>
         <Link
           href="/activities/open"
-          className="inline-flex min-h-10 items-center rounded-2xl border border-gray-200 bg-white px-4 text-sm font-medium text-gray-600 transition hover:bg-gray-50"
+          className="inline-flex min-h-10 items-center rounded-xl border border-gray-200 bg-white px-4 text-sm font-medium text-gray-600 transition hover:bg-gray-50"
         >
           Back to activities
         </Link>

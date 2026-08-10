@@ -25,16 +25,31 @@
 
   /* Card and popover elevation. Two layers each: a near-opaque hairline that
      seats the edge against the canvas, and a wide, low-opacity brand-tinted
-     bloom that does the actual floating. Tailwind's `shadow-sm` was one
-     tight grey layer — enough to see, not enough to lift, which is why every
-     card read as lying flat on the background.
+     bloom that does the actual floating. The bloom is deliberately big and
+     faint (24px+ blur at single-digit opacity) rather than tight and dark —
+     a tight shadow reads as an outline, a wide one reads as height.
 
      `shadow-pop` is the same idea with more travel, for things that appear
      above the page (dropdowns, the stepper's lost-reason panel) and need to
      detach from whatever they cover. */
-  --shadow-card: 0 1px 2px rgba(17, 17, 26, 0.04), 0 10px 28px -14px rgba(91, 79, 233, 0.22);
-  --shadow-card-hover: 0 1px 2px rgba(17, 17, 26, 0.05), 0 16px 36px -16px rgba(91, 79, 233, 0.3);
-  --shadow-pop: 0 2px 4px rgba(17, 17, 26, 0.05), 0 18px 40px -12px rgba(91, 79, 233, 0.28);
+  --shadow-card: 0 1px 2px rgba(0, 0, 0, 0.04), 0 4px 24px rgba(91, 79, 233, 0.08);
+  --shadow-card-hover: 0 2px 3px rgba(0, 0, 0, 0.04), 0 8px 32px rgba(91, 79, 233, 0.14);
+  --shadow-pop: 0 2px 4px rgba(0, 0, 0, 0.05), 0 12px 40px rgba(91, 79, 233, 0.18);
+}
+
+/* Every enabled button dips slightly while pressed — the tactile half of a
+   click that colour changes alone don't carry. The standalone `scale`
+   property, not `transform`: framer-motion writes inline transforms on some
+   of these buttons, and the two properties compose instead of fighting. */
+@media (prefers-reduced-motion: no-preference) {
+  button:not(:disabled) {
+    transition-property: scale;
+    transition-duration: 150ms;
+    transition-timing-function: ease-out;
+  }
+  button:not(:disabled):active {
+    scale: 0.97;
+  }
 }
 
 body {
@@ -134,11 +149,39 @@ body {
 @keyframes enter-up {
   from {
     opacity: 0;
-    transform: translateY(10px);
+    transform: translateY(8px);
   }
   to {
     opacity: 1;
     transform: translateY(0);
+  }
+}
+
+/* Route transitions. (app)/template.tsx wraps every page's content in a div
+   with this class; a template remounts on each navigation (unlike a layout),
+   so the animation replays every time the route changes while the sidebar —
+   which lives in the layout — stays put. Slightly shorter travel and
+   duration than `.enter`: this runs on top of the per-row stagger inside,
+   and the two should read as one arrival, not two. */
+@keyframes route-in {
+  from {
+    opacity: 0;
+    transform: translateY(6px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.route-enter {
+  animation: route-in 200ms cubic-bezier(0.32, 0.72, 0, 1) both;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .route-enter {
+    animation-name: enter-fade;
+    animation-duration: 120ms;
   }
 }
 

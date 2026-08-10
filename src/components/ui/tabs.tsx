@@ -20,7 +20,7 @@ export function Tabs({ tabs }: { tabs: Tab[] }) {
   return (
     <div
       role="tablist"
-      className="inline-flex items-center gap-1 rounded-2xl border border-brand-200/70 bg-brand-100/70 p-1"
+      className="inline-flex items-center gap-1 rounded-xl border border-brand-200/70 bg-brand-100/70 p-1"
     >
       {tabs.map((tab) => {
         const active = pathname === tab.href || pathname.startsWith(tab.href + "/");
@@ -31,7 +31,7 @@ export function Tabs({ tabs }: { tabs: Tab[] }) {
             role="tab"
             aria-selected={active}
             className={
-              "inline-flex min-h-9 items-center gap-2 rounded-xl px-4 text-sm transition-colors " +
+              "inline-flex min-h-9 items-center gap-2 rounded-lg px-4 text-sm transition-colors " +
               (active
                 ? "bg-white font-semibold text-brand-500 shadow-sm"
                 : "font-medium text-gray-500 hover:text-gray-900")

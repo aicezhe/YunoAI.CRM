@@ -19,7 +19,7 @@ export function SignOutButton({ compact = false }: { compact?: boolean }) {
       type="button"
       disabled={pending}
       onClick={() => startTransition(() => void signOut())}
-      className="inline-flex min-h-11 shrink-0 items-center gap-2 rounded-2xl border border-brand-500/15 bg-brand-500/[0.06] px-4 py-2 text-sm font-medium text-brand-500/80 transition hover:border-brand-500/40 hover:bg-brand-500/10 hover:text-brand-500 disabled:opacity-60 sm:min-h-0"
+      className="inline-flex min-h-11 shrink-0 items-center gap-2 rounded-xl border border-brand-500/15 bg-brand-500/[0.06] px-4 py-2 text-sm font-medium text-brand-500/80 transition hover:border-brand-500/40 hover:bg-brand-500/10 hover:text-brand-500 disabled:opacity-60 sm:min-h-0"
     >
       <LogOut className="h-4 w-4" strokeWidth={1.75} aria-hidden />
       <span className={compact ? "sr-only" : undefined}>

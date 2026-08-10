@@ -36,7 +36,7 @@ export default async function NewContractPage() {
             action={
               <Link
                 href="/deals"
-                className="inline-flex min-h-11 items-center rounded-2xl bg-brand-500 px-5 text-sm font-semibold text-white shadow-lg shadow-brand-500/30 transition hover:bg-brand-600"
+                className="inline-flex min-h-11 items-center rounded-xl bg-brand-500 px-5 text-sm font-semibold text-white shadow-lg shadow-brand-500/30 transition hover:bg-brand-600"
               >
                 Go to Deals
               </Link>
