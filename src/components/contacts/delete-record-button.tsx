@@ -1,0 +1,139 @@
+"use client";
+
+import { useState, useTransition } from "react";
+import { Trash2 } from "lucide-react";
+import { deleteOrganization, deletePerson } from "@/lib/data/actions";
+import type { DeleteImpact } from "@/lib/data/types";
+
+/**
+ * Deletes a contact record, behind an inline confirmation that states what
+ * the delete will actually do.
+ *
+ * Two steps and inline rather than a modal, matching ClearArchiveButton —
+ * the consequence is rendered right where the button that causes it is.
+ *
+ * The confirmation is built from real counts, not generic warning copy,
+ * because the three outcomes here are genuinely different:
+ *   · deals > 0    — refused outright. deals.org_id/person_id are ON DELETE
+ *                    RESTRICT, so the database would reject this anyway;
+ *                    saying so up front beats a failed click.
+ *   · people > 0   — allowed. persons.org_id is ON DELETE SET NULL: the
+ *                    contacts survive, unattached (0005_persons.sql).
+ *   · activities   — allowed, link cleared, history kept.
+ */
+export function DeleteRecordButton({
+  kind,
+  id,
+  name,
+  impact,
+}: {
+  kind: "organization" | "person";
+  id: string;
+  name: string;
+  impact: DeleteImpact;
+}) {
+  const [confirming, setConfirming] = useState(false);
+  const [error, setError] = useState<string | null>(null);
+  const [pending, startTransition] = useTransition();
+
+  const blocked = impact.deals > 0;
+  const noun = kind === "organization" ? "organization" : "contact";
+
+  function remove() {
+    setError(null);
+    startTransition(async () => {
+      // On success the action redirects, so nothing after this runs; only a
+      // refusal or a failure comes back with a message.
+      const result =
+        kind === "organization" ? await deleteOrganization(id) : await deletePerson(id);
+      if (result?.error) setError(result.error);
+    });
+  }
+
+  if (!confirming) {
+    return (
+      <button
+        type="button"
+        onClick={() => setConfirming(true)}
+        className="inline-flex min-h-10 shrink-0 items-center gap-2 rounded-2xl border border-gray-200 bg-white px-4 text-sm font-medium text-gray-600 transition hover:border-rose-200 hover:bg-rose-50 hover:text-rose-600"
+      >
+        <Trash2 className="h-4 w-4" strokeWidth={1.75} aria-hidden />
+        Delete
+      </button>
+    );
+  }
+
+  return (
+    <div className="w-full rounded-2xl border border-rose-200 bg-rose-50/60 p-4">
+      {blocked ? (
+        <p className="text-sm text-gray-700">
+          <span className="font-semibold">{name}</span> is on{" "}
+          {impact.deals === 1 ? "1 deal" : `${impact.deals} deals`} and can&apos;t be deleted.
+          Reassign or delete {impact.deals === 1 ? "that deal" : "those deals"} first.
+        </p>
+      ) : (
+        <p className="text-sm text-gray-700">
+          Delete <span className="font-semibold">{name}</span>? This cannot be undone.
+          <Consequences kind={kind} impact={impact} />
+        </p>
+      )}
+
+      {error && (
+        <p role="alert" className="mt-2 text-sm font-medium text-rose-600">
+          {error}
+        </p>
+      )}
+
+      <div className="mt-3 flex flex-wrap justify-end gap-2">
+        <button
+          type="button"
+          onClick={() => {
+            setConfirming(false);
+            setError(null);
+          }}
+          disabled={pending}
+          className="min-h-10 rounded-2xl border border-gray-200 bg-white px-4 text-sm font-medium text-gray-600 transition hover:bg-gray-50 disabled:opacity-60"
+        >
+          {blocked ? "Close" : "Cancel"}
+        </button>
+
+        {!blocked && (
+          <button
+            type="button"
+            onClick={remove}
+            disabled={pending}
+            className="inline-flex min-h-10 items-center gap-2 rounded-2xl bg-rose-600 px-4 text-sm font-semibold text-white transition hover:bg-rose-700 disabled:cursor-not-allowed disabled:opacity-60"
+          >
+            {pending && (
+              <span
+                aria-hidden
+                className="h-4 w-4 animate-spin rounded-full border-2 border-white/40 border-t-white"
+              />
+            )}
+            {pending ? "Deleting…" : `Delete ${noun}`}
+          </button>
+        )}
+      </div>
+    </div>
+  );
+}
+
+/** The survivors, named — so "cannot be undone" doesn't read as though the
+ *  attached people and logged calls go too. Silent when nothing is linked. */
+function Consequences({ kind, impact }: { kind: "organization" | "person"; impact: DeleteImpact }) {
+  const parts: string[] = [];
+
+  if (kind === "organization" && impact.people > 0) {
+    parts.push(
+      `${impact.people === 1 ? "1 contact" : `${impact.people} contacts`} will stay, without a company`,
+    );
+  }
+  if (impact.activities > 0) {
+    parts.push(
+      `${impact.activities === 1 ? "1 activity" : `${impact.activities} activities`} will keep ${impact.activities === 1 ? "its" : "their"} history, without the link`,
+    );
+  }
+  if (parts.length === 0) return null;
+
+  return <span className="mt-1 block text-gray-500">{parts.join("; ")}.</span>;
+}

@@ -5,6 +5,7 @@ import { revalidatePath } from "next/cache";
 import { createClient } from "@/lib/supabase/server";
 import { isAdmin, requireUser } from "@/lib/auth/current-user";
 import { isAppRole } from "@/lib/auth/roles";
+import { getOrganizationDeleteImpact, getPersonDeleteImpact } from "./contacts";
 
 /**
  * Tick an activity off from wherever it is listed.
@@ -143,32 +144,45 @@ export type OrganizationFormValues = {
 
 export type OrganizationFormState = { error: string | null; values: OrganizationFormValues };
 
+/** The form's fields, read and trimmed once — shared by create and update,
+ *  which differ only in whether the result is inserted or written over an
+ *  existing row. Empty optional fields become NULL rather than '': the
+ *  column is nullable and "" would render as a present-but-blank value
+ *  everywhere the app checks `?? <Missing />`. */
+function readOrganizationForm(formData: FormData) {
+  const values: OrganizationFormValues = {
+    name: String(formData.get("name") ?? "").trim(),
+    industry: String(formData.get("industry") ?? "").trim(),
+    address: String(formData.get("address") ?? "").trim(),
+    website: String(formData.get("website") ?? "").trim(),
+    ownerId: String(formData.get("ownerId") ?? ""),
+  };
+  return {
+    values,
+    row: {
+      name: values.name,
+      industry: values.industry || null,
+      address: values.address || null,
+      website: values.website || null,
+      owner_id: values.ownerId || null,
+    },
+  };
+}
+
 /** name is the only NOT NULL column (0004_organizations.sql) — everything
  *  else, including the owner, is genuinely optional at creation. */
 export async function createOrganization(
   _prevState: OrganizationFormState,
   formData: FormData,
 ): Promise<OrganizationFormState> {
-  const name = String(formData.get("name") ?? "").trim();
-  const industry = String(formData.get("industry") ?? "").trim();
-  const address = String(formData.get("address") ?? "").trim();
-  const website = String(formData.get("website") ?? "").trim();
-  const ownerId = String(formData.get("ownerId") ?? "");
+  const { values, row } = readOrganizationForm(formData);
 
-  const values: OrganizationFormValues = { name, industry, address, website, ownerId };
-
-  if (!name) return { error: "Enter a name.", values };
+  if (!values.name) return { error: "Enter a name.", values };
 
   const supabase = await createClient();
   const { data, error } = await supabase
     .from("organizations")
-    .insert({
-      name,
-      industry: industry || null,
-      address: address || null,
-      website: website || null,
-      owner_id: ownerId || null,
-    })
+    .insert(row)
     .select("id")
     .single();
 
@@ -183,6 +197,70 @@ export async function createOrganization(
   redirect(`/contacts/organizations/${data.id}`);
 }
 
+/** `id` is bound at the call site (`updateOrganization.bind(null, id)`), not
+ *  taken from the form — a hidden id field would be an editable claim about
+ *  which row to overwrite. */
+export async function updateOrganization(
+  id: string,
+  _prevState: OrganizationFormState,
+  formData: FormData,
+): Promise<OrganizationFormState> {
+  const { values, row } = readOrganizationForm(formData);
+
+  if (!values.name) return { error: "Enter a name.", values };
+
+  const supabase = await createClient();
+  const { error } = await supabase.from("organizations").update(row).eq("id", id);
+
+  if (error) {
+    console.error("[organizations] update failed:", error.message);
+    return { error: "Could not save your changes. Try again.", values };
+  }
+
+  revalidatePath("/", "layout");
+  redirect(`/contacts/organizations/${id}`);
+}
+
+/**
+ * Deletes an organization, or refuses with a reason.
+ *
+ * deals.org_id is ON DELETE RESTRICT, so a company with deals cannot be
+ * deleted at all — checked here first so the refusal names the count and
+ * points at the fix, rather than surfacing Postgres's foreign-key error.
+ * The database is still the real enforcement: the insert-between-check-and-
+ * delete race falls through to the 23503 branch below, which is the same
+ * refusal reached the other way.
+ *
+ * Everything else that points here is ON DELETE SET NULL — people are
+ * detached rather than deleted (see 0005_persons.sql: deleting a company
+ * must not delete the people you know there), and activities keep their
+ * history minus the link.
+ */
+export async function deleteOrganization(id: string): Promise<{ error: string | null }> {
+  await requireUser();
+
+  const impact = await getOrganizationDeleteImpact(id);
+  if (impact.deals > 0) {
+    return {
+      error: `This organization is on ${impact.deals} ${impact.deals === 1 ? "deal" : "deals"}. Reassign or delete ${impact.deals === 1 ? "it" : "them"} first.`,
+    };
+  }
+
+  const supabase = await createClient();
+  const { error } = await supabase.from("organizations").delete().eq("id", id);
+
+  if (error) {
+    console.error("[organizations] delete failed:", error.message);
+    if (error.code === "23503") {
+      return { error: "This organization is still linked to a deal. Reassign it first." };
+    }
+    return { error: "Could not delete this organization. Try again." };
+  }
+
+  revalidatePath("/", "layout");
+  redirect("/contacts/organizations");
+}
+
 export type PersonFormValues = {
   name: string;
   orgId: string;
@@ -193,6 +271,27 @@ export type PersonFormValues = {
 
 export type PersonFormState = { error: string | null; values: PersonFormValues };
 
+/** See readOrganizationForm — same split, same reason. */
+function readPersonForm(formData: FormData) {
+  const values: PersonFormValues = {
+    name: String(formData.get("name") ?? "").trim(),
+    orgId: String(formData.get("orgId") ?? ""),
+    email: String(formData.get("email") ?? "").trim(),
+    phone: String(formData.get("phone") ?? "").trim(),
+    ownerId: String(formData.get("ownerId") ?? ""),
+  };
+  return {
+    values,
+    row: {
+      name: values.name,
+      org_id: values.orgId || null,
+      email: values.email || null,
+      phone: values.phone || null,
+      owner_id: values.ownerId || null,
+    },
+  };
+}
+
 /** name is the only NOT NULL column (0005_persons.sql). org_id is nullable
  *  by design — an individual with no company yet is a normal contact, not a
  *  data-entry error (see the schema comment, and Federica Lombardi in the
@@ -201,28 +300,12 @@ export async function createPerson(
   _prevState: PersonFormState,
   formData: FormData,
 ): Promise<PersonFormState> {
-  const name = String(formData.get("name") ?? "").trim();
-  const orgId = String(formData.get("orgId") ?? "");
-  const email = String(formData.get("email") ?? "").trim();
-  const phone = String(formData.get("phone") ?? "").trim();
-  const ownerId = String(formData.get("ownerId") ?? "");
+  const { values, row } = readPersonForm(formData);
 
-  const values: PersonFormValues = { name, orgId, email, phone, ownerId };
-
-  if (!name) return { error: "Enter a name.", values };
+  if (!values.name) return { error: "Enter a name.", values };
 
   const supabase = await createClient();
-  const { data, error } = await supabase
-    .from("persons")
-    .insert({
-      name,
-      org_id: orgId || null,
-      email: email || null,
-      phone: phone || null,
-      owner_id: ownerId || null,
-    })
-    .select("id")
-    .single();
+  const { data, error } = await supabase.from("persons").insert(row).select("id").single();
 
   if (error) {
     console.error("[persons] create failed:", error.message);
@@ -231,6 +314,57 @@ export async function createPerson(
 
   revalidatePath("/", "layout");
   redirect(`/contacts/people/${data.id}`);
+}
+
+/** `id` is bound at the call site, not read from the form — see
+ *  updateOrganization. */
+export async function updatePerson(
+  id: string,
+  _prevState: PersonFormState,
+  formData: FormData,
+): Promise<PersonFormState> {
+  const { values, row } = readPersonForm(formData);
+
+  if (!values.name) return { error: "Enter a name.", values };
+
+  const supabase = await createClient();
+  const { error } = await supabase.from("persons").update(row).eq("id", id);
+
+  if (error) {
+    console.error("[persons] update failed:", error.message);
+    return { error: "Could not save your changes. Try again.", values };
+  }
+
+  revalidatePath("/", "layout");
+  redirect(`/contacts/people/${id}`);
+}
+
+/** Same shape as deleteOrganization: deals.person_id is ON DELETE RESTRICT
+ *  and blocks the delete, activities.person_id is SET NULL and merely loses
+ *  the link. */
+export async function deletePerson(id: string): Promise<{ error: string | null }> {
+  await requireUser();
+
+  const impact = await getPersonDeleteImpact(id);
+  if (impact.deals > 0) {
+    return {
+      error: `This contact is on ${impact.deals} ${impact.deals === 1 ? "deal" : "deals"}. Reassign or delete ${impact.deals === 1 ? "it" : "them"} first.`,
+    };
+  }
+
+  const supabase = await createClient();
+  const { error } = await supabase.from("persons").delete().eq("id", id);
+
+  if (error) {
+    console.error("[persons] delete failed:", error.message);
+    if (error.code === "23503") {
+      return { error: "This contact is still linked to a deal. Reassign it first." };
+    }
+    return { error: "Could not delete this contact. Try again." };
+  }
+
+  revalidatePath("/", "layout");
+  redirect("/contacts/people");
 }
 
 export type DealFormValues = {

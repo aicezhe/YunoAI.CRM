@@ -36,6 +36,7 @@ export type OrganizationRow = {
   industry: string | null;
   address: string | null;
   website: string | null;
+  ownerId: string | null;
   ownerName: string | null;
   peopleCount: number;
 };
@@ -47,7 +48,26 @@ export type PersonRow = {
   phone: string | null;
   organizationId: string | null;
   organizationName: string | null;
+  ownerId: string | null;
   ownerName: string | null;
+};
+
+/**
+ * What deleting a contact record would take with it — read before offering
+ * the delete, so the confirmation can state the consequence instead of
+ * letting Postgres reject the write with a raw constraint error.
+ *
+ * `deals` is the blocker: deals.org_id and deals.person_id are both ON
+ * DELETE RESTRICT (verified against the live database, and see the comment
+ * in 0006_deals.sql for why RESTRICT rather than SET NULL). The rest are ON
+ * DELETE SET NULL, so they survive the delete and just lose the link —
+ * worth warning about, never a reason to refuse.
+ */
+export type DeleteImpact = {
+  deals: number;
+  activities: number;
+  /** Organizations only: people who would become unattached contacts. */
+  people: number;
 };
 
 export type DealRow = {

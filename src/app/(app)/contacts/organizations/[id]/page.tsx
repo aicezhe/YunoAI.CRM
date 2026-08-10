@@ -1,9 +1,12 @@
 import Link from "next/link";
 import { notFound } from "next/navigation";
+import { Pencil } from "lucide-react";
+import { DeleteRecordButton } from "@/components/contacts/delete-record-button";
 import { BackLink, Field, Missing, RecordCard, resolveBack } from "@/components/ui/record";
 import { ErrorState } from "@/components/ui/states";
 import {
   getOrganization,
+  getOrganizationDeleteImpact,
   listPersonsForOrganization,
 } from "@/lib/data/contacts";
 
@@ -13,9 +16,10 @@ export default async function OrganizationPage({
 }: PageProps<"/contacts/organizations/[id]">) {
   const { id } = await params;
   const { from } = await searchParams;
-  const [org, people] = await Promise.all([
+  const [org, people, impact] = await Promise.all([
     getOrganization(id),
     listPersonsForOrganization(id),
+    getOrganizationDeleteImpact(id),
   ]);
 
   if (!org.ok) {
@@ -36,9 +40,18 @@ export default async function OrganizationPage({
       {/* Staggered arrival — heading, then details, then people. The delays
           are small on purpose: enough to read as a sequence, not enough to
           make anyone wait for the page. See `.enter` in globals.css. */}
-      <h1 className="enter mt-4 text-2xl font-semibold tracking-tight text-gray-900 sm:text-3xl">
-        {org.data.name}
-      </h1>
+      <div className="enter mt-4 flex flex-wrap items-start justify-between gap-3">
+        <h1 className="text-2xl font-semibold tracking-tight text-gray-900 sm:text-3xl">
+          {org.data.name}
+        </h1>
+        <Link
+          href={`/contacts/organizations/${id}/edit`}
+          className="inline-flex min-h-10 shrink-0 items-center gap-2 rounded-2xl border border-brand-200 bg-brand-50 px-4 text-sm font-medium text-brand-600 transition hover:bg-brand-100"
+        >
+          <Pencil className="h-4 w-4" strokeWidth={1.75} aria-hidden />
+          Edit
+        </Link>
+      </div>
 
       <div className="mt-8 space-y-5">
         <RecordCard index={0}>
@@ -84,6 +97,20 @@ export default async function OrganizationPage({
             </ul>
           )}
         </RecordCard>
+
+        {/* Destructive, so it sits at the bottom, after everything the
+            record is — not next to Edit, where a mis-click lands on it. */}
+        <div
+          className="enter flex justify-end"
+          style={{ "--enter-delay": "270ms" } as React.CSSProperties}
+        >
+          <DeleteRecordButton
+            kind="organization"
+            id={id}
+            name={org.data.name}
+            impact={impact}
+          />
+        </div>
       </div>
     </div>
   );

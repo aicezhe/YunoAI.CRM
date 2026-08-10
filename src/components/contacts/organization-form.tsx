@@ -1,22 +1,44 @@
 "use client";
 
 import { useActionState } from "react";
-import { createOrganization, type OrganizationFormState } from "@/lib/data/actions";
+import {
+  createOrganization,
+  updateOrganization,
+  type OrganizationFormState,
+} from "@/lib/data/actions";
 import { Field, FIELD_CLASS, FormActions, FORM_CARD_CLASS, SelectField } from "@/components/ui/form";
+import type { OrganizationRow } from "@/lib/data/types";
 import type { UserOption } from "@/lib/data/users";
 
+/** Shared by "Add organization" and "Edit organization" — see PersonForm for
+ *  the reasoning; passing `organization` switches it to edit mode. */
 export function OrganizationForm({
   users,
   currentUserId,
+  organization,
 }: {
   users: UserOption[];
   currentUserId: string;
+  /** Omitted when creating. */
+  organization?: OrganizationRow;
 }) {
   const initial: OrganizationFormState = {
     error: null,
-    values: { name: "", industry: "", address: "", website: "", ownerId: currentUserId },
+    values: organization
+      ? {
+          name: organization.name,
+          industry: organization.industry ?? "",
+          address: organization.address ?? "",
+          website: organization.website ?? "",
+          ownerId: organization.ownerId ?? "",
+        }
+      : { name: "", industry: "", address: "", website: "", ownerId: currentUserId },
   };
-  const [state, formAction, pending] = useActionState(createOrganization, initial);
+
+  const action = organization
+    ? updateOrganization.bind(null, organization.id)
+    : createOrganization;
+  const [state, formAction, pending] = useActionState(action, initial);
   const { values } = state;
 
   return (
@@ -78,8 +100,10 @@ export function OrganizationForm({
       <FormActions
         error={state.error}
         pending={pending}
-        cancelHref="/contacts/organizations"
-        submitLabel="Add organization"
+        cancelHref={
+          organization ? `/contacts/organizations/${organization.id}` : "/contacts/organizations"
+        }
+        submitLabel={organization ? "Save changes" : "Add organization"}
       />
     </form>
   );

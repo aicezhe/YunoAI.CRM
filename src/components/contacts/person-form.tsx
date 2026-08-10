@@ -1,25 +1,48 @@
 "use client";
 
 import { useActionState } from "react";
-import { createPerson, type PersonFormState } from "@/lib/data/actions";
+import { createPerson, updatePerson, type PersonFormState } from "@/lib/data/actions";
 import { Field, FIELD_CLASS, FormActions, FORM_CARD_CLASS, SelectField } from "@/components/ui/form";
-import type { OrganizationRow } from "@/lib/data/types";
+import type { OrganizationRow, PersonRow } from "@/lib/data/types";
 import type { UserOption } from "@/lib/data/users";
 
+/**
+ * Shared by "Add contact" and "Edit contact" — the fields, their validation
+ * and their layout are identical, and the only real difference is which
+ * action the submit runs and where Cancel goes back to. Passing `person`
+ * switches it to edit mode.
+ */
 export function PersonForm({
   organizations,
   users,
   currentUserId,
+  person,
 }: {
   organizations: OrganizationRow[];
   users: UserOption[];
   currentUserId: string;
+  /** Omitted when creating. */
+  person?: PersonRow;
 }) {
   const initial: PersonFormState = {
     error: null,
-    values: { name: "", orgId: "", email: "", phone: "", ownerId: currentUserId },
+    values: person
+      ? {
+          name: person.name,
+          orgId: person.organizationId ?? "",
+          email: person.email ?? "",
+          phone: person.phone ?? "",
+          ownerId: person.ownerId ?? "",
+        }
+      : // A new contact defaults to whoever is adding it; an existing one
+        // keeps whatever it already has, including nobody.
+        { name: "", orgId: "", email: "", phone: "", ownerId: currentUserId },
   };
-  const [state, formAction, pending] = useActionState(createPerson, initial);
+
+  // .bind pins the row being edited server-side. A hidden id input would
+  // work too, and would be an editable claim about which row to overwrite.
+  const action = person ? updatePerson.bind(null, person.id) : createPerson;
+  const [state, formAction, pending] = useActionState(action, initial);
   const { values } = state;
 
   return (
@@ -83,8 +106,8 @@ export function PersonForm({
       <FormActions
         error={state.error}
         pending={pending}
-        cancelHref="/contacts/people"
-        submitLabel="Add contact"
+        cancelHref={person ? `/contacts/people/${person.id}` : "/contacts/people"}
+        submitLabel={person ? "Save changes" : "Add contact"}
       />
     </form>
   );

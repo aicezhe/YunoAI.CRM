@@ -2,7 +2,7 @@ import { BackLink, CARD_STAGGER_MS } from "@/components/ui/record";
 import { ErrorState } from "@/components/ui/states";
 import { requireUser } from "@/lib/auth/current-user";
 import { listUsers } from "@/lib/data/users";
-import { OrganizationForm } from "./organization-form";
+import { OrganizationForm } from "@/components/contacts/organization-form";
 
 export const metadata = { title: "Add organization · YunoCRM" };
 
