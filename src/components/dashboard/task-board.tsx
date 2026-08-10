@@ -19,20 +19,27 @@ const TYPE_PLURAL: Record<ActivityType, string> = {
 };
 
 /** Where the row points, and who it is with. Deal first: on the dashboard
- *  the question is "which deal is this moving", not "who is this person". */
+ *  the question is "which deal is this moving", not "who is this person".
+ *
+ *  `?from=dashboard` marks the destination record's BackLink (see
+ *  resolveBack in components/ui/record.tsx) so it returns here instead of
+ *  the deal/contact's own list, which the dashboard has no tab for anyway. */
 function resolveContext(task: ActivityRow): { label: string; href: string } {
   if (task.dealId) {
     const who = task.personName ?? task.organizationName;
     return {
       label: who ? `${task.dealTitle} · ${who}` : (task.dealTitle ?? "Deal"),
-      href: `/deals/${task.dealId}`,
+      href: `/deals/${task.dealId}?from=dashboard`,
     };
   }
   if (task.personId)
-    return { label: task.personName ?? "Contact", href: `/contacts/people/${task.personId}` };
+    return {
+      label: task.personName ?? "Contact",
+      href: `/contacts/people/${task.personId}?from=dashboard`,
+    };
   return {
     label: task.organizationName ?? "Organization",
-    href: `/contacts/organizations/${task.organizationId}`,
+    href: `/contacts/organizations/${task.organizationId}?from=dashboard`,
   };
 }
 

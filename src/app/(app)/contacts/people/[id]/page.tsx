@@ -1,11 +1,15 @@
 import Link from "next/link";
 import { notFound } from "next/navigation";
-import { BackLink, Field, Missing, RecordCard } from "@/components/ui/record";
+import { BackLink, Field, Missing, RecordCard, resolveBack } from "@/components/ui/record";
 import { ErrorState } from "@/components/ui/states";
 import { getPerson } from "@/lib/data/contacts";
 
-export default async function PersonPage({ params }: PageProps<"/contacts/people/[id]">) {
+export default async function PersonPage({
+  params,
+  searchParams,
+}: PageProps<"/contacts/people/[id]">) {
   const { id } = await params;
+  const { from } = await searchParams;
   const { ok, data: person, error } = await getPerson(id);
 
   if (!ok) {
@@ -17,9 +21,11 @@ export default async function PersonPage({ params }: PageProps<"/contacts/people
   }
   if (!person) notFound();
 
+  const back = resolveBack(from, { href: "/contacts/people", label: "People" });
+
   return (
     <div className="mx-auto max-w-3xl">
-      <BackLink href="/contacts/people" label="People" />
+      <BackLink href={back.href} label={back.label} />
 
       <h1 className="enter mt-4 text-2xl font-semibold tracking-tight text-gray-900 sm:text-3xl">
         {person.name}

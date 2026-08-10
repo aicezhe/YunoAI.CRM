@@ -1,14 +1,15 @@
 import { notFound } from "next/navigation";
 import { DoneCheckbox } from "@/components/done-checkbox";
 import { ActivityIcon, StageBadge, StatusBadge } from "@/components/ui/badges";
-import { BackLink, Field, Missing, RecordCard } from "@/components/ui/record";
+import { BackLink, Field, Missing, RecordCard, resolveBack } from "@/components/ui/record";
 import { ErrorState } from "@/components/ui/states";
 import { listActivitiesForDeal } from "@/lib/data/activities";
 import { getDeal } from "@/lib/data/deals";
 import { formatDate, formatDue, formatMoney } from "@/lib/format";
 
-export default async function DealPage({ params }: PageProps<"/deals/[id]">) {
+export default async function DealPage({ params, searchParams }: PageProps<"/deals/[id]">) {
   const { id } = await params;
+  const { from } = await searchParams;
   const [deal, activities] = await Promise.all([getDeal(id), listActivitiesForDeal(id)]);
 
   if (!deal.ok) {
@@ -21,10 +22,11 @@ export default async function DealPage({ params }: PageProps<"/deals/[id]">) {
   if (!deal.data) notFound();
 
   const d = deal.data;
+  const back = resolveBack(from, { href: "/deals", label: "Deals" });
 
   return (
     <main className="mx-auto max-w-3xl px-5 py-8 sm:px-8 sm:py-10">
-      <BackLink href="/deals" label="Deals" />
+      <BackLink href={back.href} label={back.label} />
 
       {/* Staggered arrival, same rhythm as every other record page — heading
           first, then each card a beat behind it. See RecordCard. */}

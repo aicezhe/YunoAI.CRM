@@ -1,6 +1,6 @@
 import Link from "next/link";
 import { notFound } from "next/navigation";
-import { BackLink, Field, Missing, RecordCard } from "@/components/ui/record";
+import { BackLink, Field, Missing, RecordCard, resolveBack } from "@/components/ui/record";
 import { ErrorState } from "@/components/ui/states";
 import {
   getOrganization,
@@ -9,8 +9,10 @@ import {
 
 export default async function OrganizationPage({
   params,
+  searchParams,
 }: PageProps<"/contacts/organizations/[id]">) {
   const { id } = await params;
+  const { from } = await searchParams;
   const [org, people] = await Promise.all([
     getOrganization(id),
     listPersonsForOrganization(id),
@@ -25,9 +27,11 @@ export default async function OrganizationPage({
   }
   if (!org.data) notFound();
 
+  const back = resolveBack(from, { href: "/contacts/organizations", label: "Organizations" });
+
   return (
     <div className="mx-auto max-w-3xl">
-      <BackLink href="/contacts/organizations" label="Organizations" />
+      <BackLink href={back.href} label={back.label} />
 
       {/* Staggered arrival — heading, then details, then people. The delays
           are small on purpose: enough to read as a sequence, not enough to
