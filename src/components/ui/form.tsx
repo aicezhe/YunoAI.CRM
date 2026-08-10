@@ -1,6 +1,7 @@
 "use client";
 
 import Link from "next/link";
+import { Flag } from "lucide-react";
 import { useState, type ReactNode } from "react";
 
 /** Same field treatment across every form in the app — text/date/number
@@ -94,6 +95,45 @@ export function SelectField({
         ))}
       </select>
     </Field>
+  );
+}
+
+/**
+ * "Mark as urgent" — the one control that sets activities.priority.
+ *
+ * A checkbox rather than a normal/urgent select: the default is overwhelmingly
+ * the common case, and a two-option dropdown asks every person creating an
+ * activity to make a choice they mostly don't have. Unchecked submits nothing,
+ * which the action reads as "normal" (see insertActivity).
+ *
+ * `defaultChecked` rather than controlled state: unlike a `<select>`, a
+ * checkbox keeps its DOM value across an unrelated re-render, so the failed-
+ * round-trip bug that forced SelectField to be controlled does not apply.
+ */
+export function UrgentCheckbox({ id = "priority", defaultChecked }: { id?: string; defaultChecked?: boolean }) {
+  return (
+    <label
+      htmlFor={id}
+      className="flex cursor-pointer items-start gap-3 rounded-2xl border border-brand-200/70 bg-brand-50/40 px-4 py-3 transition-colors hover:bg-brand-50"
+    >
+      <input
+        id={id}
+        name="priority"
+        type="checkbox"
+        value="urgent"
+        defaultChecked={defaultChecked}
+        className="mt-0.5 h-4 w-4 shrink-0 cursor-pointer accent-brand-500"
+      />
+      <span className="min-w-0">
+        <span className="flex items-center gap-1.5 text-sm font-medium text-gray-900">
+          <Flag className="h-3.5 w-3.5 text-amber-500" strokeWidth={2.25} aria-hidden />
+          Mark as urgent
+        </span>
+        <span className="mt-0.5 block text-xs text-gray-500">
+          Urgent activities are flagged and sort above the rest in the open list.
+        </span>
+      </span>
+    </label>
   );
 }
 

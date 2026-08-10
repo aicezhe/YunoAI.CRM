@@ -111,27 +111,31 @@ async function main() {
   if (dealError) throw new Error(`deals: ${dealError.message}`);
   const deal = (title: string) => dealRows!.find((d) => d.title === title)!.id;
 
+  // priority is left off most rows so the column default ('normal') fills
+  // them in. Two are urgent on purpose: one overdue and one due furthest
+  // out, so the open list demonstrates both halves of its sort — urgent
+  // first, and by due date inside each group.
   const activities = [
-    // Overdue — the red block at the top of the dashboard.
-    { type: "call", subject: "Richiamare per conferma budget", deal_id: deal("Gestionale cantieri — 40 postazioni"), person_id: person("Luca Bellani"), org_id: org("Bellani Costruzioni"), due_at: at(-2, 11), done: false, created_by: anna },
-    { type: "email", subject: "Inviare contratto rivisto", deal_id: deal("Tracciabilità lotti produzione"), person_id: person("Davide Fontana"), org_id: org("Foodtech Padana"), due_at: at(-1, 16), done: false, created_by: marco },
+    // Overdue.
+    { type: "call", subject: "Richiamare per conferma budget", priority: "urgent", deal_id: deal("Gestionale cantieri — 40 postazioni"), person_id: person("Luca Bellani"), org_id: org("Bellani Costruzioni"), due_at: at(-2, 11), done: false, created_by: anna },
+    { type: "email", subject: "Inviare contratto rivisto", priority: "normal", deal_id: deal("Tracciabilità lotti produzione"), person_id: person("Davide Fontana"), org_id: org("Foodtech Padana"), due_at: at(-1, 16), done: false, created_by: marco },
 
-    // Today — the main block.
-    { type: "meeting", subject: "Demo portale clienti", deal_id: deal("Portale clienti studio legale"), person_id: person("Avv. Paolo Ferrari"), org_id: org("Studio Ferrari & Partners"), due_at: at(0, 10), done: false, created_by: giulia },
-    { type: "call", subject: "Allineamento su tempi di consegna", deal_id: deal("MES linea assemblaggio"), person_id: person("Matteo Rossi"), org_id: org("Rossi Manifattura"), due_at: at(0, 14, 30), done: false, created_by: camillo },
-    { type: "task", subject: "Preparare preventivo impianti", deal_id: deal("Monitoraggio impianti fotovoltaici"), person_id: person("Elena Verdi"), org_id: org("Verdi Energia"), due_at: at(0, 17), done: false, created_by: marco },
+    // Today.
+    { type: "meeting", subject: "Demo portale clienti", priority: "normal", deal_id: deal("Portale clienti studio legale"), person_id: person("Avv. Paolo Ferrari"), org_id: org("Studio Ferrari & Partners"), due_at: at(0, 10), done: false, created_by: giulia },
+    { type: "call", subject: "Allineamento su tempi di consegna", priority: "normal", deal_id: deal("MES linea assemblaggio"), person_id: person("Matteo Rossi"), org_id: org("Rossi Manifattura"), due_at: at(0, 14, 30), done: false, created_by: camillo },
+    { type: "task", subject: "Preparare preventivo impianti", priority: "normal", deal_id: deal("Monitoraggio impianti fotovoltaici"), person_id: person("Elena Verdi"), org_id: org("Verdi Energia"), due_at: at(0, 17), done: false, created_by: marco },
 
     // Upcoming.
-    { type: "meeting", subject: "Sopralluogo magazzino", deal_id: deal("Integrazione ERP magazzino"), person_id: person("Giorgia Conti"), org_id: org("Foodtech Padana"), due_at: at(2, 9, 30), done: false, created_by: marco },
-    { type: "call", subject: "Primo contatto", deal_id: deal("App mobile autisti"), person_id: person("Alessandro Riva"), org_id: org("Marelli Logistica"), due_at: at(3, 15), done: false, created_by: giulia },
-    { type: "task", subject: "Raccogliere requisiti formazione", deal_id: deal("Formazione team commerciale"), person_id: person("Chiara Neri"), org_id: org("Bellani Costruzioni"), due_at: at(5, 11), done: false, created_by: anna },
+    { type: "meeting", subject: "Sopralluogo magazzino", priority: "normal", deal_id: deal("Integrazione ERP magazzino"), person_id: person("Giorgia Conti"), org_id: org("Foodtech Padana"), due_at: at(2, 9, 30), done: false, created_by: marco },
+    { type: "call", subject: "Primo contatto", priority: "normal", deal_id: deal("App mobile autisti"), person_id: person("Alessandro Riva"), org_id: org("Marelli Logistica"), due_at: at(3, 15), done: false, created_by: giulia },
+    { type: "task", subject: "Raccogliere requisiti formazione", priority: "urgent", deal_id: deal("Formazione team commerciale"), person_id: person("Chiara Neri"), org_id: org("Bellani Costruzioni"), due_at: at(5, 11), done: false, created_by: anna },
 
     // Done, and notes with no due date at all.
-    { type: "call", subject: "Chiamata di qualifica", deal_id: deal("Rinnovo licenze annuale"), person_id: person("Sara Marelli"), org_id: org("Marelli Logistica"), due_at: at(-4, 10), done: true, created_by: anna },
-    { type: "meeting", subject: "Kickoff progetto", deal_id: deal("Manutenzione evolutiva 2026"), person_id: person("Matteo Rossi"), org_id: org("Rossi Manifattura"), due_at: at(-15, 9), done: true, created_by: camillo },
-    { type: "note", subject: "Preferiscono fatturazione trimestrale", deal_id: deal("Tracciabilità lotti produzione"), person_id: person("Davide Fontana"), org_id: org("Foodtech Padana"), due_at: null, done: false, created_by: marco },
-    { type: "note", subject: "Contatto arrivato da referral", deal_id: null, person_id: person("Federica Lombardi"), org_id: null, due_at: null, done: false, created_by: anna },
-    { type: "email", subject: "Follow-up post demo", deal_id: deal("Portale clienti studio legale"), person_id: person("Avv. Paolo Ferrari"), org_id: org("Studio Ferrari & Partners"), due_at: at(-6, 12), done: true, created_by: giulia },
+    { type: "call", subject: "Chiamata di qualifica", priority: "normal", deal_id: deal("Rinnovo licenze annuale"), person_id: person("Sara Marelli"), org_id: org("Marelli Logistica"), due_at: at(-4, 10), done: true, created_by: anna },
+    { type: "meeting", subject: "Kickoff progetto", priority: "normal", deal_id: deal("Manutenzione evolutiva 2026"), person_id: person("Matteo Rossi"), org_id: org("Rossi Manifattura"), due_at: at(-15, 9), done: true, created_by: camillo },
+    { type: "note", subject: "Preferiscono fatturazione trimestrale", priority: "normal", deal_id: deal("Tracciabilità lotti produzione"), person_id: person("Davide Fontana"), org_id: org("Foodtech Padana"), due_at: null, done: false, created_by: marco },
+    { type: "note", subject: "Contatto arrivato da referral", priority: "normal", deal_id: null, person_id: person("Federica Lombardi"), org_id: null, due_at: null, done: false, created_by: anna },
+    { type: "email", subject: "Follow-up post demo", priority: "normal", deal_id: deal("Portale clienti studio legale"), person_id: person("Avv. Paolo Ferrari"), org_id: org("Studio Ferrari & Partners"), due_at: at(-6, 12), done: true, created_by: giulia },
   ];
   const { error: activityError } = await db.from("activities").insert(activities);
   if (activityError) throw new Error(`activities: ${activityError.message}`);

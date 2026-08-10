@@ -47,10 +47,10 @@ export default function AppError({
           Try again
         </button>
         <Link
-          href="/dashboard"
+          href="/activities/open"
           className="inline-flex min-h-10 items-center rounded-2xl border border-gray-200 bg-white px-4 text-sm font-medium text-gray-600 transition hover:bg-gray-50"
         >
-          Back to dashboard
+          Back to activities
         </Link>
       </div>
     </div>

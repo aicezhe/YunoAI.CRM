@@ -1,26 +1,9 @@
 import Link from "next/link";
 import { ChevronLeft } from "lucide-react";
 
-/**
- * Where BackLink should point when a record was opened from the dashboard's
- * task list rather than from its own list page — the dashboard has no
- * "Deals"/"People"/"Organizations" tab to return to, so the list-page
- * fallback would strand the user somewhere they never asked to go.
- *
- * Driven by a `?from=dashboard` query param rather than the browser's own
- * history, which is unavailable when the record was opened directly (a
- * fresh tab, a bookmark, a hard refresh) and unreliable to branch rendering
- * on even when it is there.
- */
-export function resolveBack(
-  from: string | string[] | undefined,
-  fallback: { href: string; label: string },
-): { href: string; label: string } {
-  return from === "dashboard" ? { href: "/dashboard", label: "Dashboard" } : fallback;
-}
-
-/** Back to the list the row was clicked from — or, per resolveBack above,
- *  to the dashboard when that is where the click came from. */
+/** Back to the list the row was clicked from. An explicit link rather than
+ *  relying on the browser's back button, which is unavailable when the
+ *  record was opened directly — a fresh tab, a bookmark, a hard refresh. */
 export function BackLink({ href, label }: { href: string; label: string }) {
   return (
     <Link

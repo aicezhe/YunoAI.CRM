@@ -101,11 +101,11 @@ export async function signIn(
  * The value arrives from a query string, so it is attacker-controllable: any
  * absolute URL ("https://evil.example") or scheme-relative one ("//evil")
  * would turn our own login form into an open redirect. Only a single-slash
- * relative path is accepted; anything else falls back to the dashboard.
+ * relative path is accepted; anything else falls back to the default section.
  */
 function safeNext(value: FormDataEntryValue | null): string {
   const next = typeof value === "string" ? value : "";
-  return next.startsWith("/") && !next.startsWith("//") ? next : "/dashboard";
+  return next.startsWith("/") && !next.startsWith("//") ? next : "/activities/open";
 }
 
 export async function signOut() {

@@ -1,5 +1,7 @@
 export type DealStatus = "open" | "won" | "lost";
 export type ActivityType = "call" | "meeting" | "email" | "task" | "note";
+/** Two values, not a scale — see 0013_activity_priority.sql. */
+export type ActivityPriority = "normal" | "urgent";
 
 /**
  * Every list query returns this instead of throwing.
@@ -103,6 +105,7 @@ export type StageTransitionRow = {
 export type ActivityRow = {
   id: string;
   type: ActivityType;
+  priority: ActivityPriority;
   subject: string;
   dueAt: string | null;
   done: boolean;

@@ -5,7 +5,7 @@ import { AnimatePresence, motion } from "framer-motion";
 import { CalendarPlus, Plus } from "lucide-react";
 import { DoneCheckbox } from "@/components/done-checkbox";
 import { ActivityIcon } from "@/components/ui/badges";
-import { Field, FIELD_CLASS, SelectField } from "@/components/ui/form";
+import { Field, FIELD_CLASS, SelectField, UrgentCheckbox } from "@/components/ui/form";
 import { RecordCard } from "@/components/ui/record";
 import { InlineEmpty } from "@/components/ui/states";
 import { createDealActivity, type DealActivityFormState } from "@/lib/data/actions";
@@ -146,7 +146,15 @@ function MiniForm({
   const initial: DealActivityFormState = {
     error: null,
     done: false,
-    values: { type: "", subject: "", dealId, personId: personId ?? "", orgId: orgId ?? "", dueAt: "" },
+    values: {
+      type: "",
+      subject: "",
+      dealId,
+      personId: personId ?? "",
+      orgId: orgId ?? "",
+      dueAt: "",
+      priority: "normal",
+    },
   };
   const [state, formAction, pending] = useActionState(createDealActivity, initial);
 
@@ -197,6 +205,11 @@ function MiniForm({
           className={FIELD_CLASS}
         />
       </Field>
+
+      <UrgentCheckbox
+        id="deal-activity-priority"
+        defaultChecked={state.values.priority === "urgent"}
+      />
 
       {state.error && (
         <p role="alert" className="text-sm text-red-500">

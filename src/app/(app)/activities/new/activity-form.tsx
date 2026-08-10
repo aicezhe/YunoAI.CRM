@@ -2,7 +2,14 @@
 
 import { useActionState } from "react";
 import { createActivity, type ActivityFormState } from "@/lib/data/actions";
-import { Field, FIELD_CLASS, FormActions, FORM_CARD_CLASS, SelectField } from "@/components/ui/form";
+import {
+  Field,
+  FIELD_CLASS,
+  FormActions,
+  FORM_CARD_CLASS,
+  SelectField,
+  UrgentCheckbox,
+} from "@/components/ui/form";
 import type { DealRow, OrganizationRow, PersonRow } from "@/lib/data/types";
 
 const TYPES = [
@@ -24,7 +31,15 @@ export function ActivityForm({
 }) {
   const initial: ActivityFormState = {
     error: null,
-    values: { type: "", subject: "", dealId: "", personId: "", orgId: "", dueAt: "" },
+    values: {
+      type: "",
+      subject: "",
+      dealId: "",
+      personId: "",
+      orgId: "",
+      dueAt: "",
+      priority: "normal",
+    },
   };
   const [state, formAction, pending] = useActionState(createActivity, initial);
   const { values } = state;
@@ -98,6 +113,8 @@ export function ActivityForm({
           Leave blank to log something that already happened, like a note.
         </p>
       </Field>
+
+      <UrgentCheckbox defaultChecked={values.priority === "urgent"} />
 
       <FormActions
         error={state.error}

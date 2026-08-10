@@ -546,6 +546,8 @@ export type ActivityFormValues = {
   personId: string;
   orgId: string;
   dueAt: string;
+  /** "urgent" when the form's checkbox is ticked, "normal" otherwise. */
+  priority: string;
 };
 
 export type ActivityFormState = { error: string | null; values: ActivityFormValues };
@@ -579,8 +581,13 @@ async function insertActivity(
   const personId = String(formData.get("personId") ?? "");
   const orgId = String(formData.get("orgId") ?? "");
   const dueAt = String(formData.get("dueAt") ?? "");
+  // An unchecked checkbox submits nothing at all, so absence is the "normal"
+  // case rather than a missing value to complain about. Narrowed to the two
+  // allowed strings here so a hand-crafted POST can't get past the column's
+  // CHECK and surface as a generic database error.
+  const priority = formData.get("priority") === "urgent" ? "urgent" : "normal";
 
-  const values: ActivityFormValues = { type, subject, dealId, personId, orgId, dueAt };
+  const values: ActivityFormValues = { type, subject, dealId, personId, orgId, dueAt, priority };
 
   if (!type) return { ok: false, error: "Choose a type.", values };
   if (!subject) return { ok: false, error: "Enter a subject.", values };
@@ -594,6 +601,7 @@ async function insertActivity(
   const { error } = await supabase.from("activities").insert({
     type,
     subject,
+    priority,
     deal_id: dealId || null,
     person_id: personId || null,
     org_id: orgId || null,

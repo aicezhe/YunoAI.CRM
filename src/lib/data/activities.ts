@@ -3,7 +3,7 @@ import { createClient } from "@/lib/supabase/server";
 import { fail, ok, type ActivityRow, type ActivityType, type Result } from "./types";
 
 const ACTIVITY_SELECT = `
-  id, type, subject, due_at, done,
+  id, type, priority, subject, due_at, done,
   deal:deals(id, title),
   person:persons(id, name),
   organization:organizations(id, name)
@@ -12,6 +12,7 @@ const ACTIVITY_SELECT = `
 type RawActivity = {
   id: string;
   type: string;
+  priority: string;
   subject: string;
   due_at: string | null;
   done: boolean;
@@ -24,6 +25,7 @@ function toActivityRow(row: RawActivity): ActivityRow {
   return {
     id: row.id,
     type: row.type as ActivityRow["type"],
+    priority: row.priority as ActivityRow["priority"],
     subject: row.subject,
     dueAt: row.due_at,
     done: row.done,
@@ -55,7 +57,26 @@ export async function listActivities(done: boolean): Promise<Result<ActivityRow[
     : await query.order("due_at", { nullsFirst: false });
 
   if (error) return fail("listActivities", error.message);
-  return ok((data as unknown as RawActivity[]).map(toActivityRow));
+
+  const rows = (data as unknown as RawActivity[]).map(toActivityRow);
+
+  // Urgent floats to the top of the open list, keeping the due-date order
+  // the query already applied within each group (Array#sort is stable).
+  //
+  // Ranked explicitly rather than ordered on the column: 'urgent' > 'normal'
+  // alphabetically only by luck, and the moment a third value is added the
+  // accident stops holding — the same reason listDeals ranks status here
+  // instead of in SQL.
+  //
+  // Not applied to the archive: priority answers "what do I do next", which
+  // a finished activity no longer has an answer to.
+  if (!done) rows.sort((a, b) => priorityRank(a) - priorityRank(b));
+
+  return ok(rows);
+}
+
+function priorityRank(activity: ActivityRow): number {
+  return activity.priority === "urgent" ? 0 : 1;
 }
 
 /** Tab badges. A failed count degrades to zero rather than taking the

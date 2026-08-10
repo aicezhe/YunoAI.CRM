@@ -1,9 +1,32 @@
 import Link from "next/link";
+import { Flag } from "lucide-react";
 import { DoneCheckbox } from "@/components/done-checkbox";
 import { ActivityIcon } from "@/components/ui/badges";
 import { Blank, Card, Cell, Row, RowLink, Table } from "@/components/ui/table";
 import type { ActivityRow } from "@/lib/data/types";
 import { formatDue } from "@/lib/format";
+
+/**
+ * The urgent marker: a small amber flag ahead of the subject.
+ *
+ * Amber rather than the brand lavender, which is the colour of every link
+ * and button here and so carries no urgency of its own; and an icon rather
+ * than a tinted row, which at three or four urgent items turns the list into
+ * a block of colour and stops the flag meaning anything.
+ *
+ * Hidden once an activity is done — priority answers "what do I do next",
+ * which is why the archive is not sorted by it either (see listActivities).
+ */
+function UrgentFlag({ activity }: { activity: ActivityRow }) {
+  if (activity.priority !== "urgent" || activity.done) return null;
+  return (
+    <Flag
+      className="h-3.5 w-3.5 shrink-0 fill-amber-400 text-amber-500"
+      strokeWidth={2.25}
+      aria-label="Urgent"
+    />
+  );
+}
 
 /** The "Related to" column's own link — deal first, since that is the
  *  context a rep is usually working from, falling back to the person, then
@@ -49,8 +72,11 @@ export function ActivityTable({
               </Cell>
 
               <RowLink href={`/activities/${activity.id}`}>
-                <span className={activity.done ? "text-gray-400 line-through" : undefined}>
-                  {activity.subject}
+                <span className="flex items-center gap-1.5">
+                  <UrgentFlag activity={activity} />
+                  <span className={activity.done ? "text-gray-400 line-through" : undefined}>
+                    {activity.subject}
+                  </span>
                 </span>
               </RowLink>
 
@@ -84,6 +110,7 @@ export function ActivityTable({
               <div className="flex items-center justify-between gap-3">
                 <div className="flex min-w-0 items-center gap-3">
                   <ActivityIcon type={activity.type} />
+                  <UrgentFlag activity={activity} />
                   <Link
                     href={`/activities/${activity.id}`}
                     className={

@@ -13,7 +13,7 @@ export const metadata = { title: "Sign in · YunoCRM" };
  */
 export default async function LoginPage({ searchParams }: PageProps<"/login">) {
   const { next } = await searchParams;
-  const target = typeof next === "string" ? next : "/dashboard";
+  const target = typeof next === "string" ? next : "/activities/open";
 
   return (
     <main className="relative flex min-h-dvh items-center justify-center overflow-hidden bg-gradient-to-br from-brand-100 via-brand-50 to-white px-4 py-8">

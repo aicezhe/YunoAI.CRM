@@ -2,15 +2,14 @@ import { notFound } from "next/navigation";
 import { DealActivityCard } from "@/components/deals/deal-activity-card";
 import { StageStepper } from "@/components/deals/stage-stepper";
 import { Route } from "lucide-react";
-import { BackLink, Field, Missing, RecordCard, resolveBack } from "@/components/ui/record";
+import { BackLink, Field, Missing, RecordCard } from "@/components/ui/record";
 import { ErrorState, InlineEmpty } from "@/components/ui/states";
 import { listActivitiesForDeal } from "@/lib/data/activities";
 import { getDeal, listStages, listStageTransitions } from "@/lib/data/deals";
 import { formatDate, formatMoney, formatTime } from "@/lib/format";
 
-export default async function DealPage({ params, searchParams }: PageProps<"/deals/[id]">) {
+export default async function DealPage({ params }: PageProps<"/deals/[id]">) {
   const { id } = await params;
-  const { from } = await searchParams;
   const [deal, activities, stages, transitions] = await Promise.all([
     getDeal(id),
     listActivitiesForDeal(id),
@@ -28,11 +27,9 @@ export default async function DealPage({ params, searchParams }: PageProps<"/dea
   if (!deal.data) notFound();
 
   const d = deal.data;
-  const back = resolveBack(from, { href: "/deals", label: "Deals" });
-
   return (
     <main className="mx-auto max-w-3xl px-5 py-8 sm:px-8 sm:py-10">
-      <BackLink href={back.href} label={back.label} />
+      <BackLink href="/deals" label="Deals" />
 
       {/* Staggered arrival, same rhythm as every other record page — heading
           first, then each card a beat behind it. See RecordCard.

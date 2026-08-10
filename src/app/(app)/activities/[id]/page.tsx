@@ -1,5 +1,6 @@
 import Link from "next/link";
 import { notFound } from "next/navigation";
+import { Flag } from "lucide-react";
 import { DoneCheckbox } from "@/components/done-checkbox";
 import { ActivityIcon } from "@/components/ui/badges";
 import { BackLink, Field, Missing, RecordCard } from "@/components/ui/record";
@@ -45,6 +46,16 @@ export default async function ActivityPage({ params }: PageProps<"/activities/[i
         <RecordCard index={0}>
           <dl>
             <Field label="Type">{a.type.charAt(0).toUpperCase() + a.type.slice(1)}</Field>
+            <Field label="Priority">
+              {a.priority === "urgent" ? (
+                <span className="inline-flex items-center gap-1.5 text-amber-600">
+                  <Flag className="h-3.5 w-3.5 fill-amber-400 text-amber-500" strokeWidth={2.25} aria-hidden />
+                  Urgent
+                </span>
+              ) : (
+                <span className="font-normal text-gray-500">Normal</span>
+              )}
+            </Field>
             <Field label="Due">
               {a.dueAt ? `${formatDate(a.dueAt)}, ${formatTime(a.dueAt)}` : <Missing />}
             </Field>

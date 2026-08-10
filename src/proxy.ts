@@ -4,8 +4,9 @@ import { NextResponse, type NextRequest } from "next/server";
 /** Reachable without a session. Everything else redirects to /login. */
 const PUBLIC_PATHS = ["/login"];
 
-/** Where a signed-in user lands when they hit "/" or /login. */
-const HOME = "/dashboard";
+/** Where a signed-in user lands when they hit "/" or /login. Activities is
+ *  the default section: it is the list of what is actually owed today. */
+const HOME = "/activities/open";
 
 /**
  * Runs before every request (Next 16 renamed this file from `middleware.ts`

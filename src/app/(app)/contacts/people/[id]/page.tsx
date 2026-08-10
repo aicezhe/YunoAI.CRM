@@ -2,16 +2,12 @@ import Link from "next/link";
 import { notFound } from "next/navigation";
 import { Pencil } from "lucide-react";
 import { DeleteRecordButton } from "@/components/contacts/delete-record-button";
-import { BackLink, Field, Missing, RecordCard, resolveBack } from "@/components/ui/record";
+import { BackLink, Field, Missing, RecordCard } from "@/components/ui/record";
 import { ErrorState } from "@/components/ui/states";
 import { getPerson, getPersonDeleteImpact } from "@/lib/data/contacts";
 
-export default async function PersonPage({
-  params,
-  searchParams,
-}: PageProps<"/contacts/people/[id]">) {
+export default async function PersonPage({ params }: PageProps<"/contacts/people/[id]">) {
   const { id } = await params;
-  const { from } = await searchParams;
   const [{ ok, data: person, error }, impact] = await Promise.all([
     getPerson(id),
     getPersonDeleteImpact(id),
@@ -26,11 +22,10 @@ export default async function PersonPage({
   }
   if (!person) notFound();
 
-  const back = resolveBack(from, { href: "/contacts/people", label: "People" });
 
   return (
     <div className="mx-auto max-w-3xl">
-      <BackLink href={back.href} label={back.label} />
+      <BackLink href="/contacts/people" label="People" />
 
       <div className="enter mt-4 flex flex-wrap items-start justify-between gap-3">
         <h1 className="text-2xl font-semibold tracking-tight text-gray-900 sm:text-3xl">

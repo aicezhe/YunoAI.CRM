@@ -2,7 +2,6 @@ import {
   CalendarCheck,
   FileText,
   Handshake,
-  LayoutGrid,
   Settings,
   Users,
   type LucideIcon,
@@ -31,14 +30,16 @@ export type NavItem = {
  * someone you sell to — and splitting them meant guessing which list a name
  * was in before searching for it.
  *
- * Deals sits directly after Dashboard because it is the section people open
- * all day; Contracts is near the end because it is consulted, not worked.
+ * Activities is first and is where sign-in lands: it is the list of what is
+ * actually owed today, so it is both the most-opened section and the most
+ * useful thing to be looking at on arrival. Deals follows because it is the
+ * other all-day section; Contracts is near the end because it is consulted,
+ * not worked.
  */
 export const NAV_ITEMS: NavItem[] = [
-  { href: "/dashboard", label: "Dashboard", shortLabel: "Home", icon: LayoutGrid },
+  { href: "/activities/open", match: "/activities", label: "Activities", shortLabel: "Activity", icon: CalendarCheck },
   { href: "/deals", label: "Deals", icon: Handshake },
   { href: "/contacts/people", match: "/contacts", label: "Contacts", icon: Users },
-  { href: "/activities/open", match: "/activities", label: "Activities", shortLabel: "Activity", icon: CalendarCheck },
   { href: "/contracts", label: "Contracts", icon: FileText },
   { href: "/settings", label: "Settings", icon: Settings },
 ];
