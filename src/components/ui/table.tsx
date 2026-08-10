@@ -72,17 +72,23 @@ export function Row({
   children,
   index,
   count,
+  className = "",
 }: {
   children: React.ReactNode;
   index?: number;
   count?: number;
+  /** Extra classes for rows that carry state of their own — e.g. the light
+   *  brand tint on urgent activities. Appended last, so a bg here wins over
+   *  the default transparent row but still yields to hover's stronger one. */
+  className?: string;
 }) {
   const animated = index !== undefined && count !== undefined;
   return (
     <tr
       className={
         "relative border-b border-brand-200/40 transition-colors duration-150 ease-out last:border-0 hover:bg-brand-100/60 focus-within:bg-brand-100/60" +
-        (animated ? " enter" : "")
+        (animated ? " enter" : "") +
+        (className ? ` ${className}` : "")
       }
       style={animated ? enterStyle(index, count) : undefined}
     >
@@ -185,17 +191,22 @@ export function Card({
   children,
   index,
   count,
+  className = "",
 }: {
   children: React.ReactNode;
   index?: number;
   count?: number;
+  /** Same contract as Row's className — appended last so a stateful tint
+   *  (urgent activities) can override the default white surface. */
+  className?: string;
 }) {
   const animated = index !== undefined && count !== undefined;
   return (
     <div
       className={
         "relative rounded-2xl border border-brand-200/70 bg-white p-4 shadow-card" +
-        (animated ? " enter" : "")
+        (animated ? " enter" : "") +
+        (className ? ` ${className}` : "")
       }
       style={animated ? enterStyle(index, count) : undefined}
     >

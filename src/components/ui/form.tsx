@@ -1,7 +1,7 @@
 "use client";
 
 import Link from "next/link";
-import { Flag } from "lucide-react";
+import { CircleAlert } from "lucide-react";
 import { useState, type ReactNode } from "react";
 
 /** Same field treatment across every form in the app — text/date/number
@@ -126,7 +126,7 @@ export function UrgentCheckbox({ id = "priority", defaultChecked }: { id?: strin
       />
       <span className="min-w-0">
         <span className="flex items-center gap-1.5 text-sm font-medium text-gray-900">
-          <Flag className="h-3.5 w-3.5 text-amber-500" strokeWidth={2.25} aria-hidden />
+          <CircleAlert className="h-4 w-4 fill-amber-400 text-white" strokeWidth={2.25} aria-hidden />
           Mark as urgent
         </span>
         <span className="mt-0.5 block text-xs text-gray-500">

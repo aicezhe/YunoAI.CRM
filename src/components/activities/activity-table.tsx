@@ -1,5 +1,5 @@
 import Link from "next/link";
-import { Flag } from "lucide-react";
+import { CircleAlert } from "lucide-react";
 import { DoneCheckbox } from "@/components/done-checkbox";
 import { ActivityIcon } from "@/components/ui/badges";
 import { Blank, Card, Cell, Row, RowLink, Table } from "@/components/ui/table";
@@ -7,25 +7,48 @@ import type { ActivityRow } from "@/lib/data/types";
 import { formatDue } from "@/lib/format";
 
 /**
- * The urgent marker: a small amber flag ahead of the subject.
+ * The urgent marker: an amber exclamation disc ahead of the subject, and a
+ * light brand wash over the whole row (see urgentTint below).
  *
- * Amber rather than the brand lavender, which is the colour of every link
- * and button here and so carries no urgency of its own; and an icon rather
- * than a tinted row, which at three or four urgent items turns the list into
- * a block of colour and stops the flag meaning anything.
+ * Amber for the icon rather than the brand lavender, which is the colour of
+ * every link and button here and so carries no urgency of its own. The row
+ * tint is lavender on purpose though — it says "highlighted", while the
+ * disc alone says "why".
  *
  * Hidden once an activity is done — priority answers "what do I do next",
  * which is why the archive is not sorted by it either (see listActivities).
  */
-function UrgentFlag({ activity }: { activity: ActivityRow }) {
-  if (activity.priority !== "urgent" || activity.done) return null;
+function UrgentMark({ activity }: { activity: ActivityRow }) {
+  if (!isUrgent(activity)) return null;
   return (
-    <Flag
-      className="h-3.5 w-3.5 shrink-0 fill-amber-400 text-amber-500"
+    <CircleAlert
+      className="h-4 w-4 shrink-0 fill-amber-400 text-white"
       strokeWidth={2.25}
       aria-label="Urgent"
     />
   );
+}
+
+function isUrgent(activity: ActivityRow): boolean {
+  return activity.priority === "urgent" && !activity.done;
+}
+
+/**
+ * A flat brand tint, written as a gradient on purpose: background-image
+ * layers over background-color, so the same class works on the transparent
+ * table rows and the white mobile cards without fighting their own bg
+ * utilities.
+ *
+ * That layering also means the row's own hover background sits *underneath*
+ * this and is invisible through it — checked in the browser, the hover
+ * genuinely stopped reading on urgent rows. So the tint deepens on hover
+ * itself, keeping the feedback these rows would otherwise lose.
+ */
+const URGENT_TINT =
+  "bg-gradient-to-r from-brand-100/55 to-brand-100/55 transition-[--tw-gradient-from,--tw-gradient-to] duration-150 ease-out hover:from-brand-200/70 hover:to-brand-200/70";
+
+function urgentTint(activity: ActivityRow): string {
+  return isUrgent(activity) ? URGENT_TINT : "";
 }
 
 /** The "Related to" column's own link — deal first, since that is the
@@ -66,14 +89,14 @@ export function ActivityTable({
         {activities.map((activity, i) => {
           const related = relatedTo(activity);
           return (
-            <Row key={activity.id} index={i} count={activities.length}>
+            <Row key={activity.id} index={i} count={activities.length} className={urgentTint(activity)}>
               <Cell className="w-16">
                 <ActivityIcon type={activity.type} />
               </Cell>
 
               <RowLink href={`/activities/${activity.id}`}>
                 <span className="flex items-center gap-1.5">
-                  <UrgentFlag activity={activity} />
+                  <UrgentMark activity={activity} />
                   <span className={"transition-colors duration-200 " + (activity.done ? "text-gray-400 line-through" : "")}>
                     {activity.subject}
                   </span>
@@ -106,11 +129,11 @@ export function ActivityTable({
         {activities.map((activity, i) => {
           const related = relatedTo(activity);
           return (
-            <Card key={activity.id} index={i} count={activities.length}>
+            <Card key={activity.id} index={i} count={activities.length} className={urgentTint(activity)}>
               <div className="flex items-center justify-between gap-3">
                 <div className="flex min-w-0 items-center gap-3">
                   <ActivityIcon type={activity.type} />
-                  <UrgentFlag activity={activity} />
+                  <UrgentMark activity={activity} />
                   <Link
                     href={`/activities/${activity.id}`}
                     className={
