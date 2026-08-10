@@ -18,7 +18,16 @@ import { enterStyle } from "@/lib/stagger";
  * overflow-x-auto on the wrapper, not the page: a wide table scrolls inside
  * its own card on a phone instead of making the whole layout slide sideways.
  */
-export function Table({ columns, children }: { columns: string[]; children: React.ReactNode }) {
+export function Table({
+  columns,
+  children,
+}: {
+  /** Usually plain labels; a column can pass its own element (e.g. a
+   *  clickable sort header) instead. Keyed by position, not content, since
+   *  two columns can share a label and an element isn't a valid key. */
+  columns: React.ReactNode[];
+  children: React.ReactNode;
+}) {
   return (
     <div className="overflow-x-auto rounded-3xl border border-brand-200/70 bg-white shadow-sm">
       <table className="w-full min-w-[44rem] border-collapse text-sm">
@@ -26,9 +35,9 @@ export function Table({ columns, children }: { columns: string[]; children: Reac
           {/* A tinted band rather than plain white — it anchors the top of the
               grid and survives scrolling past on long lists. */}
           <tr className="border-b border-brand-200/70 bg-brand-50/70">
-            {columns.map((c) => (
+            {columns.map((c, i) => (
               <th
-                key={c}
+                key={i}
                 scope="col"
                 className="border-r border-brand-200/40 px-5 py-3 text-left text-xs font-semibold tracking-wide text-gray-500 uppercase last:border-r-0"
               >

@@ -5,7 +5,7 @@ import { fail, ok, type DealRow, type Result } from "./types";
 const DEAL_SELECT = `
   id, title, value, currency, status, expected_close_date,
   stage:pipeline_stages(name, position),
-  owner:users(name),
+  owner:users(id, name),
   organization:organizations(id, name),
   person:persons(id, name)
 `;
@@ -18,7 +18,7 @@ type RawDeal = {
   status: string;
   expected_close_date: string | null;
   stage: { name: string; position: number } | null;
-  owner: { name: string } | null;
+  owner: { id: string; name: string } | null;
   organization: { id: string; name: string } | null;
   person: { id: string; name: string } | null;
 };
@@ -40,7 +40,9 @@ function toDealRow(row: RawDeal): DealRow {
     currency: row.currency,
     status: row.status as DealRow["status"],
     stageName: row.stage?.name ?? null,
+    stagePosition: row.stage?.position ?? null,
     expectedCloseDate: row.expected_close_date,
+    ownerId: row.owner?.id ?? null,
     ownerName: row.owner?.name ?? null,
     organizationName: row.organization?.name ?? null,
     personName: row.person?.name ?? null,

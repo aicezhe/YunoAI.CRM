@@ -57,7 +57,9 @@ export type DealRow = {
   currency: string | null;
   status: DealStatus;
   stageName: string | null;
+  stagePosition: number | null;
   expectedCloseDate: string | null;
+  ownerId: string | null;
   ownerName: string | null;
   organizationName: string | null;
   personName: string | null;
