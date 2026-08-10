@@ -82,7 +82,7 @@ export function RecordCard({
   return (
     <section
       className={
-        "rounded-3xl border border-brand-200/70 bg-white p-6 shadow-sm" + (animated ? " enter" : "")
+        "rounded-3xl border border-brand-200/70 bg-white p-6 shadow-card" + (animated ? " enter" : "")
       }
       style={
         animated

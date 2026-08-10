@@ -22,6 +22,19 @@
   /* The soft brand-tinted drop shadow used by the login card and any surface
      that should float rather than sit flat. */
   --shadow-brand: 0 20px 60px -15px rgba(91, 79, 233, 0.25);
+
+  /* Card and popover elevation. Two layers each: a near-opaque hairline that
+     seats the edge against the canvas, and a wide, low-opacity brand-tinted
+     bloom that does the actual floating. Tailwind's `shadow-sm` was one
+     tight grey layer — enough to see, not enough to lift, which is why every
+     card read as lying flat on the background.
+
+     `shadow-pop` is the same idea with more travel, for things that appear
+     above the page (dropdowns, the stepper's lost-reason panel) and need to
+     detach from whatever they cover. */
+  --shadow-card: 0 1px 2px rgba(17, 17, 26, 0.04), 0 10px 28px -14px rgba(91, 79, 233, 0.22);
+  --shadow-card-hover: 0 1px 2px rgba(17, 17, 26, 0.05), 0 16px 36px -16px rgba(91, 79, 233, 0.3);
+  --shadow-pop: 0 2px 4px rgba(17, 17, 26, 0.05), 0 18px 40px -12px rgba(91, 79, 233, 0.28);
 }
 
 body {
@@ -129,8 +142,13 @@ body {
   }
 }
 
+/* 240ms, not the 380ms this started at: with the per-row stagger on top, the
+   longer duration meant the last row of a list was still settling well after
+   the page was readable, which reads as sluggish rather than smooth. The
+   curve is unchanged — it decelerates hard, so the movement still stops
+   softly at the shorter length. */
 .enter {
-  animation: enter-up 380ms cubic-bezier(0.32, 0.72, 0, 1) both;
+  animation: enter-up 240ms cubic-bezier(0.32, 0.72, 0, 1) both;
   animation-delay: var(--enter-delay, 0ms);
 }
 

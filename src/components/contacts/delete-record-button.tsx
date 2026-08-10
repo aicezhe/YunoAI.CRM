@@ -1,6 +1,7 @@
 "use client";
 
 import { useState, useTransition } from "react";
+import { motion } from "framer-motion";
 import { Trash2 } from "lucide-react";
 import { deleteOrganization, deletePerson } from "@/lib/data/actions";
 import type { DeleteImpact } from "@/lib/data/types";
@@ -55,7 +56,7 @@ export function DeleteRecordButton({
       <button
         type="button"
         onClick={() => setConfirming(true)}
-        className="inline-flex min-h-10 shrink-0 items-center gap-2 rounded-2xl border border-gray-200 bg-white px-4 text-sm font-medium text-gray-600 transition hover:border-rose-200 hover:bg-rose-50 hover:text-rose-600"
+        className="inline-flex min-h-10 shrink-0 items-center gap-2 rounded-2xl border border-gray-200 bg-white px-4 text-sm font-medium text-gray-600 transition-colors hover:border-rose-200 hover:bg-rose-50 hover:text-rose-600"
       >
         <Trash2 className="h-4 w-4" strokeWidth={1.75} aria-hidden />
         Delete
@@ -64,7 +65,12 @@ export function DeleteRecordButton({
   }
 
   return (
-    <div className="w-full rounded-2xl border border-rose-200 bg-rose-50/60 p-4">
+    <motion.div
+      initial={{ opacity: 0, scale: 0.98, y: -4 }}
+      animate={{ opacity: 1, scale: 1, y: 0 }}
+      transition={{ duration: 0.18, ease: [0.32, 0.72, 0, 1] }}
+      className="w-full rounded-2xl border border-rose-200 bg-rose-50/60 p-4"
+    >
       {blocked ? (
         <p className="text-sm text-gray-700">
           <span className="font-semibold">{name}</span> is on{" "}
@@ -92,7 +98,7 @@ export function DeleteRecordButton({
             setError(null);
           }}
           disabled={pending}
-          className="min-h-10 rounded-2xl border border-gray-200 bg-white px-4 text-sm font-medium text-gray-600 transition hover:bg-gray-50 disabled:opacity-60"
+          className="min-h-10 rounded-2xl border border-gray-200 bg-white px-4 text-sm font-medium text-gray-600 transition-colors hover:bg-gray-50 disabled:opacity-60"
         >
           {blocked ? "Close" : "Cancel"}
         </button>
@@ -102,7 +108,7 @@ export function DeleteRecordButton({
             type="button"
             onClick={remove}
             disabled={pending}
-            className="inline-flex min-h-10 items-center gap-2 rounded-2xl bg-rose-600 px-4 text-sm font-semibold text-white transition hover:bg-rose-700 disabled:cursor-not-allowed disabled:opacity-60"
+            className="inline-flex min-h-10 items-center gap-2 rounded-2xl bg-rose-600 px-4 text-sm font-semibold text-white transition-colors hover:bg-rose-700 disabled:cursor-not-allowed disabled:opacity-60"
           >
             {pending && (
               <span
@@ -114,7 +120,7 @@ export function DeleteRecordButton({
           </button>
         )}
       </div>
-    </div>
+    </motion.div>
   );
 }
 

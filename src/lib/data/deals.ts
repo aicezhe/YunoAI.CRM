@@ -3,7 +3,7 @@ import { createClient } from "@/lib/supabase/server";
 import { fail, ok, type DealRow, type Result, type StageTransitionRow } from "./types";
 
 const DEAL_SELECT = `
-  id, title, value, currency, status, stage_id, expected_close_date,
+  id, title, value, currency, status, lost_reason, stage_id, expected_close_date,
   stage:pipeline_stages(name, position),
   owner:users(id, name),
   organization:organizations(id, name),
@@ -16,6 +16,7 @@ type RawDeal = {
   value: string | number | null;
   currency: string | null;
   status: string;
+  lost_reason: string | null;
   stage_id: string | null;
   expected_close_date: string | null;
   stage: { name: string; position: number } | null;
@@ -40,6 +41,7 @@ function toDealRow(row: RawDeal): DealRow {
     value: toNumber(row.value),
     currency: row.currency,
     status: row.status as DealRow["status"],
+    lostReason: row.lost_reason,
     stageId: row.stage_id,
     stageName: row.stage?.name ?? null,
     stagePosition: row.stage?.position ?? null,

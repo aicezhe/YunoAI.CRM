@@ -1,11 +1,13 @@
 "use client";
 
 import { useActionState, useEffect, useState } from "react";
-import { Plus } from "lucide-react";
+import { AnimatePresence, motion } from "framer-motion";
+import { CalendarPlus, Plus } from "lucide-react";
 import { DoneCheckbox } from "@/components/done-checkbox";
 import { ActivityIcon } from "@/components/ui/badges";
 import { Field, FIELD_CLASS, SelectField } from "@/components/ui/form";
 import { RecordCard } from "@/components/ui/record";
+import { InlineEmpty } from "@/components/ui/states";
 import { createDealActivity, type DealActivityFormState } from "@/lib/data/actions";
 import type { ActivityRow, Result } from "@/lib/data/types";
 import { formatDue } from "@/lib/format";
@@ -48,10 +50,13 @@ export function DealActivityCard({
       title="Activity"
       action={
         !open && (
+          // Filled, not the pale outline it started as: logging what just
+          // happened is the main thing anyone does on this page, and the
+          // button was reading as quieter than the record fields above it.
           <button
             type="button"
             onClick={() => setOpen(true)}
-            className="inline-flex items-center gap-1.5 rounded-xl border border-brand-200 bg-brand-50 px-3 py-1.5 text-xs font-semibold text-brand-600 transition hover:bg-brand-100"
+            className="inline-flex min-h-9 items-center gap-1.5 rounded-2xl bg-brand-500 px-3.5 text-xs font-semibold text-white shadow-sm shadow-brand-500/25 transition-colors hover:bg-brand-600"
           >
             <Plus className="h-3.5 w-3.5" strokeWidth={2.5} aria-hidden />
             Add activity
@@ -59,24 +64,48 @@ export function DealActivityCard({
         )
       }
     >
-      {open && (
-        <MiniForm
-          key={formKey}
-          dealId={dealId}
-          personId={personId}
-          orgId={orgId}
-          onCancel={() => setOpen(false)}
-          onSaved={() => {
-            setOpen(false);
-            setFormKey((k) => k + 1);
-          }}
-        />
-      )}
+      <AnimatePresence initial={false}>
+        {open && (
+          <motion.div
+            initial={{ opacity: 0, scale: 0.98, height: 0 }}
+            animate={{ opacity: 1, scale: 1, height: "auto" }}
+            exit={{ opacity: 0, scale: 0.98, height: 0 }}
+            transition={{ duration: 0.2, ease: [0.32, 0.72, 0, 1] }}
+            className="overflow-hidden"
+          >
+            <MiniForm
+              key={formKey}
+              dealId={dealId}
+              personId={personId}
+              orgId={orgId}
+              onCancel={() => setOpen(false)}
+              onSaved={() => {
+                setOpen(false);
+                setFormKey((k) => k + 1);
+              }}
+            />
+          </motion.div>
+        )}
+      </AnimatePresence>
 
       {!activities.ok ? (
         <p className="py-4 text-sm text-gray-500">{activities.error}</p>
       ) : activities.data.length === 0 ? (
-        <p className="py-4 text-sm text-gray-500">Nothing logged against this deal yet.</p>
+        <InlineEmpty
+          icon={CalendarPlus}
+          title="Nothing logged against this deal yet."
+          action={
+            !open && (
+              <button
+                type="button"
+                onClick={() => setOpen(true)}
+                className="text-sm font-medium text-brand-600 transition-colors hover:text-brand-500 hover:underline"
+              >
+                Log your first activity
+              </button>
+            )
+          }
+        />
       ) : (
         <ul className="mt-2 divide-y divide-brand-200/40">
           {activities.data.map((a) => (
@@ -179,14 +208,14 @@ function MiniForm({
         <button
           type="button"
           onClick={onCancel}
-          className="inline-flex min-h-9 items-center rounded-xl px-3 text-sm font-medium text-gray-500 transition hover:bg-white"
+          className="inline-flex min-h-9 items-center rounded-2xl px-3 text-sm font-medium text-gray-500 transition-colors hover:bg-white"
         >
           Cancel
         </button>
         <button
           type="submit"
           disabled={pending}
-          className="inline-flex min-h-9 items-center rounded-xl bg-brand-500 px-4 text-sm font-semibold text-white shadow-sm transition hover:bg-brand-600 disabled:cursor-not-allowed disabled:opacity-60"
+          className="inline-flex min-h-9 items-center rounded-2xl bg-brand-500 px-4 text-sm font-semibold text-white shadow-sm shadow-brand-500/25 transition-colors hover:bg-brand-600 disabled:cursor-not-allowed disabled:opacity-60"
         >
           {pending ? "Saving…" : "Save"}
         </button>

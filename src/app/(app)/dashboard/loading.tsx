@@ -6,7 +6,7 @@ export default function DashboardLoading() {
       <div className="skeleton h-10 w-56 rounded-lg" />
       <div className="skeleton-soft mt-3 h-4 w-40 rounded" />
 
-      <div className="mt-8 rounded-3xl border border-brand-200/70 bg-white p-3 shadow-sm">
+      <div className="mt-8 rounded-3xl border border-brand-200/70 bg-white p-3 shadow-card">
         {Array.from({ length: 4 }).map((_, i) => (
           <div key={i} className="flex items-center gap-4 px-1 py-3.5">
             <div className="skeleton h-8 w-8 shrink-0 rounded-xl" />

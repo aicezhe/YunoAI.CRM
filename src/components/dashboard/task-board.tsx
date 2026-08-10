@@ -139,7 +139,7 @@ export function TaskBoard({
 
         {today.length > 0 ? (
           <section
-            className="enter rounded-3xl border border-brand-200/70 bg-white p-2 shadow-sm sm:p-3"
+            className="enter rounded-3xl border border-brand-200/70 bg-white p-2 shadow-card sm:p-3"
             style={delayStyle(180)}
           >
             <ul>
@@ -277,7 +277,7 @@ function AllClearCard({ completedToday }: { completedToday: CompletedToday }) {
   const caption = completedCaption(completedToday);
 
   return (
-    <section className="enter flex flex-col items-center rounded-3xl border border-brand-200/70 bg-white px-6 py-16 text-center shadow-sm">
+    <section className="enter flex flex-col items-center rounded-3xl border border-brand-200/70 bg-white px-6 py-16 text-center shadow-card">
       <span className="rise-in flex h-14 w-14 items-center justify-center rounded-2xl bg-brand-100 text-brand-500">
         <Sun className="h-6 w-6" strokeWidth={1.75} aria-hidden />
       </span>

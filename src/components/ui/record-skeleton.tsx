@@ -19,7 +19,7 @@ export function RecordSkeleton({ cards = 2, rows = 4 }: { cards?: number; rows?:
         {Array.from({ length: cards }).map((_, c) => (
           <div
             key={c}
-            className="rounded-3xl border border-brand-200/70 bg-white p-6 shadow-sm"
+            className="rounded-3xl border border-brand-200/70 bg-white p-6 shadow-card"
           >
             {Array.from({ length: rows }).map((_, r) => (
               <div

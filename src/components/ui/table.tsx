@@ -34,7 +34,7 @@ export function Table({
   children: React.ReactNode;
 }) {
   return (
-    <div className="hidden overflow-x-auto rounded-3xl border border-brand-200/70 bg-white shadow-sm md:block">
+    <div className="hidden overflow-x-auto rounded-3xl border border-brand-200/70 bg-white shadow-card md:block">
       <table className="w-full min-w-[44rem] border-collapse text-sm">
         <thead>
           {/* A tinted band rather than plain white — it anchors the top of the
@@ -81,7 +81,7 @@ export function Row({
   return (
     <tr
       className={
-        "relative border-b border-brand-200/40 transition-colors last:border-0 hover:bg-brand-100/60 focus-within:bg-brand-100/60" +
+        "relative border-b border-brand-200/40 transition-colors duration-150 ease-out last:border-0 hover:bg-brand-100/60 focus-within:bg-brand-100/60" +
         (animated ? " enter" : "")
       }
       style={animated ? enterStyle(index, count) : undefined}
@@ -194,7 +194,7 @@ export function Card({
   return (
     <div
       className={
-        "relative rounded-2xl border border-brand-200/70 bg-white p-4 shadow-sm" +
+        "relative rounded-2xl border border-brand-200/70 bg-white p-4 shadow-card" +
         (animated ? " enter" : "")
       }
       style={animated ? enterStyle(index, count) : undefined}
@@ -223,7 +223,7 @@ export function CardLink({
     <Link
       href={href}
       className={
-        "block rounded-2xl border border-brand-200/70 bg-white p-4 shadow-sm transition-colors hover:bg-brand-100/40 active:bg-brand-100/60" +
+        "block rounded-2xl border border-brand-200/70 bg-white p-4 shadow-card transition-[background-color,box-shadow] duration-150 ease-out hover:bg-brand-100/40 hover:shadow-card-hover active:bg-brand-100/60" +
         (animated ? " enter" : "")
       }
       style={animated ? enterStyle(index, count) : undefined}

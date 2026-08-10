@@ -10,7 +10,7 @@ export const FIELD_CLASS =
   "w-full rounded-2xl border border-gray-200 bg-white px-4 py-2.5 text-sm text-gray-900 placeholder-gray-400 outline-none transition focus:border-brand-500 focus:ring-4 focus:ring-brand-500/10";
 
 export const FORM_CARD_CLASS =
-  "space-y-5 rounded-3xl border border-brand-200/70 bg-white p-6 shadow-sm";
+  "space-y-5 rounded-3xl border border-brand-200/70 bg-white p-6 shadow-card";
 
 export function Field({
   id,

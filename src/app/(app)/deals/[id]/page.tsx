@@ -1,8 +1,9 @@
 import { notFound } from "next/navigation";
 import { DealActivityCard } from "@/components/deals/deal-activity-card";
-import { StagePicker } from "@/components/deals/stage-picker";
+import { StageStepper } from "@/components/deals/stage-stepper";
+import { Route } from "lucide-react";
 import { BackLink, Field, Missing, RecordCard, resolveBack } from "@/components/ui/record";
-import { ErrorState } from "@/components/ui/states";
+import { ErrorState, InlineEmpty } from "@/components/ui/states";
 import { listActivitiesForDeal } from "@/lib/data/activities";
 import { getDeal, listStages, listStageTransitions } from "@/lib/data/deals";
 import { formatDate, formatMoney, formatTime } from "@/lib/format";
@@ -35,19 +36,21 @@ export default async function DealPage({ params, searchParams }: PageProps<"/dea
 
       {/* Staggered arrival, same rhythm as every other record page — heading
           first, then each card a beat behind it. See RecordCard.
-          relative z-10: .enter animates transform, which gives this row its
+          relative z-10: .enter animates transform, which gives this block its
           own stacking context — without an explicit z-index it still loses
-          to the RecordCards below in DOM-order stacking, trapping the stage
-          dropdown behind them. */}
-      <div className="enter relative z-10 mt-4 flex flex-wrap items-start justify-between gap-4">
+          to the RecordCards below in DOM-order stacking, trapping the
+          stepper's lost-reason popover behind them. */}
+      <div className="enter relative z-10 mt-4">
         <h1 className="text-2xl font-semibold tracking-tight text-gray-900 sm:text-3xl">
           {d.title}
         </h1>
-        <StagePicker
+        <StageStepper
           dealId={d.id}
           stages={stages.ok ? stages.data : []}
           initialStageId={d.stageId}
           initialStageName={d.stageName}
+          initialStatus={d.status}
+          initialLostReason={d.lostReason}
         />
       </div>
 
@@ -73,7 +76,15 @@ export default async function DealPage({ params, searchParams }: PageProps<"/dea
           {!transitions.ok ? (
             <p className="py-4 text-sm text-gray-500">{transitions.error}</p>
           ) : transitions.data.length === 0 ? (
-            <p className="py-4 text-sm text-gray-500">No stage changes recorded yet.</p>
+            <InlineEmpty
+              icon={Route}
+              title="No stage changes recorded yet."
+              action={
+                <span className="text-sm text-gray-400">
+                  Moving this deal along the bar above records the first one.
+                </span>
+              }
+            />
           ) : (
             <ul className="mt-2 divide-y divide-brand-200/40">
               {transitions.data.map((t) => (
