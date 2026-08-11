@@ -1,5 +1,4 @@
 import type { LucideIcon } from "lucide-react";
-import { enterStyle } from "@/lib/stagger";
 import { AlertTriangle } from "lucide-react";
 
 /**
@@ -81,16 +80,6 @@ export function ErrorState({ message }: { message: string }) {
 }
 
 /**
- * Table skeleton — desktop bars in a table-shaped card, mobile bars in
- * separate card shells, matching whichever of the two real layouts
- * (Table vs. Card/CardLink) is about to take its place.
- *
- * The rows cascade in with the same `.enter` stagger the real rows use, so
- * a loading screen is the page arriving — the same movement, just in grey —
- * rather than a flat grid that blinks on and gets swapped. The shimmer
- * sweep then carries the "still working" signal while the rows sit.
- */
-/**
  * Cell fill percentages. Real cells hold values of different lengths, and a
  * grid of bars that all run the full column width is the single thing that
  * makes a skeleton look like a rendering fault rather than like text on its
@@ -99,10 +88,20 @@ export function ErrorState({ message }: { message: string }) {
  * markup. */
 const FILL = [88, 62, 74, 95, 55, 81, 68, 91, 58, 78];
 
+/**
+ * Table skeleton — desktop bars in a table-shaped card, mobile bars in
+ * separate card shells, matching whichever of the two real layouts
+ * (Table vs. Card/CardLink) is about to take its place.
+ *
+ * The whole thing arrives as one piece, on a delay — see `.skeleton-screen`
+ * in globals.css. No per-row stagger: a placeholder that performs an
+ * entrance and is then thrown away halfway through reads as busier than the
+ * wait it is covering. The sweep alone carries "still working".
+ */
 export function TableSkeleton({ rows = 6, columns = 5 }: { rows?: number; columns?: number }) {
   return (
     <>
-      <div className="enter hidden overflow-hidden rounded-2xl border border-brand-200/70 bg-white shadow-card md:block">
+      <div className="skeleton-screen hidden overflow-hidden rounded-2xl border border-brand-200/70 bg-white shadow-card md:block">
         {/* The header band is real chrome in the table this becomes, so it is
             drawn as chrome here too — tinted, with fainter bars than the body
             rather than heavier ones. */}
@@ -116,8 +115,7 @@ export function TableSkeleton({ rows = 6, columns = 5 }: { rows?: number; column
         {Array.from({ length: rows }).map((_, r) => (
           <div
             key={r}
-            className="enter flex gap-6 border-b border-brand-200/40 px-5 py-4 last:border-0"
-            style={enterStyle(r, rows)}
+            className="flex gap-6 border-b border-brand-200/40 px-5 py-4 last:border-0"
           >
             {Array.from({ length: columns }).map((_, c) => (
               <div key={c} className="flex-1">
@@ -131,12 +129,11 @@ export function TableSkeleton({ rows = 6, columns = 5 }: { rows?: number; column
         ))}
       </div>
 
-      <div className="space-y-3 md:hidden">
+      <div className="skeleton-screen space-y-3 md:hidden">
         {Array.from({ length: rows }).map((_, r) => (
           <div
             key={r}
-            className="enter rounded-2xl border border-brand-200/70 bg-white p-4 shadow-card"
-            style={enterStyle(r, rows)}
+            className="rounded-2xl border border-brand-200/70 bg-white p-4 shadow-card"
           >
             <div
               className="skeleton h-3.5 rounded"
@@ -157,7 +154,7 @@ export function TableSkeleton({ rows = 6, columns = 5 }: { rows?: number; column
  *  real PageHeader rather than eyeballed, so nothing jumps on the swap. */
 export function HeaderSkeleton() {
   return (
-    <div className="enter flex flex-wrap items-start justify-between gap-4">
+    <div className="skeleton-screen flex flex-wrap items-start justify-between gap-4">
       <div>
         <div className="skeleton h-7 w-40 rounded-lg" />
         <div className="skeleton-soft mt-3 h-3 w-56 max-w-full rounded" />

@@ -96,8 +96,13 @@ body {
   position: absolute;
   inset: 0;
   transform: translateX(-100%);
-  background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.95), transparent);
-  animation: skeleton-sweep 2.4s cubic-bezier(0.4, 0, 0.2, 1) infinite;
+  background: linear-gradient(
+    90deg,
+    transparent 10%,
+    rgba(255, 255, 255, 0.9) 50%,
+    transparent 90%
+  );
+  animation: skeleton-sweep 2.6s cubic-bezier(0.45, 0, 0.25, 1) infinite;
 }
 
 /* Travels past the far edge and then rests before starting over. A sweep
@@ -120,6 +125,45 @@ body {
   .skeleton::after,
   .skeleton-soft::after {
     animation: none;
+  }
+}
+
+
+/* The loading screen, as one calm surface.
+ *
+ * Two things made the old one feel abrupt. It appeared instantly, so a query
+ * that answered in 80ms produced a flash of grey bars and then real content —
+ * a flicker, not a loading state. And its rows cascaded in on the same
+ * staggered `.enter` the real rows use, so the placeholder performed an
+ * entrance and was then thrown away mid-performance.
+ *
+ * So: no stagger inside a skeleton, and a delay before it shows at all.
+ * `both` keeps it invisible during that delay, which means a fast response
+ * never shows a skeleton — the screen simply goes from the old page to the
+ * new one. Only a wait long enough to need explaining gets one, and then it
+ * arrives by fading, slowly, as a single piece.
+ *
+ * 220ms is the usual threshold for "did that respond instantly?" — below it
+ * people read a swap as immediate, above it they start looking for feedback.
+ * The fade itself is deliberately long: something that eases in over half a
+ * second cannot read as a flicker. */
+.skeleton-screen {
+  animation: skeleton-appear 500ms ease-out both;
+  animation-delay: 220ms;
+}
+
+@keyframes skeleton-appear {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .skeleton-screen {
+    animation-duration: 1ms;
   }
 }
 

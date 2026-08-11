@@ -1,4 +1,3 @@
-import { CARD_STAGGER_MS } from "@/components/ui/record";
 
 /**
  * Placeholder for a record page.
@@ -25,22 +24,18 @@ const VALUE_W = ["w-44", "w-32", "w-52", "w-28", "w-40", "w-36"];
 
 export function RecordSkeleton({ cards = 2, rows = 4 }: { cards?: number; rows?: number }) {
   return (
-    <div className="mx-auto max-w-3xl">
-      <div className="enter skeleton-soft h-3.5 w-24 rounded" />
+    <div className="skeleton-screen mx-auto max-w-3xl">
+      <div className="skeleton-soft h-3.5 w-24 rounded" />
       {/* Shorter and lighter than the h-9/w-72 slab this replaced: at the top
           of an otherwise empty page that block was the loudest thing on
           screen, and it is standing in for a heading, not shouting one. */}
-      <div
-        className="enter skeleton mt-5 h-7 w-56 max-w-full rounded-lg"
-        style={{ "--enter-delay": `${CARD_STAGGER_MS / 2}ms` } as React.CSSProperties}
-      />
+      <div className="skeleton mt-5 h-7 w-56 max-w-full rounded-lg" />
 
       <div className="mt-8 space-y-6">
         {Array.from({ length: cards }).map((_, c) => (
           <div
             key={c}
-            className="enter rounded-2xl border border-brand-200/70 bg-white p-7 shadow-card"
-            style={{ "--enter-delay": `${(c + 1) * CARD_STAGGER_MS}ms` } as React.CSSProperties}
+            className="rounded-2xl border border-brand-200/70 bg-white p-7 shadow-card"
           >
             {Array.from({ length: rows }).map((_, r) => (
               <div
