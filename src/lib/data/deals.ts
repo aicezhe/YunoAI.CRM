@@ -79,6 +79,46 @@ export async function listDeals(): Promise<Result<DealRow[]>> {
   return ok(rows);
 }
 
+/**
+ * The deals shown on a contact's or a company's own record.
+ *
+ * Two functions rather than one with a column argument: the column name is
+ * not a parameter anywhere else in this file, and a typo in a string passed
+ * from a page would fail at runtime instead of at the type level.
+ *
+ * Same order as the main list — open first, soonest to close at the top —
+ * because the question being asked of this block is the same one: what is
+ * still live with these people.
+ */
+export async function listDealsForPerson(personId: string): Promise<Result<DealRow[]>> {
+  return dealsRelatedTo("person_id", personId, "listDealsForPerson");
+}
+
+export async function listDealsForOrganization(orgId: string): Promise<Result<DealRow[]>> {
+  return dealsRelatedTo("org_id", orgId, "listDealsForOrganization");
+}
+
+async function dealsRelatedTo(
+  column: "person_id" | "org_id",
+  id: string,
+  context: string,
+): Promise<Result<DealRow[]>> {
+  const supabase = await createClient();
+  const { data, error } = await supabase
+    .from("deals")
+    .select(DEAL_SELECT)
+    .eq(column, id)
+    .order("expected_close_date", { nullsFirst: false });
+
+  if (error) return fail(context, error.message);
+
+  const rank: Record<DealRow["status"], number> = { open: 0, won: 1, lost: 2 };
+  const rows = (data as unknown as RawDeal[]).map(toDealRow);
+  rows.sort((a, b) => rank[a.status] - rank[b.status]);
+
+  return ok(rows);
+}
+
 export type StageOption = { id: string; name: string };
 
 /** For the deal form's stage picker, in board order. */

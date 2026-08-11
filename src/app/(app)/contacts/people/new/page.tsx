@@ -7,7 +7,13 @@ import { PersonForm } from "@/components/contacts/person-form";
 
 export const metadata = { title: "Add contact · YunoCRM" };
 
-export default async function NewPersonPage() {
+/** See the deal form's copy of this. */
+function single(value: string | string[] | undefined): string | undefined {
+  return Array.isArray(value) ? value[0] : value;
+}
+
+export default async function NewPersonPage({ searchParams }: PageProps<"/contacts/people/new">) {
+  const { org } = await searchParams;
   const [user, organizations, users] = await Promise.all([
     requireUser(),
     listOrganizations(),
@@ -36,6 +42,7 @@ export default async function NewPersonPage() {
             organizations={organizations.ok ? organizations.data : []}
             users={users.ok ? users.data : []}
             currentUserId={user.id}
+            prefillOrgId={single(org)}
           />
         )}
       </div>

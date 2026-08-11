@@ -95,6 +95,41 @@ export async function getActivity(id: string): Promise<Result<ActivityRow | null
   return ok(data ? toActivityRow(data as unknown as RawActivity) : null);
 }
 
+/**
+ * The activity feed on a contact's or a company's own record — the calls,
+ * meetings and notes attached directly to them.
+ *
+ * Deliberately not widened to "everything that touches this company": an
+ * activity on one of its deals belongs to that deal's feed, and pulling those
+ * in here would show the same row twice to anyone reading both screens.
+ *
+ * Newest first, open or done alike, because this block is a history rather
+ * than a to-do list — the record's own list is where work gets worked.
+ */
+export async function listActivitiesForPerson(personId: string): Promise<Result<ActivityRow[]>> {
+  return activitiesRelatedTo("person_id", personId, "listActivitiesForPerson");
+}
+
+export async function listActivitiesForOrganization(orgId: string): Promise<Result<ActivityRow[]>> {
+  return activitiesRelatedTo("org_id", orgId, "listActivitiesForOrganization");
+}
+
+async function activitiesRelatedTo(
+  column: "person_id" | "org_id",
+  id: string,
+  context: string,
+): Promise<Result<ActivityRow[]>> {
+  const supabase = await createClient();
+  const { data, error } = await supabase
+    .from("activities")
+    .select(ACTIVITY_SELECT)
+    .eq(column, id)
+    .order("due_at", { ascending: false, nullsFirst: false });
+
+  if (error) return fail(context, error.message);
+  return ok((data as unknown as RawActivity[]).map(toActivityRow));
+}
+
 export async function listActivitiesForDeal(dealId: string): Promise<Result<ActivityRow[]>> {
   const supabase = await createClient();
   const { data, error } = await supabase

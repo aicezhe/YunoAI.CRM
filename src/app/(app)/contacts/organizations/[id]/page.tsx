@@ -2,6 +2,7 @@ import Link from "next/link";
 import { notFound } from "next/navigation";
 import { Pencil } from "lucide-react";
 import { DeleteRecordButton } from "@/components/contacts/delete-record-button";
+import { RelatedActivity, RelatedDeals, RelatedPeople } from "@/components/contacts/related";
 import { BackLink, Field, Missing, RecordCard } from "@/components/ui/record";
 import { FlipScene } from "@/components/ui/flip-scene";
 import { ErrorState } from "@/components/ui/states";
@@ -10,15 +11,21 @@ import {
   getOrganizationDeleteImpact,
   listPersonsForOrganization,
 } from "@/lib/data/contacts";
+import { listActivitiesForOrganization } from "@/lib/data/activities";
+import { listDealsForOrganization } from "@/lib/data/deals";
 
 export default async function OrganizationPage({
   params,
 }: PageProps<"/contacts/organizations/[id]">) {
   const { id } = await params;
-  const [org, people, impact] = await Promise.all([
+  // One round trip for the record and everything hanging off it — see the
+  // person page for why the related blocks are not deferred.
+  const [org, people, impact, deals, activities] = await Promise.all([
     getOrganization(id),
     listPersonsForOrganization(id),
     getOrganizationDeleteImpact(id),
+    listDealsForOrganization(id),
+    listActivitiesForOrganization(id),
   ]);
 
   if (!org.ok) {
@@ -74,33 +81,17 @@ export default async function OrganizationPage({
           </dl>
         </RecordCard>
 
-        <RecordCard title="People" index={1}>
-          {!people.ok ? (
-            <p className="py-4 text-sm text-gray-500">{people.error}</p>
-          ) : people.data.length === 0 ? (
-            <p className="py-4 text-sm text-gray-500">No contacts at this organization yet.</p>
-          ) : (
-            <ul className="mt-2 divide-y divide-brand-200/40">
-              {people.data.map((p) => (
-                <li key={p.id} className="flex flex-wrap items-center justify-between gap-2 py-3">
-                  <Link
-                    href={`/contacts/people/${p.id}`}
-                    className="text-sm font-medium text-gray-900 hover:text-brand-600"
-                  >
-                    {p.name}
-                  </Link>
-                  <span className="text-sm text-gray-500">{p.email ?? p.phone ?? ""}</span>
-                </li>
-              ))}
-            </ul>
-          )}
-        </RecordCard>
+        <RelatedPeople people={people} index={1} addHref={`/contacts/people/new?org=${id}`} />
+
+        <RelatedDeals deals={deals} index={2} addHref={`/deals/new?org=${id}`} />
+
+        <RelatedActivity activities={activities} index={3} addHref={`/activities/new?org=${id}`} />
 
         {/* Destructive, so it sits at the bottom, after everything the
             record is — not next to Edit, where a mis-click lands on it. */}
         <div
           className="enter flex justify-end"
-          style={{ "--enter-delay": "270ms" } as React.CSSProperties}
+          style={{ "--enter-delay": "450ms" } as React.CSSProperties}
         >
           <DeleteRecordButton
             kind="organization"

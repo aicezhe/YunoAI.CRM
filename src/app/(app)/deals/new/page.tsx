@@ -8,7 +8,14 @@ import { DealForm } from "./deal-form";
 
 export const metadata = { title: "Add deal · YunoCRM" };
 
-export default async function NewDealPage() {
+/** A query parameter can arrive repeated ("?org=a&org=b"), which the type
+ *  reflects. Nothing sensible to do with two ids, so take the first. */
+function single(value: string | string[] | undefined): string | undefined {
+  return Array.isArray(value) ? value[0] : value;
+}
+
+export default async function NewDealPage({ searchParams }: PageProps<"/deals/new">) {
+  const { org, person } = await searchParams;
   const [user, organizations, persons, stages, users] = await Promise.all([
     requireUser(),
     listOrganizations(),
@@ -48,6 +55,7 @@ export default async function NewDealPage() {
             stages={stages.ok ? stages.data : []}
             users={users.ok ? users.data : []}
             currentUserId={user.id}
+            prefill={{ orgId: single(org), personId: single(person) }}
           />
         )}
       </div>

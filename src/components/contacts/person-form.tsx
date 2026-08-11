@@ -17,12 +17,17 @@ export function PersonForm({
   users,
   currentUserId,
   person,
+  prefillOrgId,
 }: {
   organizations: OrganizationRow[];
   users: UserOption[];
   currentUserId: string;
   /** Omitted when creating. */
   person?: PersonRow;
+  /** Set when "Add person" was pressed on a company's own record — the
+   *  employer is already known. Ignored in edit mode, where the person's
+   *  stored organization wins. */
+  prefillOrgId?: string;
 }) {
   const initial: PersonFormState = {
     error: null,
@@ -36,7 +41,7 @@ export function PersonForm({
         }
       : // A new contact defaults to whoever is adding it; an existing one
         // keeps whatever it already has, including nobody.
-        { name: "", orgId: "", email: "", phone: "", ownerId: currentUserId },
+        { name: "", orgId: prefillOrgId ?? "", email: "", phone: "", ownerId: currentUserId },
   };
 
   // .bind pins the row being edited server-side. A hidden id input would

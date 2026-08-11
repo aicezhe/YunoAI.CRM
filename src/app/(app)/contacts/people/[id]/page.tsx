@@ -2,16 +2,25 @@ import Link from "next/link";
 import { notFound } from "next/navigation";
 import { Pencil } from "lucide-react";
 import { DeleteRecordButton } from "@/components/contacts/delete-record-button";
+import { RelatedActivity, RelatedDeals } from "@/components/contacts/related";
 import { BackLink, Field, Missing, RecordCard } from "@/components/ui/record";
 import { FlipScene } from "@/components/ui/flip-scene";
 import { ErrorState } from "@/components/ui/states";
+import { listActivitiesForPerson } from "@/lib/data/activities";
 import { getPerson, getPersonDeleteImpact } from "@/lib/data/contacts";
+import { listDealsForPerson } from "@/lib/data/deals";
 
 export default async function PersonPage({ params }: PageProps<"/contacts/people/[id]">) {
   const { id } = await params;
-  const [{ ok, data: person, error }, impact] = await Promise.all([
+  // One round trip for the whole page. The related blocks are part of the
+  // record here, not a lazy extra: a contact with no deals and no history is
+  // a different thing from one with five of each, and the page should not
+  // reveal which it is a beat after it opens.
+  const [{ ok, data: person, error }, impact, deals, activities] = await Promise.all([
     getPerson(id),
     getPersonDeleteImpact(id),
+    listDealsForPerson(id),
+    listActivitiesForPerson(id),
   ]);
 
   if (!ok) {
@@ -79,11 +88,27 @@ export default async function PersonPage({ params }: PageProps<"/contacts/people
           </dl>
         </RecordCard>
 
+        {/* The counterparty is prefilled both ways: a deal started from a
+            contact is a deal with that contact, and with their company if
+            they have one — retyping either would be asking for what the page
+            already knows. */}
+        <RelatedDeals
+          deals={deals}
+          index={1}
+          addHref={`/deals/new?person=${id}${
+            person.organizationId ? `&org=${person.organizationId}` : ""
+          }`}
+        />
+
+        <RelatedActivity activities={activities} index={2} addHref={`/activities/new?person=${id}`} />
+
         {/* Destructive, so it sits below the record rather than beside
-            Edit — see the organization page. */}
+            Edit — see the organization page. Now that the deals are listed
+            above it, "is on 1 deal and can't be deleted" names something the
+            reader can actually go and look at. */}
         <div
           className="enter flex justify-end"
-          style={{ "--enter-delay": "180ms" } as React.CSSProperties}
+          style={{ "--enter-delay": "360ms" } as React.CSSProperties}
         >
           <DeleteRecordButton kind="person" id={id} name={person.name} impact={impact} />
         </div>

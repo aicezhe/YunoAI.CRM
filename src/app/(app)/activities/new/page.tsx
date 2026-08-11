@@ -6,7 +6,14 @@ import { ActivityForm } from "./activity-form";
 
 export const metadata = { title: "Add activity · YunoCRM" };
 
-export default async function NewActivityPage() {
+/** See the deal form's copy of this — a repeated query parameter arrives as
+ *  an array, and one id is all this can use. */
+function single(value: string | string[] | undefined): string | undefined {
+  return Array.isArray(value) ? value[0] : value;
+}
+
+export default async function NewActivityPage({ searchParams }: PageProps<"/activities/new">) {
+  const { person, org, deal } = await searchParams;
   const [deals, persons, organizations] = await Promise.all([
     listDeals(),
     listPersons(),
@@ -39,6 +46,7 @@ export default async function NewActivityPage() {
             deals={deals.ok ? deals.data : []}
             persons={persons.ok ? persons.data : []}
             organizations={organizations.ok ? organizations.data : []}
+            prefill={{ personId: single(person), orgId: single(org), dealId: single(deal) }}
           />
         )}
       </div>

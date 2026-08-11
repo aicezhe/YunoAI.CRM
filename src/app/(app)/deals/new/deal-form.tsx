@@ -13,19 +13,24 @@ export function DealForm({
   stages,
   users,
   currentUserId,
+  prefill,
 }: {
   organizations: OrganizationRow[];
   persons: PersonRow[];
   stages: StageOption[];
   users: UserOption[];
   currentUserId: string;
+  /** Counterparty carried in from wherever this was opened — the "Add deal"
+   *  button on a contact's or a company's record. Only the initial value;
+   *  both pickers stay editable. */
+  prefill?: { orgId?: string; personId?: string };
 }) {
   const initial: DealFormState = {
     error: null,
     values: {
       title: "",
-      orgId: "",
-      personId: "",
+      orgId: prefill?.orgId ?? "",
+      personId: prefill?.personId ?? "",
       // The board's first column — see the comment on createDeal for why a
       // real default beats leaving this at "no stage".
       stageId: stages[0]?.id ?? "",

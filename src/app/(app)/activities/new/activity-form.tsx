@@ -24,19 +24,23 @@ export function ActivityForm({
   deals,
   persons,
   organizations,
+  prefill,
 }: {
   deals: DealRow[];
   persons: PersonRow[];
   organizations: OrganizationRow[];
+  /** Carried in from the record this was opened from. Initial value only —
+   *  every picker stays editable. */
+  prefill?: { personId?: string; orgId?: string; dealId?: string };
 }) {
   const initial: ActivityFormState = {
     error: null,
     values: {
       type: "",
       subject: "",
-      dealId: "",
-      personId: "",
-      orgId: "",
+      dealId: prefill?.dealId ?? "",
+      personId: prefill?.personId ?? "",
+      orgId: prefill?.orgId ?? "",
       dueAt: "",
       priority: "normal",
     },
