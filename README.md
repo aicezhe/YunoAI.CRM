@@ -40,6 +40,14 @@ npm run dev                                     # http://localhost:3200
 
 `seed:demo` wipes the demo tables and rewrites them, so it doubles as the reset command. It does not touch accounts.
 
+```bash
+npm test         # vitest, no database or network needed
+npm run lint
+npm run typecheck
+```
+
+The tests cover the rules that can be wrong without looking wrong: deal sorting and filtering, urgent-first ordering, money and date formatting, role parsing. Queries are not mocked — a test asserting that PostgREST was called the way the test expects would restate the implementation rather than check it, and the invariants that matter are CHECK constraints in the database.
+
 ## Data model
 
 ```mermaid
