@@ -1,6 +1,6 @@
 # YunoCRM v2
 
-A hand-kept CRM for a company that sells SaaS: organizations, people, deals, activities and contracts, all entered through forms. No automation, no AI, no ingestion — every record exists because someone typed it.
+A hand-kept CRM for a company that sells SaaS: organizations, people, deals, activities and contracts, all entered through forms. No automation, no AI, no ingestion - every record exists because someone typed it.
 
 Next.js 16 (App Router) · TypeScript · Tailwind v4 · Supabase (Postgres + Auth) · deployed on Vercel.
 
