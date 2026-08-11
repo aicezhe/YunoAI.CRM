@@ -4,6 +4,7 @@ import { CircleAlert } from "lucide-react";
 import { DoneCheckbox } from "@/components/done-checkbox";
 import { ActivityIcon } from "@/components/ui/badges";
 import { BackLink, Field, Missing, RecordCard } from "@/components/ui/record";
+import { FlipScene } from "@/components/ui/flip-scene";
 import { ErrorState } from "@/components/ui/states";
 import { getActivity } from "@/lib/data/activities";
 import { formatDate, formatTime } from "@/lib/format";
@@ -24,6 +25,7 @@ export default async function ActivityPage({ params }: PageProps<"/activities/[i
   const a = activity.data;
 
   return (
+    <FlipScene>
     <main className="mx-auto max-w-3xl px-5 py-8 sm:px-8 sm:py-10">
       <BackLink href={a.done ? "/activities/archive" : "/activities/open"} label="Activities" />
 
@@ -93,5 +95,6 @@ export default async function ActivityPage({ params }: PageProps<"/activities/[i
         </RecordCard>
       </div>
     </main>
+  </FlipScene>
   );
 }

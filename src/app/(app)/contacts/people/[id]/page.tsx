@@ -3,6 +3,7 @@ import { notFound } from "next/navigation";
 import { Pencil } from "lucide-react";
 import { DeleteRecordButton } from "@/components/contacts/delete-record-button";
 import { BackLink, Field, Missing, RecordCard } from "@/components/ui/record";
+import { FlipScene } from "@/components/ui/flip-scene";
 import { ErrorState } from "@/components/ui/states";
 import { getPerson, getPersonDeleteImpact } from "@/lib/data/contacts";
 
@@ -24,6 +25,7 @@ export default async function PersonPage({ params }: PageProps<"/contacts/people
 
 
   return (
+    <FlipScene>
     <div className="mx-auto max-w-3xl">
       <BackLink href="/contacts/people" label="People" />
 
@@ -87,5 +89,6 @@ export default async function PersonPage({ params }: PageProps<"/contacts/people
         </div>
       </div>
     </div>
+  </FlipScene>
   );
 }

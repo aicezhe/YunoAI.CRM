@@ -3,6 +3,7 @@ import { notFound } from "next/navigation";
 import { Pencil } from "lucide-react";
 import { DeleteRecordButton } from "@/components/contacts/delete-record-button";
 import { BackLink, Field, Missing, RecordCard } from "@/components/ui/record";
+import { FlipScene } from "@/components/ui/flip-scene";
 import { ErrorState } from "@/components/ui/states";
 import {
   getOrganization,
@@ -30,6 +31,7 @@ export default async function OrganizationPage({
   if (!org.data) notFound();
 
   return (
+    <FlipScene>
     <div className="mx-auto max-w-3xl">
       <BackLink href="/contacts/organizations" label="Organizations" />
 
@@ -109,5 +111,6 @@ export default async function OrganizationPage({
         </div>
       </div>
     </div>
+  </FlipScene>
   );
 }

@@ -3,6 +3,7 @@ import { DealActivityCard } from "@/components/deals/deal-activity-card";
 import { StageStepper } from "@/components/deals/stage-stepper";
 import { Route } from "lucide-react";
 import { BackLink, Field, Missing, RecordCard } from "@/components/ui/record";
+import { FlipScene } from "@/components/ui/flip-scene";
 import { ErrorState, InlineEmpty } from "@/components/ui/states";
 import { listActivitiesForDeal } from "@/lib/data/activities";
 import { getDeal, listStages, listStageTransitions } from "@/lib/data/deals";
@@ -28,6 +29,7 @@ export default async function DealPage({ params }: PageProps<"/deals/[id]">) {
 
   const d = deal.data;
   return (
+    <FlipScene>
     <main className="mx-auto max-w-3xl px-5 py-8 sm:px-8 sm:py-10">
       <BackLink href="/deals" label="Deals" />
 
@@ -103,5 +105,6 @@ export default async function DealPage({ params }: PageProps<"/deals/[id]">) {
         </RecordCard>
       </div>
     </main>
+  </FlipScene>
   );
 }
