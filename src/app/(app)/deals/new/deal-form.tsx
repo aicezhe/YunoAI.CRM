@@ -2,7 +2,14 @@
 
 import { useActionState } from "react";
 import { type DealFormState, createDeal } from "@/lib/data/actions/deals";
-import { Field, FIELD_CLASS, FormActions, FORM_CARD_CLASS, SelectField } from "@/components/ui/form";
+import {
+  Field,
+  FIELD_CLASS,
+  FormActions,
+  FORM_CARD_CLASS,
+  OwnerField,
+  SelectField,
+} from "@/components/ui/form";
 import type { OrganizationRow, PersonRow } from "@/lib/data/types";
 import type { StageOption } from "@/lib/data/deals";
 import type { UserOption } from "@/lib/data/users";
@@ -113,15 +120,9 @@ export function DealForm({
         />
       </Field>
 
-      <SelectField
-        id="ownerId"
-        name="ownerId"
-        label="Owner"
-        optional
-        defaultValue={values.ownerId}
-        placeholder="Unassigned"
-        options={users.map((u) => ({ value: u.id, label: u.name }))}
-      />
+      {/* Fixed: this form only ever creates, and a deal is owned by whoever
+          entered it. Reassignment is not lost — see the deal's own record. */}
+      <OwnerField users={users} defaultValue={values.ownerId} editable={false} />
 
       <FormActions error={state.error} pending={pending} cancelHref="/deals" submitLabel="Add deal" />
     </form>

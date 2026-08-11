@@ -186,3 +186,56 @@ export function FormActions({
     </div>
   );
 }
+
+/**
+ * The Owner row.
+ *
+ * Two shapes on purpose. Creating a record: whoever is adding it owns it, so
+ * this states who that will be and offers nothing to decide — the choice was
+ * never interesting at that moment, and a select there is one more thing to
+ * read past on the way to saving. Editing: a real picker, because handing a
+ * record to a colleague is a thing people genuinely need to do.
+ *
+ * The fixed shape posts nothing. The create actions read the owner from the
+ * session, so there is no hidden input to forge and no disabled field whose
+ * value the browser would drop anyway.
+ */
+export function OwnerField({
+  users,
+  defaultValue,
+  editable,
+}: {
+  users: { id: string; name: string }[];
+  defaultValue: string;
+  /** True on an edit form. */
+  editable: boolean;
+}) {
+  if (editable) {
+    return (
+      <SelectField
+        id="ownerId"
+        name="ownerId"
+        label="Owner"
+        optional
+        defaultValue={defaultValue}
+        placeholder="Unassigned"
+        options={users.map((u) => ({ value: u.id, label: u.name }))}
+      />
+    );
+  }
+
+  const owner = users.find((u) => u.id === defaultValue);
+
+  return (
+    <div>
+      <span className="mb-1.5 block text-sm font-medium text-gray-700">Owner</span>
+      {/* Styled as a field so the form keeps its rhythm, but plainly inert:
+          no border, no white surface, so it does not invite a click that
+          would do nothing. */}
+      <p className="px-1 py-2.5 text-sm text-gray-900">
+        {owner?.name ?? "You"}
+        <span className="ml-2 text-gray-400">— you, as the one adding it</span>
+      </p>
+    </div>
+  );
+}

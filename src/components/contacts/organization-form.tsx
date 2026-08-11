@@ -2,7 +2,13 @@
 
 import { useActionState } from "react";
 import { type OrganizationFormState, createOrganization, updateOrganization } from "@/lib/data/actions/contacts";
-import { Field, FIELD_CLASS, FormActions, FORM_CARD_CLASS, SelectField } from "@/components/ui/form";
+import {
+  Field,
+  FIELD_CLASS,
+  FormActions,
+  FORM_CARD_CLASS,
+  OwnerField,
+} from "@/components/ui/form";
 import type { OrganizationRow } from "@/lib/data/types";
 import type { UserOption } from "@/lib/data/users";
 
@@ -83,14 +89,10 @@ export function OrganizationForm({
       {/* Defaults to whoever is filling the form in — the common case is
           adding your own lead, not assigning someone else's on their
           behalf — but it stays a real picker, changeable in one click. */}
-      <SelectField
-        id="ownerId"
-        name="ownerId"
-        label="Owner"
-        optional
+      <OwnerField
+        users={users}
         defaultValue={values.ownerId}
-        placeholder="Unassigned"
-        options={users.map((u) => ({ value: u.id, label: u.name }))}
+        editable={Boolean(organization)}
       />
 
       <FormActions

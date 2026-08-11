@@ -47,7 +47,14 @@ export async function createDeal(
   const stageId = String(formData.get("stageId") ?? "");
   const rawValue = String(formData.get("value") ?? "").trim();
   const expectedCloseDate = String(formData.get("expectedCloseDate") ?? "");
-  const ownerId = String(formData.get("ownerId") ?? "");
+
+  // Whoever is adding the deal owns it. Read from the session rather than
+  // from the form: the create form shows the owner but does not offer a
+  // choice, so a posted ownerId could only have been put there by hand —
+  // and a form field is a claim, not an authorisation. Reassignment happens
+  // on the deal itself, where it is an explicit act.
+  const owner = await requireUser();
+  const ownerId = owner.id;
 
   const values: DealFormValues = {
     title,

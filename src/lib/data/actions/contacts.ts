@@ -45,8 +45,16 @@ function readOrganizationForm(formData: FormData) {
   };
 }
 
-/** name is the only NOT NULL column (0004_organizations.sql) — everything
- *  else, including the owner, is genuinely optional at creation. */
+/**
+ * name is the only NOT NULL column (0004_organizations.sql) — everything
+ * else is genuinely optional at creation.
+ *
+ * The owner is the exception: it is taken from the session, not the form.
+ * Whoever adds a company is the one who has it, and the create form shows
+ * that without offering a choice — so anything posted under `ownerId` could
+ * only have been put there by hand. Reassignment lives in the edit form,
+ * where changing someone else's ownership is a deliberate act.
+ */
 export async function createOrganization(
   _prevState: OrganizationFormState,
   formData: FormData,
@@ -54,6 +62,10 @@ export async function createOrganization(
   const { values, row } = readOrganizationForm(formData);
 
   if (!values.name) return { error: "Enter a name.", values };
+
+  const owner = await requireUser();
+  values.ownerId = owner.id;
+  row.owner_id = owner.id;
 
   const supabase = await createClient();
   const { data, error } = await supabase
@@ -179,6 +191,11 @@ export async function createPerson(
   const { values, row } = readPersonForm(formData);
 
   if (!values.name) return { error: "Enter a name.", values };
+
+  // Owner from the session — see createOrganization for why.
+  const owner = await requireUser();
+  values.ownerId = owner.id;
+  row.owner_id = owner.id;
 
   const supabase = await createClient();
   const { data, error } = await supabase.from("persons").insert(row).select("id").single();

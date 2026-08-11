@@ -2,7 +2,14 @@
 
 import { useActionState } from "react";
 import { type PersonFormState, createPerson, updatePerson } from "@/lib/data/actions/contacts";
-import { Field, FIELD_CLASS, FormActions, FORM_CARD_CLASS, SelectField } from "@/components/ui/form";
+import {
+  Field,
+  FIELD_CLASS,
+  FormActions,
+  FORM_CARD_CLASS,
+  OwnerField,
+  SelectField,
+} from "@/components/ui/form";
 import type { OrganizationRow, PersonRow } from "@/lib/data/types";
 import type { UserOption } from "@/lib/data/users";
 
@@ -98,15 +105,7 @@ export function PersonForm({
         />
       </Field>
 
-      <SelectField
-        id="ownerId"
-        name="ownerId"
-        label="Owner"
-        optional
-        defaultValue={values.ownerId}
-        placeholder="Unassigned"
-        options={users.map((u) => ({ value: u.id, label: u.name }))}
-      />
+      <OwnerField users={users} defaultValue={values.ownerId} editable={Boolean(person)} />
 
       <FormActions
         error={state.error}
