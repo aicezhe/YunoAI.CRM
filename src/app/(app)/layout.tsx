@@ -16,7 +16,18 @@ import { countActivities } from "@/lib/data/activities";
  * is later narrowed. The call is React-cache()'d, so pages below that also
  * need the user share this one round-trip.
  */
-export default async function AppLayout({ children }: { children: React.ReactNode }) {
+export default async function AppLayout({
+  children,
+  /** The flip-open record panel (see components/flip-panel.tsx). Filled only
+   *  by the intercepting routes under @modal; empty on every other URL, which
+   *  is what @modal/default.tsx is for. It sits outside the scrolling content
+   *  wrapper below because the panel is `fixed` and covers the whole shell,
+   *  sidebar included. */
+  modal,
+}: {
+  children: React.ReactNode;
+  modal: React.ReactNode;
+}) {
   const user = await requireUser();
   const isAdmin = user.role === "admin";
   // For the sidebar's Activities badge. Deliberately not awaited in parallel
@@ -46,6 +57,8 @@ export default async function AppLayout({ children }: { children: React.ReactNod
       {/* pb clears the fixed BottomNav on mobile; md:ml clears the fixed
           Sidebar on desktop, where there is no bottom bar to clear. */}
       <div className="pb-24 md:ml-60 md:pb-0">{children}</div>
+
+      {modal}
 
       <BottomNav isAdmin={isAdmin} />
     </div>
