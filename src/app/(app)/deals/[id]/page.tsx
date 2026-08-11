@@ -1,7 +1,8 @@
+import Link from "next/link";
 import { notFound } from "next/navigation";
 import { DealActivityCard } from "@/components/deals/deal-activity-card";
 import { StageStepper } from "@/components/deals/stage-stepper";
-import { Route } from "lucide-react";
+import { Pencil, Route } from "lucide-react";
 import { BackLink, Field, Missing, RecordCard } from "@/components/ui/record";
 import { FlipScene } from "@/components/ui/flip-scene";
 import { ErrorState, InlineEmpty } from "@/components/ui/states";
@@ -40,9 +41,21 @@ export default async function DealPage({ params }: PageProps<"/deals/[id]">) {
           to the RecordCards below in DOM-order stacking, trapping the
           stepper's lost-reason popover behind them. */}
       <div className="enter relative z-10 mt-4">
-        <h1 className="text-2xl font-semibold tracking-tight text-gray-900 sm:text-3xl">
-          {d.title}
-        </h1>
+        {/* Edit sits beside the title, matching the contact and organization
+            records. The stepper below stays the fast path for the one change
+            people make constantly; this is for everything else. */}
+        <div className="flex flex-wrap items-start justify-between gap-3">
+          <h1 className="text-2xl font-semibold tracking-tight text-gray-900 sm:text-3xl">
+            {d.title}
+          </h1>
+          <Link
+            href={`/deals/${id}/edit`}
+            className="inline-flex min-h-10 shrink-0 items-center gap-2 rounded-xl border border-brand-200 bg-brand-50 px-4 text-sm font-medium text-brand-600 transition hover:bg-brand-100"
+          >
+            <Pencil className="h-4 w-4" strokeWidth={1.75} aria-hidden />
+            Edit
+          </Link>
+        </div>
         <StageStepper
           dealId={d.id}
           stages={stages.ok ? stages.data : []}

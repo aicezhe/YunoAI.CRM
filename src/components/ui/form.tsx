@@ -57,6 +57,7 @@ export function SelectField({
   optional,
   options,
   placeholder,
+  onValueChange,
 }: {
   id: string;
   name: string;
@@ -70,6 +71,10 @@ export function SelectField({
    *  choice (a deal's stage, defaulted to the first one) has no need for
    *  one; the true default is just the first entry in `options`. */
   placeholder?: string;
+  /** For the rare field another part of the form has to react to — the deal
+   *  form reveals its "reason for losing" input the moment Lost is picked.
+   *  The select stays in charge of its own value; this only reports it. */
+  onValueChange?: (value: string) => void;
 }) {
   const [value, setValue] = useState(defaultValue);
 
@@ -80,7 +85,10 @@ export function SelectField({
         name={name}
         required={required}
         value={value}
-        onChange={(e) => setValue(e.target.value)}
+        onChange={(e) => {
+          setValue(e.target.value);
+          onValueChange?.(e.target.value);
+        }}
         className={FIELD_CLASS}
       >
         {placeholder && (
