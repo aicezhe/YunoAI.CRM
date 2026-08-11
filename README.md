@@ -1,130 +1,93 @@
 # YunoCRM v2
 
-A hand-kept CRM — organizations, people, deals, activities and contracts, all
-entered through forms. No automation, no AI, no ingestion pipelines: every
-record exists because someone typed it.
+A hand-kept CRM for a company that sells SaaS: organizations, people, deals, activities and contracts, all entered through forms. No automation, no AI, no ingestion — every record exists because someone typed it.
 
-Next.js 16 (App Router) · TypeScript · Tailwind v4 · Supabase Auth.
+Next.js 16 (App Router) · TypeScript · Tailwind v4 · Supabase (Postgres + Auth) · deployed on Vercel.
 
-## Current state
+## Live
 
-This is the scaffold. Authentication, the app shell and the seven section
-routes are in place; every section renders an empty state. Database migrations
-and the forms that fill them are the next step, once the schema is agreed.
+- App: https://yuno-ai-crm.vercel.app
+- Database credentials are sent separately by email. Nothing in this repo contains them; `.env.local` is gitignored.
 
-## Setup
+## Test accounts
+
+| Email | Password | Role |
+| --- | --- | --- |
+| camillo@yunocrm.test | `YUQLQTKcf63eCQKTnw` | admin |
+| anna@yunocrm.test | `4gsX2s5Lx6kAVfjNTk` | member |
+| marco@yunocrm.test | `VuEDKSwiTunTnCwY87` | member |
+| giulia@yunocrm.test | `mSQfAufnedzg37QTi9` | member |
+
+These are demo accounts on a demo database; the passwords are checked in deliberately so the app is reviewable without a separate handover.
+
+To compare the two views, open **Settings**. An admin sees each teammate's role and can change it; a member sees the same roster without roles and without controls. Everything else — deals, contacts, activities, contracts — is shared: any signed-in user can read and edit any record, which is the intended model for a team this size.
+
+## Running locally
 
 ```bash
 npm install
-cp .env.example .env.local   # then fill it in
-npm run dev
+cp .env.example .env.local
 ```
 
-### Environment variables
+Fill `.env.local` with four values from your Supabase project — `SUPABASE_URL`, `SUPABASE_PUBLISHABLE_KEY`, `SUPABASE_SECRET_KEY`, `DATABASE_URL`. `.env.example` says where each one lives in the dashboard.
 
-All four come from one Supabase project. `.env.local` is gitignored — never
-commit real values.
+```bash
+npx supabase db push --db-url "$DATABASE_URL"   # schema
+npm run seed:users                              # the four accounts above
+npm run seed:demo                               # demo records
+npm run dev                                     # http://localhost:3200
+```
 
-| Variable | Where to find it | Used for |
-| --- | --- | --- |
-| `SUPABASE_URL` | Project Settings → API | Auth requests |
-| `SUPABASE_PUBLISHABLE_KEY` | Project Settings → API (`sb_publishable_…`) | Auth requests, gated by RLS |
-| `SUPABASE_SECRET_KEY` | Project Settings → API (`sb_secret_…`) | Not used yet — bypasses RLS, for seeding and admin actions |
-| `DATABASE_URL` | Project Settings → Database → Connection string → URI | Not used yet — for migrations |
+`seed:demo` wipes the demo tables and rewrites them, so it doubles as the reset command. It does not touch accounts.
 
-These are the current Supabase key names; `SUPABASE_PUBLISHABLE_KEY` replaces
-the legacy `anon` key and `SUPABASE_SECRET_KEY` replaces `service_role`.
+## Data model
 
-Note that none of them carry the `NEXT_PUBLIC_` prefix, and that is deliberate:
-sign-in runs as a Server Action, so no Supabase credential is ever inlined into
-the browser bundle. `src/lib/supabase/env.ts` is marked `server-only`, which
-turns an accidental import from a Client Component into a build error rather
-than a leak.
+```mermaid
+erDiagram
+    users ||--o{ deals : owns
+    pipeline_stages ||--o{ deals : "current stage"
+    organizations ||--o{ persons : employs
+    organizations ||--o{ deals : "counterparty"
+    persons ||--o{ deals : "counterparty"
+    deals ||--o{ stage_transitions : "history"
+    deals ||--o{ contracts : "signed"
+    deals ||--o{ activities : "logged on"
+    organizations ||--o{ activities : "logged on"
+    persons ||--o{ activities : "logged on"
+```
 
-### Accounts
-
-There is no sign-up screen — accounts are created by an admin. `npm run seed:users`
-creates four demo logins, one per role, listed at the top of
-`scripts/seed-users.ts`:
-
-| | Role | |
-| --- | --- | --- |
-| Camillo | admin | `camillo@yunocrm.test` |
-| Anna, Marco, Giulia | member | `anna@…`, `marco@…`, `giulia@…` |
-
-Passwords are in that file. They are throwaway logins for a demo database and
-are checked in deliberately, so the app can be tried without credentials being
-sent around separately. Delete these accounts before pointing the schema at
-anything real.
-
-Accounts can also be added by hand in the Supabase Dashboard under
-**Authentication → Users → Add user** with *Auto Confirm User* enabled; the
-trigger from migration `0001` writes the matching profile row as a `member`.
-
-## Database
-
-Eight tables in `supabase/migrations/`, numbered in dependency order — nothing
-references a table that a later file creates.
-
-| | |
+| Table | Why it exists |
 | --- | --- |
-| `0001` | `users` — profile for an auth account, plus the trigger that creates one |
-| `0002` | `pipeline_stages` |
-| `0003`–`0004` | `organizations`, `persons` |
-| `0005` | `deals` — the constraint-heavy one |
-| `0006`–`0008` | `stage_transitions`, `activities`, `contracts` |
-| `0009` | Row Level Security |
-| `0010` | default pipeline stages |
+| `users` | App profile for a Supabase Auth account — display name and role. Auth owns the credentials; this owns who the person is inside the CRM. |
+| `pipeline_stages` | The configurable stages of the sales process, ordered by `position`. |
+| `organizations` | Companies you sell to. |
+| `persons` | Individuals, each optionally employed by an organization. |
+| `deals` | An opportunity: value, expected close, current stage, and open/won/lost. |
+| `stage_transitions` | Append-only log of every stage change on a deal, with who moved it and when. |
+| `activities` | Calls, meetings, emails, tasks and notes, attached to a deal, a person or a company. |
+| `contracts` | What was actually signed against a deal — date, value, terms. |
 
-Applying them:
+## Key decisions
 
-```bash
-supabase login
-supabase link --project-ref <ref>
-supabase db push
-```
+- **Stages are a table, not an enum.** Stages are configuration the team reorders and renames, so deals store a `stage_id`. Renaming "Proposal" or moving it in the funnel touches one row and leaves every deal and every history entry alone.
 
-If `db push` cannot connect, the direct database host (`db.<ref>.supabase.co`)
-is IPv6-only and some networks have no route to it. Use the regional session
-pooler instead, which answers on IPv4 — the connection string is in the
-dashboard under **Connect → Session pooler**:
+- **`stage_transitions` is append-only history.** A deal's current stage says where it is; the log says how it got there. Without it "how long do deals sit in Proposal" has no answer, because the previous stage is overwritten on every move.
 
-```bash
-supabase db push --db-url "postgresql://postgres.<ref>:<password>@aws-1-<region>.pooler.supabase.com:5432/postgres"
-```
+- **One `activities` table for past and future.** A logged call and a scheduled call are the same entity in different time states — same fields, same links, same list. Splitting them into two tables would duplicate the schema to express a `done` flag.
 
-Then the demo accounts — these cannot be SQL, because each one has to exist in
-`auth.users` with a real password hash before a profile row can reference it:
+- **Contracts are their own table, not `status = 'won'`.** A contract carries data a deal does not — signing date, signed value, terms — and one deal can produce more than one. Winning a deal and signing a contract are separate events, so they are separate rows.
 
-```bash
-npm run seed:users
-```
+- **Constraints live in the database.** `lost_reason` is required when a deal is lost and must be empty otherwise; a deal must point to at least an organization or a person; an activity must be linked to at least one record. Enforced by CHECK constraints, so a bug in the app or a hand-written SQL statement cannot write a contradictory row.
 
-Every rule lives in the database rather than in application code: role and
-status are `CHECK`ed, a lost deal must carry a reason, a deal must have an
-organization or a person, and the `ON DELETE` behaviour of each foreign key is
-chosen per relationship. The reasoning is in comments in each migration.
+## Demo data
 
-## Scripts
+The database ships populated — 6 organizations, 10 people, 12 deals, 13 activities, 2 contracts — so every screen has something in it. The edge states are seeded too: one deal is won and one is lost with a recorded reason, one deal has a person but no company, and two activities are flagged urgent.
 
-| Command | |
-| --- | --- |
-| `npm run dev` | Dev server |
-| `npm run build` | Production build |
-| `npm run typecheck` | `tsc --noEmit` |
-| `npm run lint` | ESLint |
-| `npm run seed:users` | Create the demo accounts |
+Run `npm run seed:demo` to reset to exactly that set.
 
-## How auth fits together
+## Deliberately out of scope
 
-- `src/proxy.ts` — runs before every request. Refreshes the Supabase session
-  and redirects anonymous visitors to `/login`. In Next.js 16 this file
-  replaces `middleware.ts`.
-- `src/lib/auth/actions.ts` — `signIn` / `signOut` Server Actions.
-- `src/lib/auth/current-user.ts` — `getCurrentUser()` / `requireUser()`, the
-  real authorization boundary, called from the `(app)` layout.
-- `src/lib/auth/profile.ts` — the seam where the `users` table plugs in. It
-  returns `null` today; the query to enable is written out in a comment.
-
-The proxy check is optimistic — it runs before routing and only redirects.
-Pages rely on `requireUser()`, next to the data it protects.
+- **Kanban board for the pipeline.** The stage stepper on a deal already moves a deal and records the transition; a board is a second way to do the same write.
+- **Multiple participants per activity.** One activity links to one deal, one person, one company. Attendee lists are a join table serving a reporting question nobody asked yet.
+- **Geolocation fields on organizations.** Addresses are stored as text. Coordinates only pay off with a map or a territory query, neither of which exists here.
+- **File uploads on contracts.** Excluded by instruction. Contracts record the terms, not the PDF.

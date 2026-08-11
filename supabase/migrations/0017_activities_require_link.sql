@@ -81,6 +81,11 @@ where deal_id is null and person_id is null and org_id is null;
 -- The rule itself. Any one link is enough — the schema comment's own
 -- reasoning: a call to a company's main line has no person to attach, and a
 -- note on a deal has neither a person nor a company of its own.
+-- Same reason as in 0015: 0008_activities.sql declares this constraint under
+-- the same name, so the file has to drop before it adds or it cannot replay
+-- onto a database built from the repo as it stands.
+alter table public.activities drop constraint if exists activities_has_link;
+
 alter table public.activities
   add constraint activities_has_link check (
     deal_id is not null or person_id is not null or org_id is not null

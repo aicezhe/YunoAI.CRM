@@ -57,6 +57,11 @@ alter table public.deals alter column status set default 'open';
 --
 -- The emptiness test is trim(), not just NULL: '' and '   ' would satisfy
 -- `is not null` and defeat the constraint.
+-- Dropped first so the file replays: 0006_deals.sql already declares this
+-- constraint under the same name, and `add constraint` on an existing name
+-- is an error rather than a no-op.
+alter table public.deals drop constraint if exists deals_lost_reason_matches_status;
+
 alter table public.deals
   add constraint deals_lost_reason_matches_status check (
     case

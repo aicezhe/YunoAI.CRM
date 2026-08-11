@@ -26,15 +26,38 @@
 -- Sort order is declaration order, not alphabetical: 'open' < 'won' < 'lost'
 -- rather than lost/open/won. Worth knowing before ordering a report by it.
 
-create type public.user_role as enum ('admin', 'member');
+-- Guarded, because 0001_enums.sql declares the same three types. On this
+-- database 0001 never ran (see above) so these create them for the first
+-- time; on a database built from the repo as it now stands, 0001 ran and
+-- these are no-ops. Without the guard the whole set is unreplayable: a
+-- reviewer pointing `supabase db push` at a fresh Supabase project would
+-- fail here with `type "user_role" already exists`.
+do $enums$
+begin
+  if not exists (select 1 from pg_type where typname = 'user_role') then
+    create type public.user_role as enum ('admin', 'member');
+  end if;
 
-create type public.deal_status as enum ('open', 'won', 'lost');
+  if not exists (select 1 from pg_type where typname = 'deal_status') then
+    create type public.deal_status as enum ('open', 'won', 'lost');
+  end if;
 
--- Ordered roughly by how a rep works: live contact first, then written, then
--- the two that carry no counterparty of their own.
-create type public.activity_type as enum ('call', 'meeting', 'email', 'task', 'note');
+  -- Ordered roughly by how a rep works: live contact first, then written,
+  -- then the two that carry no counterparty of their own.
+  if not exists (select 1 from pg_type where typname = 'activity_type') then
+    create type public.activity_type as enum ('call', 'meeting', 'email', 'task', 'note');
+  end if;
+end
+$enums$;
 
 -- Not in 0001_enums.sql: priority was added later, in 0013, and matched the
 -- text+CHECK convention that was actually live at the time. It joins the
 -- others here so the rule is uniform rather than "enums except this one".
-create type public.activity_priority as enum ('normal', 'urgent');
+-- Guarded for symmetry with the block above, not because 0001 declares it.
+do $priority$
+begin
+  if not exists (select 1 from pg_type where typname = 'activity_priority') then
+    create type public.activity_priority as enum ('normal', 'urgent');
+  end if;
+end
+$priority$;
