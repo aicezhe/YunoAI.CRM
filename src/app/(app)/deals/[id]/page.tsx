@@ -1,22 +1,25 @@
 import Link from "next/link";
 import { notFound } from "next/navigation";
 import { DealActivityCard } from "@/components/deals/deal-activity-card";
+import { DealContractsCard } from "@/components/deals/deal-contracts-card";
 import { StageStepper } from "@/components/deals/stage-stepper";
 import { Pencil, Route } from "lucide-react";
 import { BackLink, Field, Missing, RecordCard } from "@/components/ui/record";
 import { FlipScene } from "@/components/ui/flip-scene";
 import { ErrorState, InlineEmpty } from "@/components/ui/states";
 import { listActivitiesForDeal } from "@/lib/data/activities";
+import { listContractsForDeal } from "@/lib/data/contracts";
 import { getDeal, listStages, listStageTransitions } from "@/lib/data/deals";
 import { formatDate, formatMoney, formatTime } from "@/lib/format";
 
 export default async function DealPage({ params }: PageProps<"/deals/[id]">) {
   const { id } = await params;
-  const [deal, activities, stages, transitions] = await Promise.all([
+  const [deal, activities, stages, transitions, contracts] = await Promise.all([
     getDeal(id),
     listActivitiesForDeal(id),
     listStages(),
     listStageTransitions(id),
+    listContractsForDeal(id),
   ]);
 
   if (!deal.ok) {
@@ -77,14 +80,20 @@ export default async function DealPage({ params }: PageProps<"/deals/[id]">) {
           </dl>
         </RecordCard>
 
+        {/* Directly under the fields, above the activity feed: after a win
+            this is the next thing to do, and a prompt below two other cards
+            is a prompt nobody scrolls to. */}
+        <DealContractsCard dealId={d.id} status={d.status} contracts={contracts} index={1} />
+
         <DealActivityCard
           dealId={d.id}
           personId={d.personId}
           orgId={d.organizationId}
           activities={activities}
+          index={2}
         />
 
-        <RecordCard title="Stage history" index={2}>
+        <RecordCard title="Stage history" index={3}>
           {!transitions.ok ? (
             <p className="py-4 text-sm text-gray-500">{transitions.error}</p>
           ) : transitions.data.length === 0 ? (

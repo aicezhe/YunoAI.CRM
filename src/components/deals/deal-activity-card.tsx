@@ -33,11 +33,15 @@ export function DealActivityCard({
   personId,
   orgId,
   activities,
+  index,
 }: {
   dealId: string;
   personId: string | null;
   orgId: string | null;
   activities: Result<ActivityRow[]>;
+  /** Position on the page, for the staggered arrival — passed in rather than
+   *  fixed here, since the contracts card above it comes and goes. */
+  index: number;
 }) {
   const [open, setOpen] = useState(false);
   // Bumped on every close-after-save, so reopening mounts a fresh
@@ -46,7 +50,7 @@ export function DealActivityCard({
 
   return (
     <RecordCard
-      index={1}
+      index={index}
       title="Activity"
       action={
         !open && (
