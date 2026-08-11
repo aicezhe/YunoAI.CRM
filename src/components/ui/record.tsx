@@ -28,9 +28,9 @@ export function Field({ label, children }: { label: string; children: React.Reac
 }
 
 /** Fixed step between a record page's cards — see the comment on RecordCard.
- *  Exported so a page can offset its own non-card elements (e.g. the
- *  context line under a dashboard's task lists) onto the same beat instead
- *  of picking an unrelated number. */
+ *  Exported so a page can offset its own non-card elements onto the same
+ *  beat instead of picking an unrelated number — the record skeleton uses it
+ *  to arrive in the same rhythm as the page it stands in for. */
 export const CARD_STAGGER_MS = 90;
 
 /**

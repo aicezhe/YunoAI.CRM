@@ -3,7 +3,7 @@
 import { useState, useTransition } from "react";
 import { motion } from "framer-motion";
 import { Trash2 } from "lucide-react";
-import { deleteOrganization, deletePerson } from "@/lib/data/actions";
+import { deleteOrganization, deletePerson } from "@/lib/data/actions/contacts";
 import type { DeleteImpact } from "@/lib/data/types";
 
 /**

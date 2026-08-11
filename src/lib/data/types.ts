@@ -87,7 +87,7 @@ export type DealRow = {
   currency: string | null;
   status: DealStatus;
   /** Set exactly when status is 'lost' — the database enforces both
-   *  directions (deals_lost_reason_required). Shown beside the closed
+   *  directions (deals_lost_reason_matches_status). Shown beside the closed
    *  stepper so a lost deal says why on its own record. */
   lostReason: string | null;
   stageId: string | null;

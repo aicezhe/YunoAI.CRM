@@ -1,7 +1,7 @@
 "use client";
 
 import { useActionState } from "react";
-import { createContract, type ContractFormState } from "@/lib/data/actions";
+import { type ContractFormState, createContract } from "@/lib/data/actions/contracts";
 import { Field, FIELD_CLASS, FormActions, FORM_CARD_CLASS, SelectField } from "@/components/ui/form";
 import type { DealRow } from "@/lib/data/types";
 

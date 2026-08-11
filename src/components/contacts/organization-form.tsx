@@ -1,11 +1,7 @@
 "use client";
 
 import { useActionState } from "react";
-import {
-  createOrganization,
-  updateOrganization,
-  type OrganizationFormState,
-} from "@/lib/data/actions";
+import { type OrganizationFormState, createOrganization, updateOrganization } from "@/lib/data/actions/contacts";
 import { Field, FIELD_CLASS, FormActions, FORM_CARD_CLASS, SelectField } from "@/components/ui/form";
 import type { OrganizationRow } from "@/lib/data/types";
 import type { UserOption } from "@/lib/data/users";

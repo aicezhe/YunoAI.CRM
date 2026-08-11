@@ -1,7 +1,7 @@
 "use client";
 
 import { useActionState, useEffect, useRef } from "react";
-import { updatePassword, type PasswordState } from "@/lib/data/actions";
+import { type PasswordState, updatePassword } from "@/lib/data/actions/account";
 import { Field, FIELD_CLASS } from "@/components/ui/form";
 
 const INITIAL: PasswordState = { error: null, done: false };

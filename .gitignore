@@ -52,10 +52,3 @@ Thumbs.db
 .idea/
 .vscode/*
 !.vscode/extensions.json
-
-# ---- Локальные конфиги инструментов ----
-# AGENTS.md заново создаётся при каждом `next dev`, поэтому именно ignore,
-# а не просто удаление — иначе файл вернётся в первый же запуск.
-.claude/
-AGENTS.md
-CLAUDE.md

@@ -1,7 +1,7 @@
 "use client";
 
 import { useState, useTransition } from "react";
-import { setUserRole } from "@/lib/data/actions";
+import { setUserRole } from "@/lib/data/actions/account";
 import type { TeamMember } from "@/lib/data/users";
 
 export function TeamRoster({

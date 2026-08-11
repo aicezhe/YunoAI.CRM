@@ -105,51 +105,6 @@ export async function getDeal(id: string): Promise<Result<DealRow | null>> {
   return ok(data ? toDealRow(data as unknown as RawDeal) : null);
 }
 
-export type PipelineSummary = {
-  openCount: number;
-  openValue: number;
-  staleCount: number;
-};
-
-/**
- * The one-line context strip at the bottom of the dashboard.
- *
- * "Stale" is an open deal with no activity in the last seven days — including
- * deals that have never had one. That is deliberately computed here rather
- * than filtered in SQL on a joined date: a LEFT JOIN with a HAVING max(...)
- * would drop the never-touched deals unless written carefully, and those are
- * exactly the ones worth surfacing.
- */
-export async function getPipelineSummary(): Promise<Result<PipelineSummary>> {
-  const supabase = await createClient();
-
-  const { data: deals, error: dealsError } = await supabase
-    .from("deals")
-    .select("id, value")
-    .eq("status", "open");
-
-  if (dealsError) return fail("getPipelineSummary", dealsError.message);
-
-  const weekAgo = new Date();
-  weekAgo.setDate(weekAgo.getDate() - 7);
-
-  const { data: recent, error: recentError } = await supabase
-    .from("activities")
-    .select("deal_id")
-    .gte("created_at", weekAgo.toISOString())
-    .not("deal_id", "is", null);
-
-  if (recentError) return fail("getPipelineSummary", recentError.message);
-
-  const touched = new Set((recent ?? []).map((a) => a.deal_id as string));
-
-  return ok({
-    openCount: deals.length,
-    openValue: deals.reduce((sum, d) => sum + (toNumber(d.value as string | null) ?? 0), 0),
-    staleCount: deals.filter((d) => !touched.has(d.id)).length,
-  });
-}
-
 type RawStageTransition = {
   id: string;
   occurred_at: string;

@@ -3,7 +3,7 @@
 import { useEffect, useRef, useState, useTransition } from "react";
 import { AnimatePresence, motion } from "framer-motion";
 import { Check, RotateCcw, X } from "lucide-react";
-import { updateDealStage } from "@/lib/data/actions";
+import { updateDealStage } from "@/lib/data/actions/deals";
 import type { DealStatus } from "@/lib/data/types";
 
 type Stage = { id: string; name: string };

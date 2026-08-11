@@ -5,7 +5,7 @@ import { Wordmark } from "@/components/wordmark";
  * Root-level 404, deliberately outside the (app) group: it also has to cover
  * URLs that matched no route at all, which never reach the authenticated
  * layout. So it links to /login rather than assuming a session — proxy.ts
- * forwards an already signed-in visitor on to the dashboard from there.
+ * forwards an already signed-in visitor on to Activities from there.
  */
 export default function NotFound() {
   return (

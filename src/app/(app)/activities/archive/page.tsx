@@ -11,7 +11,7 @@ export const metadata = { title: "Archive · YunoCRM" };
  *
  * Not a separate table or an extra flag — the archive is simply the other
  * side of `done`. Which means unticking a row here puts it straight back on
- * the open list, and the dashboard picks it up again if it is still due.
+ * the open list, sorted back into place by its due date.
  */
 export default async function ArchivePage() {
   const { ok, data: activities, error } = await listActivities(true);

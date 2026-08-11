@@ -1,7 +1,7 @@
 "use client";
 
 import { useActionState } from "react";
-import { updateProfileName, type ProfileNameState } from "@/lib/data/actions";
+import { type ProfileNameState, updateProfileName } from "@/lib/data/actions/account";
 import { FIELD_CLASS } from "@/components/ui/form";
 
 /**

@@ -8,7 +8,7 @@ import { ActivityIcon } from "@/components/ui/badges";
 import { Field, FIELD_CLASS, SelectField, UrgentCheckbox } from "@/components/ui/form";
 import { RecordCard } from "@/components/ui/record";
 import { InlineEmpty } from "@/components/ui/states";
-import { createDealActivity, type DealActivityFormState } from "@/lib/data/actions";
+import { type DealActivityFormState, createDealActivity } from "@/lib/data/actions/activities";
 import type { ActivityRow, Result } from "@/lib/data/types";
 import { formatDue } from "@/lib/format";
 

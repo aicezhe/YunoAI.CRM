@@ -7,4 +7,4 @@
 --
 -- The first admin account cannot be seeded from SQL at all: public.users.id is
 -- a foreign key onto auth.users.id, and a row inserted into auth.users by hand
--- has no usable password. See scripts/seed-admin.ts — `npm run seed:admin`.
+-- has no usable password. See scripts/seed-users.ts — `npm run seed:users`.

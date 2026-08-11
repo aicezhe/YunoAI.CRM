@@ -1,7 +1,7 @@
 "use client";
 
 import { useActionState } from "react";
-import { createDeal, type DealFormState } from "@/lib/data/actions";
+import { type DealFormState, createDeal } from "@/lib/data/actions/deals";
 import { Field, FIELD_CLASS, FormActions, FORM_CARD_CLASS, SelectField } from "@/components/ui/form";
 import type { OrganizationRow, PersonRow } from "@/lib/data/types";
 import type { StageOption } from "@/lib/data/deals";

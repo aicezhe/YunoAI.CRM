@@ -5,8 +5,12 @@ import "server-only";
  *
  * These use Supabase's current key names, not the legacy anon/service_role
  * pair: the publishable key is safe to expose and gates on Row Level
- * Security, the secret key bypasses RLS entirely. `server-only` makes an
- * accidental import from a Client Component a build error rather than a leak.
+ * Security. `server-only` makes an accidental import from a Client Component
+ * a build error rather than a leak.
+ *
+ * The secret key is deliberately absent. It bypasses RLS, and the only thing
+ * that needs it is the seeding scripts — which read it from the environment
+ * themselves, outside the app, so no request path can reach it.
  *
  * Reading a missing key would otherwise surface as a confusing runtime
  * failure deep inside the Supabase SDK ("Invalid URL"), so a missing variable
@@ -25,12 +29,3 @@ function required(name: string): string {
 
 export const SUPABASE_URL = required("SUPABASE_URL");
 export const SUPABASE_PUBLISHABLE_KEY = required("SUPABASE_PUBLISHABLE_KEY");
-
-/**
- * Bypasses RLS — only for future admin-side work (seeding users, inviting
- * accounts). Deliberately lazy: the app must boot without it, since nothing
- * in the current scaffold needs it.
- */
-export function getSecretKey(): string {
-  return required("SUPABASE_SECRET_KEY");
-}

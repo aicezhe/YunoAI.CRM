@@ -1,7 +1,7 @@
 "use client";
 
 import { useActionState } from "react";
-import { createActivity, type ActivityFormState } from "@/lib/data/actions";
+import { type ActivityFormState, createActivity } from "@/lib/data/actions/activities";
 import {
   Field,
   FIELD_CLASS,

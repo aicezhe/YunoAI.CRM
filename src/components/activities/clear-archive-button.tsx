@@ -2,7 +2,7 @@
 
 import { useState, useTransition } from "react";
 import { Trash2 } from "lucide-react";
-import { clearActivityArchive } from "@/lib/data/actions";
+import { clearActivityArchive } from "@/lib/data/actions/activities";
 
 /**
  * Empties the archive, behind an inline confirmation.

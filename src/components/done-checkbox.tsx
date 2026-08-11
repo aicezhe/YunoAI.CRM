@@ -2,7 +2,7 @@
 
 import { useOptimistic, useTransition } from "react";
 import { Check } from "lucide-react";
-import { setActivityDone } from "@/lib/data/actions";
+import { setActivityDone } from "@/lib/data/actions/activities";
 
 /**
  * Ticks an activity off in place.

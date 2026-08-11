@@ -6,58 +6,17 @@ import { StageBadge, StatusBadge } from "@/components/ui/badges";
 import { EmptyState } from "@/components/ui/states";
 import { Blank, CardLink, Cell, Row, RowLink, Table } from "@/components/ui/table";
 import type { DealRow } from "@/lib/data/types";
+import {
+  isOverdue,
+  isoDate,
+  nextSort,
+  visibleDeals,
+  weekOut,
+  type Sort,
+  type SortDirection,
+  type SortKey,
+} from "@/lib/deals-view";
 import { formatDate, formatMoney } from "@/lib/format";
-
-type SortKey = "value" | "expectedClose" | "stage";
-type SortDirection = "asc" | "desc";
-type Sort = { key: SortKey; direction: SortDirection };
-
-// The direction a first click on each column should produce: value leads
-// with the biggest deals (what to prioritize), expected close leads with the
-// soonest (what's burning). Stage never toggles — see stageRank below.
-const DEFAULT_DIRECTION: Record<SortKey, SortDirection> = {
-  value: "desc",
-  expectedClose: "asc",
-  stage: "asc",
-};
-
-/** Funnel order: open deals by pipeline position, then Won, then Lost — a
- *  closed deal keeps whatever stage it was in when it closed, so status has
- *  to be checked first or Won/Lost would scatter across the open ranks. */
-function stageRank(deal: DealRow): [number, number] {
-  if (deal.status === "won") return [1, 0];
-  if (deal.status === "lost") return [2, 0];
-  return [0, deal.stagePosition ?? Infinity];
-}
-
-function compareDeals(key: SortKey, direction: SortDirection) {
-  const sign = direction === "asc" ? 1 : -1;
-  return (a: DealRow, b: DealRow): number => {
-    if (key === "stage") {
-      const [bucketA, posA] = stageRank(a);
-      const [bucketB, posB] = stageRank(b);
-      return bucketA !== bucketB ? bucketA - bucketB : posA - posB;
-    }
-    if (key === "value") {
-      // A deal with no value is neither the biggest nor the smallest — it's
-      // unknown, so it sits out of the ranking entirely, last either way.
-      if (a.value === null) return b.value === null ? 0 : 1;
-      if (b.value === null) return -1;
-      return (a.value - b.value) * sign;
-    }
-    if (a.expectedCloseDate === null) return b.expectedCloseDate === null ? 0 : 1;
-    if (b.expectedCloseDate === null) return -1;
-    return a.expectedCloseDate < b.expectedCloseDate ? -sign : a.expectedCloseDate > b.expectedCloseDate ? sign : 0;
-  };
-}
-
-/** YYYY-MM-DD, matching the date-only column so "this week"/"overdue" can
- *  compare as plain strings instead of parsing a date-only value as a Date —
- *  the latter reads it as UTC midnight, which drifts against the viewer's
- *  local "today" by the timezone offset. */
-function isoDate(d: Date): string {
-  return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, "0")}-${String(d.getDate()).padStart(2, "0")}`;
-}
 
 export function DealsTable({ deals, currentUserId }: { deals: DealRow[]; currentUserId: string }) {
   const [sort, setSort] = useState<Sort>({ key: "expectedClose", direction: "asc" });
@@ -66,32 +25,22 @@ export function DealsTable({ deals, currentUserId }: { deals: DealRow[]; current
   const [openOnly, setOpenOnly] = useState(true);
 
   const today = isoDate(new Date());
-  const weekOut = (() => {
-    const d = new Date();
-    d.setDate(d.getDate() + 7);
-    return isoDate(d);
-  })();
+  const weekEdge = weekOut(new Date());
 
   function toggleSort(key: SortKey) {
-    setSort((prev) =>
-      prev.key !== key
-        ? { key, direction: DEFAULT_DIRECTION[key] }
-        : key === "stage"
-          ? prev
-          : { key, direction: prev.direction === "asc" ? "desc" : "asc" },
-    );
+    setSort((prev) => nextSort(prev, key));
   }
 
-  const visible = useMemo(() => {
-    return deals
-      .filter((d) => !openOnly || d.status === "open")
-      .filter((d) => !myDealsOnly || d.ownerId === currentUserId)
-      .filter((d) => {
-        if (!closingThisWeek) return true;
-        return d.expectedCloseDate !== null && d.expectedCloseDate >= today && d.expectedCloseDate <= weekOut;
-      })
-      .sort(compareDeals(sort.key, sort.direction));
-  }, [deals, openOnly, myDealsOnly, closingThisWeek, today, weekOut, sort, currentUserId]);
+  const visible = useMemo(
+    () =>
+      visibleDeals(
+        deals,
+        { openOnly, myDealsOnly, closingThisWeek },
+        sort,
+        { currentUserId, today, weekOut: weekEdge },
+      ),
+    [deals, openOnly, myDealsOnly, closingThisWeek, today, weekEdge, sort, currentUserId],
+  );
 
   const filtersActive = myDealsOnly || closingThisWeek || openOnly;
 
@@ -253,10 +202,6 @@ export function DealsTable({ deals, currentUserId }: { deals: DealRow[]; current
       )}
     </>
   );
-}
-
-function isOverdue(deal: DealRow, today: string): boolean {
-  return deal.status === "open" && deal.expectedCloseDate !== null && deal.expectedCloseDate < today;
 }
 
 function SortHeader({
