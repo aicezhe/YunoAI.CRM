@@ -90,13 +90,27 @@ export function ErrorState({ message }: { message: string }) {
  * rather than a flat grid that blinks on and gets swapped. The shimmer
  * sweep then carries the "still working" signal while the rows sit.
  */
+/**
+ * Cell fill percentages. Real cells hold values of different lengths, and a
+ * grid of bars that all run the full column width is the single thing that
+ * makes a skeleton look like a rendering fault rather than like text on its
+ * way. Walked with a stride co-prime to the row length so no two rows line
+ * up, and fixed rather than random so server and client render the same
+ * markup. */
+const FILL = [88, 62, 74, 95, 55, 81, 68, 91, 58, 78];
+
 export function TableSkeleton({ rows = 6, columns = 5 }: { rows?: number; columns?: number }) {
   return (
     <>
       <div className="enter hidden overflow-hidden rounded-2xl border border-brand-200/70 bg-white shadow-card md:block">
-        <div className="flex gap-6 border-b border-brand-200/70 px-5 py-4">
+        {/* The header band is real chrome in the table this becomes, so it is
+            drawn as chrome here too — tinted, with fainter bars than the body
+            rather than heavier ones. */}
+        <div className="flex gap-6 border-b border-brand-200/70 bg-brand-50/70 px-5 py-3.5">
           {Array.from({ length: columns }).map((_, i) => (
-            <div key={i} className="skeleton h-3 flex-1 rounded" />
+            <div key={i} className="flex-1">
+              <div className="skeleton-soft h-2.5 w-14 max-w-full rounded" />
+            </div>
           ))}
         </div>
         {Array.from({ length: rows }).map((_, r) => (
@@ -106,10 +120,12 @@ export function TableSkeleton({ rows = 6, columns = 5 }: { rows?: number; column
             style={enterStyle(r, rows)}
           >
             {Array.from({ length: columns }).map((_, c) => (
-              <div
-                key={c}
-                className={`h-3.5 flex-1 rounded ${c === 0 ? "skeleton" : "skeleton-soft"}`}
-              />
+              <div key={c} className="flex-1">
+                <div
+                  className={`h-3 rounded ${c === 0 ? "skeleton" : "skeleton-soft"}`}
+                  style={{ width: `${FILL[(r * 3 + c) % FILL.length]}%` }}
+                />
+              </div>
             ))}
           </div>
         ))}
@@ -122,9 +138,14 @@ export function TableSkeleton({ rows = 6, columns = 5 }: { rows?: number; column
             className="enter rounded-2xl border border-brand-200/70 bg-white p-4 shadow-card"
             style={enterStyle(r, rows)}
           >
-            <div className="skeleton h-4 w-2/3 rounded" />
-            <div className="skeleton-soft mt-2.5 h-3 w-2/5 rounded" />
-            <div className="skeleton-soft mt-3 h-3 w-1/3 rounded" />
+            <div
+              className="skeleton h-3.5 rounded"
+              style={{ width: `${FILL[r % FILL.length]}%` }}
+            />
+            <div
+              className="skeleton-soft mt-3 h-2.5 rounded"
+              style={{ width: `${FILL[(r + 4) % FILL.length] * 0.6}%` }}
+            />
           </div>
         ))}
       </div>
@@ -132,15 +153,16 @@ export function TableSkeleton({ rows = 6, columns = 5 }: { rows?: number; column
   );
 }
 
-/** Header skeleton — title plus the action button's footprint. */
+/** Header skeleton — title plus the action button's footprint. Sized to the
+ *  real PageHeader rather than eyeballed, so nothing jumps on the swap. */
 export function HeaderSkeleton() {
   return (
     <div className="enter flex flex-wrap items-start justify-between gap-4">
       <div>
-        <div className="skeleton h-8 w-44 rounded-lg" />
-        <div className="skeleton-soft mt-3 h-3.5 w-64 max-w-full rounded" />
+        <div className="skeleton h-7 w-40 rounded-lg" />
+        <div className="skeleton-soft mt-3 h-3 w-56 max-w-full rounded" />
       </div>
-      <div className="skeleton h-11 w-40 rounded-2xl" />
+      <div className="skeleton-soft h-11 w-36 rounded-2xl" />
     </div>
   );
 }

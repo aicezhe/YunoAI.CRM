@@ -14,12 +14,24 @@ import { CARD_STAGGER_MS } from "@/components/ui/record";
  * swap to content then reads as the grey version resolving into colour, not
  * one screen being replaced by another.
  */
+/**
+ * Field labels and values are never all the same length, and a column of
+ * identical bars is what makes a skeleton read as a broken grid instead of
+ * as text that hasn't arrived. Fixed values rather than Math.random(), which
+ * would differ between the server render and the client's and hydrate
+ * mismatched. */
+const LABEL_W = ["w-20", "w-24", "w-16", "w-24", "w-20", "w-14"];
+const VALUE_W = ["w-44", "w-32", "w-52", "w-28", "w-40", "w-36"];
+
 export function RecordSkeleton({ cards = 2, rows = 4 }: { cards?: number; rows?: number }) {
   return (
     <div className="mx-auto max-w-3xl">
-      <div className="enter skeleton h-4 w-28 rounded" />
+      <div className="enter skeleton-soft h-3.5 w-24 rounded" />
+      {/* Shorter and lighter than the h-9/w-72 slab this replaced: at the top
+          of an otherwise empty page that block was the loudest thing on
+          screen, and it is standing in for a heading, not shouting one. */}
       <div
-        className="enter skeleton mt-5 h-9 w-72 max-w-full rounded-lg"
+        className="enter skeleton mt-5 h-7 w-56 max-w-full rounded-lg"
         style={{ "--enter-delay": `${CARD_STAGGER_MS / 2}ms` } as React.CSSProperties}
       />
 
@@ -35,8 +47,10 @@ export function RecordSkeleton({ cards = 2, rows = 4 }: { cards?: number; rows?:
                 key={r}
                 className="flex items-center justify-between gap-8 border-b border-brand-200/40 py-3.5 last:border-0"
               >
-                <div className="skeleton-soft h-3.5 w-24 rounded" />
-                <div className="skeleton h-3.5 w-40 max-w-[45%] rounded" />
+                <div className={`skeleton-soft h-3 rounded ${LABEL_W[(c * rows + r) % LABEL_W.length]}`} />
+                <div
+                  className={`skeleton h-3 max-w-[45%] rounded ${VALUE_W[(c * rows + r) % VALUE_W.length]}`}
+                />
               </div>
             ))}
           </div>

@@ -76,12 +76,18 @@ body {
   overflow: hidden;
 }
 
+/* Deliberately faint. The first cut used brand-150/brand-100, which on a
+   white card sits at roughly the weight of real text — so a loading screen
+   read as a page full of solid lavender slabs rather than as an absence of
+   content. A placeholder should be quieter than what replaces it: these are
+   light enough to read as "empty" at a glance, and the sweep is what keeps
+   them from looking like a stalled render. */
 .skeleton {
-  background-color: var(--color-brand-150);
+  background-color: var(--color-brand-100);
 }
 
 .skeleton-soft {
-  background-color: var(--color-brand-100);
+  background-color: color-mix(in oklab, var(--color-brand-100) 45%, white);
 }
 
 .skeleton::after,
@@ -90,11 +96,17 @@ body {
   position: absolute;
   inset: 0;
   transform: translateX(-100%);
-  background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.8), transparent);
-  animation: skeleton-sweep 1.8s ease-in-out infinite;
+  background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.95), transparent);
+  animation: skeleton-sweep 2.4s cubic-bezier(0.4, 0, 0.2, 1) infinite;
 }
 
+/* Travels past the far edge and then rests before starting over. A sweep
+   that restarts the instant it finishes reads as a busy, mechanical loop;
+   the pause makes it a slow breath instead — and it matters more now that
+   the bars themselves are faint, since the sweep is doing most of the work
+   of saying "still loading". */
 @keyframes skeleton-sweep {
+  60%,
   100% {
     transform: translateX(100%);
   }
