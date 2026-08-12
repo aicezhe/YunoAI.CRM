@@ -34,7 +34,10 @@ export default async function ContractsPage() {
             <Table columns={["Deal", "Signed", "Value", "Notes"]}>
               {contracts.map((contract, i) => (
                 <Row key={contract.id} index={i} count={contracts.length}>
-                  <RowLink href={`/deals/${contract.dealId}`}>
+                  {/* The contract's own page, not the deal's — this list is
+                      where contracts are entered from, so leaving one should
+                      land back here. The deal is one click away inside. */}
+                  <RowLink href={`/contracts/${contract.id}`}>
                     {contract.dealTitle ?? "Deal"}
                   </RowLink>
                   <Cell muted className="tabular-nums whitespace-nowrap">
@@ -52,7 +55,7 @@ export default async function ContractsPage() {
               {contracts.map((contract, i) => (
                 <CardLink
                   key={contract.id}
-                  href={`/deals/${contract.dealId}`}
+                  href={`/contracts/${contract.id}`}
                   index={i}
                   count={contracts.length}
                 >
