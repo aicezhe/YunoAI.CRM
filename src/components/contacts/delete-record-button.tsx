@@ -1,7 +1,7 @@
 "use client";
 
 import { useState, useTransition } from "react";
-import { motion } from "framer-motion";
+import { AnimatePresence, motion } from "framer-motion";
 import { Trash2 } from "lucide-react";
 import { deleteOrganization, deletePerson } from "@/lib/data/actions/contacts";
 import type { DeleteImpact } from "@/lib/data/types";
@@ -51,76 +51,87 @@ export function DeleteRecordButton({
     });
   }
 
-  if (!confirming) {
-    return (
-      <button
-        type="button"
-        onClick={() => setConfirming(true)}
-        className="inline-flex min-h-10 shrink-0 items-center gap-2 rounded-xl border border-gray-200 bg-white px-4 text-sm font-medium text-gray-600 transition-colors hover:border-rose-200 hover:bg-rose-50 hover:text-rose-600"
-      >
-        <Trash2 className="h-4 w-4" strokeWidth={1.75} aria-hidden />
-        Delete
-      </button>
-    );
-  }
-
+  // AnimatePresence with mode="wait", so Cancel actually plays the panel's
+  // exit before the plain button returns — an early-return swap here would
+  // unmount it mid-frame, which reads as the panel snapping shut. `initial=
+  // {false}` keeps the button from animating in on first page load.
   return (
-    <motion.div
-      initial={{ opacity: 0, scale: 0.98, y: -4 }}
-      animate={{ opacity: 1, scale: 1, y: 0 }}
-      transition={{ duration: 0.18, ease: [0.32, 0.72, 0, 1] }}
-      className="w-full rounded-2xl border border-rose-200 bg-rose-50/60 p-4"
-    >
-      {blocked ? (
-        <p className="text-sm text-gray-700">
-          <span className="font-semibold">{name}</span> is on{" "}
-          {impact.deals === 1 ? "1 deal" : `${impact.deals} deals`} and can&apos;t be deleted.
-          Reassign or delete {impact.deals === 1 ? "that deal" : "those deals"} first.
-        </p>
-      ) : (
-        <p className="text-sm text-gray-700">
-          Delete <span className="font-semibold">{name}</span>? This cannot be undone.
-          <Consequences kind={kind} impact={impact} />
-        </p>
-      )}
-
-      {error && (
-        <p role="alert" className="mt-2 text-sm font-medium text-rose-600">
-          {error}
-        </p>
-      )}
-
-      <div className="mt-3 flex flex-wrap justify-end gap-2">
-        <button
+    <AnimatePresence mode="wait" initial={false}>
+      {!confirming ? (
+        <motion.button
+          key="trigger"
           type="button"
-          onClick={() => {
-            setConfirming(false);
-            setError(null);
-          }}
-          disabled={pending}
-          className="min-h-10 rounded-xl border border-gray-200 bg-white px-4 text-sm font-medium text-gray-600 transition-colors hover:bg-gray-50 disabled:opacity-60"
+          initial={{ opacity: 0 }}
+          animate={{ opacity: 1 }}
+          exit={{ opacity: 0, transition: { duration: 0.1 } }}
+          transition={{ duration: 0.15, ease: "easeOut" }}
+          onClick={() => setConfirming(true)}
+          className="inline-flex min-h-10 shrink-0 items-center gap-2 rounded-xl border border-gray-200 bg-white px-4 text-sm font-medium text-gray-600 transition-colors hover:border-rose-200 hover:bg-rose-50 hover:text-rose-600"
         >
-          {blocked ? "Close" : "Cancel"}
-        </button>
+          <Trash2 className="h-4 w-4" strokeWidth={1.75} aria-hidden />
+          Delete
+        </motion.button>
+      ) : (
+        <motion.div
+          key="panel"
+          initial={{ opacity: 0, scale: 0.96, y: -4 }}
+          animate={{ opacity: 1, scale: 1, y: 0 }}
+          exit={{ opacity: 0, scale: 0.96, transition: { duration: 0.1, ease: "easeIn" } }}
+          transition={{ duration: 0.15, ease: [0.32, 0.72, 0, 1] }}
+          className="w-full rounded-2xl border border-rose-200 bg-rose-50/60 p-4"
+        >
+          {blocked ? (
+            <p className="text-sm text-gray-700">
+              <span className="font-semibold">{name}</span> is on{" "}
+              {impact.deals === 1 ? "1 deal" : `${impact.deals} deals`} and can&apos;t be deleted.
+              Reassign or delete {impact.deals === 1 ? "that deal" : "those deals"} first.
+            </p>
+          ) : (
+            <p className="text-sm text-gray-700">
+              Delete <span className="font-semibold">{name}</span>? This cannot be undone.
+              <Consequences kind={kind} impact={impact} />
+            </p>
+          )}
 
-        {!blocked && (
-          <button
-            type="button"
-            onClick={remove}
-            disabled={pending}
-            className="inline-flex min-h-10 items-center gap-2 rounded-xl bg-rose-600 px-4 text-sm font-semibold text-white transition-colors hover:bg-rose-700 disabled:cursor-not-allowed disabled:opacity-60"
-          >
-            {pending && (
-              <span
-                aria-hidden
-                className="h-4 w-4 animate-spin rounded-full border-2 border-white/40 border-t-white"
-              />
+          {error && (
+            <p role="alert" className="mt-2 text-sm font-medium text-rose-600">
+              {error}
+            </p>
+          )}
+
+          <div className="mt-3 flex flex-wrap justify-end gap-2">
+            <button
+              type="button"
+              onClick={() => {
+                setConfirming(false);
+                setError(null);
+              }}
+              disabled={pending}
+              className="min-h-10 rounded-xl border border-gray-200 bg-white px-4 text-sm font-medium text-gray-600 transition-colors hover:bg-gray-50 disabled:opacity-60"
+            >
+              {blocked ? "Close" : "Cancel"}
+            </button>
+
+            {!blocked && (
+              <button
+                type="button"
+                onClick={remove}
+                disabled={pending}
+                className="inline-flex min-h-10 items-center gap-2 rounded-xl bg-rose-600 px-4 text-sm font-semibold text-white transition-colors hover:bg-rose-700 disabled:cursor-not-allowed disabled:opacity-60"
+              >
+                {pending && (
+                  <span
+                    aria-hidden
+                    className="h-4 w-4 animate-spin rounded-full border-2 border-white/40 border-t-white"
+                  />
+                )}
+                {pending ? "Deleting…" : `Delete ${noun}`}
+              </button>
             )}
-            {pending ? "Deleting…" : `Delete ${noun}`}
-          </button>
-        )}
-      </div>
-    </motion.div>
+          </div>
+        </motion.div>
+      )}
+    </AnimatePresence>
   );
 }
 
