@@ -1,7 +1,7 @@
 import Link from "next/link";
 import { notFound } from "next/navigation";
 import { Pencil } from "lucide-react";
-import { BackLink, Field, Missing, RecordCard } from "@/components/ui/record";
+import { BackLink, Field, Missing, RecordCard, RecordLink } from "@/components/ui/record";
 import { FlipScene } from "@/components/ui/flip-scene";
 import { ErrorState } from "@/components/ui/states";
 import { isAdmin } from "@/lib/auth/current-user";
@@ -63,9 +63,9 @@ export default async function ContractPage({ params }: PageProps<"/contracts/[id
             <dl>
               <Field label="Deal">
                 {c.dealId ? (
-                  <Link href={`/deals/${c.dealId}`} className="text-brand-600 hover:underline">
+                  <RecordLink href={`/deals/${c.dealId}`}>
                     {c.dealTitle}
-                  </Link>
+                  </RecordLink>
                 ) : (
                   <Missing />
                 )}

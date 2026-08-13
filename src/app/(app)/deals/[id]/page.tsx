@@ -4,7 +4,7 @@ import { DealActivityCard } from "@/components/deals/deal-activity-card";
 import { DealContractsCard } from "@/components/deals/deal-contracts-card";
 import { StageStepper } from "@/components/deals/stage-stepper";
 import { Pencil, Route } from "lucide-react";
-import { BackLink, Field, Missing, RecordCard } from "@/components/ui/record";
+import { BackLink, Field, Missing, RecordCard, RecordLink } from "@/components/ui/record";
 import { FlipScene } from "@/components/ui/flip-scene";
 import { ErrorState, InlineEmpty } from "@/components/ui/states";
 import { listActivitiesForDeal } from "@/lib/data/activities";
@@ -73,8 +73,24 @@ export default async function DealPage({ params }: PageProps<"/deals/[id]">) {
         <RecordCard index={0}>
           <dl>
             <Field label="Value">{formatMoney(d.value, d.currency)}</Field>
-            <Field label="Organization">{d.organizationName ?? <Missing />}</Field>
-            <Field label="Contact">{d.personName ?? <Missing />}</Field>
+            <Field label="Organization">
+              {d.organizationId ? (
+                <RecordLink href={`/contacts/organizations/${d.organizationId}`}>
+                  {d.organizationName}
+                </RecordLink>
+              ) : (
+                <Missing />
+              )}
+            </Field>
+            <Field label="Contact">
+              {d.personId ? (
+                <RecordLink href={`/contacts/people/${d.personId}`}>{d.personName}</RecordLink>
+              ) : (
+                <Missing />
+              )}
+            </Field>
+            {/* Owner stays plain text: a user has no page of their own, and
+                the team roster in Settings is a list, not a record. */}
             <Field label="Owner">{d.ownerName ?? <Missing />}</Field>
             <Field label="Expected close">{formatDate(d.expectedCloseDate)}</Field>
           </dl>

@@ -1,5 +1,6 @@
 "use client";
 
+import Link from "next/link";
 import { useActionState, useEffect, useState } from "react";
 import { AnimatePresence, motion } from "framer-motion";
 import { CalendarPlus, Plus } from "lucide-react";
@@ -118,19 +119,29 @@ export function DealActivityCard({
       ) : (
         <ul className="mt-2 divide-y divide-brand-200/40">
           {activities.data.map((a) => (
-            <li key={a.id} className="flex items-center gap-3 py-3">
+            <li
+              key={a.id}
+              className="relative flex items-center gap-3 py-3 transition-colors duration-150 ease-out hover:bg-brand-50/60"
+            >
               <ActivityIcon type={a.type} />
               <div className="min-w-0 flex-1">
-                <p
+                {/* The subject opens the activity — a stretched link, so the
+                    whole row is the target while the Done checkbox beside it
+                    keeps its own. */}
+                <Link
+                  href={`/activities/${a.id}`}
                   className={
-                    "truncate text-sm transition-colors duration-200 " + (a.done ? "text-gray-400 line-through" : "text-gray-900")
+                    "block truncate text-sm transition-colors duration-200 after:absolute after:inset-0 after:content-[''] hover:text-brand-600 " +
+                    (a.done ? "text-gray-400 line-through" : "text-gray-900")
                   }
                 >
                   {a.subject}
-                </p>
+                </Link>
                 <p className="text-xs text-gray-400">{formatDue(a.dueAt)}</p>
               </div>
-              <DoneCheckbox id={a.id} done={a.done} label={a.subject} />
+              <span className="relative z-10 shrink-0">
+                <DoneCheckbox id={a.id} done={a.done} label={a.subject} />
+              </span>
             </li>
           ))}
         </ul>

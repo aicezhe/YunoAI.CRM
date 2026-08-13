@@ -1,9 +1,8 @@
-import Link from "next/link";
 import { notFound } from "next/navigation";
 import { CircleAlert } from "lucide-react";
 import { DoneCheckbox } from "@/components/done-checkbox";
 import { ActivityIcon } from "@/components/ui/badges";
-import { BackLink, Field, Missing, RecordCard } from "@/components/ui/record";
+import { BackLink, Field, Missing, RecordCard, RecordLink } from "@/components/ui/record";
 import { FlipScene } from "@/components/ui/flip-scene";
 import { ErrorState } from "@/components/ui/states";
 import { getActivity } from "@/lib/data/activities";
@@ -63,30 +62,27 @@ export default async function ActivityPage({ params }: PageProps<"/activities/[i
             </Field>
             <Field label="Deal">
               {a.dealId ? (
-                <Link href={`/deals/${a.dealId}`} className="text-brand-600 hover:underline">
+                <RecordLink href={`/deals/${a.dealId}`}>
                   {a.dealTitle}
-                </Link>
+                </RecordLink>
               ) : (
                 <Missing />
               )}
             </Field>
             <Field label="Contact">
               {a.personId ? (
-                <Link href={`/contacts/people/${a.personId}`} className="text-brand-600 hover:underline">
+                <RecordLink href={`/contacts/people/${a.personId}`}>
                   {a.personName}
-                </Link>
+                </RecordLink>
               ) : (
                 <Missing />
               )}
             </Field>
             <Field label="Organization">
               {a.organizationId ? (
-                <Link
-                  href={`/contacts/organizations/${a.organizationId}`}
-                  className="text-brand-600 hover:underline"
-                >
+                <RecordLink href={`/contacts/organizations/${a.organizationId}`}>
                   {a.organizationName}
-                </Link>
+                </RecordLink>
               ) : (
                 <Missing />
               )}

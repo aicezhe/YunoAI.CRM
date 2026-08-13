@@ -3,7 +3,7 @@ import { notFound } from "next/navigation";
 import { Pencil } from "lucide-react";
 import { DeleteRecordButton } from "@/components/contacts/delete-record-button";
 import { RelatedActivity, RelatedDeals } from "@/components/contacts/related";
-import { BackLink, Field, Missing, RecordCard } from "@/components/ui/record";
+import { BackLink, Field, Missing, RecordCard, RecordLink } from "@/components/ui/record";
 import { FlipScene } from "@/components/ui/flip-scene";
 import { ErrorState } from "@/components/ui/states";
 import { listActivitiesForPerson } from "@/lib/data/activities";
@@ -56,12 +56,9 @@ export default async function PersonPage({ params }: PageProps<"/contacts/people
           <dl>
             <Field label="Organization">
               {person.organizationId ? (
-                <Link
-                  href={`/contacts/organizations/${person.organizationId}`}
-                  className="text-brand-600 hover:underline"
-                >
+                <RecordLink href={`/contacts/organizations/${person.organizationId}`}>
                   {person.organizationName}
-                </Link>
+                </RecordLink>
               ) : (
                 <Missing />
               )}

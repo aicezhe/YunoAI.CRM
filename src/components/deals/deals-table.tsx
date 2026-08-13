@@ -1,5 +1,6 @@
 "use client";
 
+import Link from "next/link";
 import { useMemo, useState } from "react";
 import { ChevronDown, ChevronUp, Handshake } from "lucide-react";
 import { StageBadge, StatusBadge } from "@/components/ui/badges";
@@ -136,10 +137,35 @@ export function DealsTable({ deals, currentUserId }: { deals: DealRow[]; current
               {/* One column for both counterparties: the schema allows
                   either, and two half-empty columns would read worse than
                   one that always has something in it. */}
+              {/* Both counterparties link to their own record. `relative
+                  z-10` lifts them over the row's stretched link, the same
+                  way EmailChip and PhoneLink already do — without it the
+                  row's own link swallows the click. */}
               <Cell muted>
-                {deal.organizationName ?? deal.personName ?? <Blank />}
-                {deal.organizationName && deal.personName && (
-                  <span className="block text-xs text-gray-400">{deal.personName}</span>
+                {deal.organizationId ? (
+                  <Link
+                    href={`/contacts/organizations/${deal.organizationId}`}
+                    className="relative z-10 transition-colors duration-150 ease-out hover:text-brand-600 hover:underline"
+                  >
+                    {deal.organizationName}
+                  </Link>
+                ) : deal.personId ? (
+                  <Link
+                    href={`/contacts/people/${deal.personId}`}
+                    className="relative z-10 transition-colors duration-150 ease-out hover:text-brand-600 hover:underline"
+                  >
+                    {deal.personName}
+                  </Link>
+                ) : (
+                  <Blank />
+                )}
+                {deal.organizationName && deal.personId && (
+                  <Link
+                    href={`/contacts/people/${deal.personId}`}
+                    className="relative z-10 block text-xs text-gray-400 transition-colors duration-150 ease-out hover:text-brand-600 hover:underline"
+                  >
+                    {deal.personName}
+                  </Link>
                 )}
               </Cell>
 

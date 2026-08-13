@@ -87,3 +87,31 @@ export function RecordCard({
 export function Missing() {
   return <span className="font-normal text-gray-300">—</span>;
 }
+
+/**
+ * The name of a related record, as a link to it.
+ *
+ * One component rather than a repeated className, because "a linked record"
+ * appears on every record page and in two tables, and the six copies of
+ * `text-brand-600 hover:underline` were already drifting — some had a
+ * transition, some didn't.
+ *
+ * brand-600 rather than the brand-500 accent: 500 is the fill colour of
+ * buttons and badges, and text at that weight on white sits at the edge of
+ * comfortable contrast. Every link in the app has always used 600, so this
+ * matches the cards it lives in.
+ *
+ * The underline animates in rather than appearing: `decoration-transparent`
+ * plus a transition on decoration-color means the underline is always
+ * *there*, just invisible, so nothing reflows when it shows.
+ */
+export function RecordLink({ href, children }: { href: string; children: React.ReactNode }) {
+  return (
+    <Link
+      href={href}
+      className="rounded-sm text-brand-600 underline decoration-transparent underline-offset-2 transition-[color,text-decoration-color] duration-150 ease-out hover:text-brand-500 hover:decoration-brand-500/60 focus-visible:decoration-brand-500/60"
+    >
+      {children}
+    </Link>
+  );
+}
