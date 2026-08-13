@@ -1,13 +1,13 @@
 "use client";
 
-import { useMemo, useState } from "react";
+import { Fragment, useMemo, useState } from "react";
 import Link from "next/link";
 import { CircleAlert } from "lucide-react";
 import { DoneCheckbox } from "@/components/done-checkbox";
 import { ActivityIcon } from "@/components/ui/badges";
 import { SortHeader, SortPill, type SortDirection } from "@/components/ui/sort";
 import { Blank, Card, Cell, Row, RowLink, Table } from "@/components/ui/table";
-import { sortActivities } from "@/lib/activities-view";
+import { groupActivities } from "@/lib/activities-view";
 import type { ActivityRow } from "@/lib/data/types";
 import { formatDue } from "@/lib/format";
 
@@ -97,7 +97,18 @@ export function ActivityTable({
   const [direction, setDirection] = useState<SortDirection>(archived ? "desc" : "asc");
   const toggle = () => setDirection((d) => (d === "asc" ? "desc" : "asc"));
 
-  const rows = useMemo(() => sortActivities(activities, direction), [activities, direction]);
+  // Urgent stays pinned above everything else, sorted by date inside its own
+  // block. Kept as two lists rather than one so each can be captioned — a
+  // pinned row that is not labelled reads as a sorting bug, which is exactly
+  // what happened the first time this shipped without the captions.
+  const { urgent, rest } = useMemo(
+    () => groupActivities(activities, direction, !archived),
+    [activities, direction, archived],
+  );
+  const total = urgent.length + rest.length;
+  // Only worth captioning when there are both kinds — one block needs no
+  // label to explain itself.
+  const captioned = urgent.length > 0 && rest.length > 0;
 
   return (
     <>
@@ -116,10 +127,14 @@ export function ActivityTable({
           "Done",
         ]}
       >
-        {rows.map((activity, i) => {
+        {captioned && <CaptionRow label="Urgent" />}
+        {[...urgent, ...rest].map((activity, i) => {
           const related = relatedTo(activity);
+          const startsRest = captioned && i === urgent.length;
           return (
-            <Row key={activity.id} index={i} count={rows.length} className={urgentTint(activity)}>
+            <Fragment key={activity.id}>
+              {startsRest && <CaptionRow label="Everything else" />}
+            <Row key={activity.id} index={i} count={total} className={urgentTint(activity)}>
               <Cell className="w-16">
                 <ActivityIcon type={activity.type} />
               </Cell>
@@ -151,15 +166,19 @@ export function ActivityTable({
                 <DoneCheckbox id={activity.id} done={activity.done} label={activity.subject} />
               </Cell>
             </Row>
+            </Fragment>
           );
         })}
       </Table>
 
       <div className="space-y-3 md:hidden">
-        {rows.map((activity, i) => {
+        {captioned && <CardCaption label="Urgent" />}
+        {[...urgent, ...rest].map((activity, i) => {
           const related = relatedTo(activity);
           return (
-            <Card key={activity.id} index={i} count={rows.length} className={urgentTint(activity)}>
+            <Fragment key={activity.id}>
+              {captioned && i === urgent.length && <CardCaption label="Everything else" />}
+            <Card index={i} count={total} className={urgentTint(activity)}>
               <div className="flex items-center justify-between gap-3">
                 <div className="flex min-w-0 items-center gap-3">
                   <ActivityIcon type={activity.type} />
@@ -190,9 +209,34 @@ export function ActivityTable({
                 </p>
               )}
             </Card>
+            </Fragment>
           );
         })}
       </div>
     </>
+  );
+}
+
+/**
+ * The line that turns a pinned block into a group. Without it, urgent rows
+ * sitting above an otherwise date-ordered column read as the sort being
+ * broken — there is nothing on the row to say it was lifted deliberately.
+ */
+function CaptionRow({ label }: { label: string }) {
+  return (
+    <tr>
+      <td
+        colSpan={5}
+        className="border-b border-brand-200/40 bg-brand-50/40 px-5 py-1.5 text-[11px] font-semibold tracking-wide text-gray-400 uppercase"
+      >
+        {label}
+      </td>
+    </tr>
+  );
+}
+
+function CardCaption({ label }: { label: string }) {
+  return (
+    <p className="pt-1 text-[11px] font-semibold tracking-wide text-gray-400 uppercase">{label}</p>
   );
 }

@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { sortActivities } from "@/lib/activities-view";
+import { groupActivities, sortActivities } from "@/lib/activities-view";
 import type { ActivityRow } from "@/lib/data/types";
 
 function activity(over: Partial<ActivityRow>): ActivityRow {
@@ -42,19 +42,13 @@ describe("sortActivities", () => {
     expect(sortActivities(rows, "desc").map((a) => a.id)).toEqual(["late", "soon", "none"]);
   });
 
-  it("does not lift urgent work out of date order", () => {
-    // The regression this exists for: urgent rows used to be pinned to the
-    // top whatever the dates said, which made a sorted column read as
-    // broken — "17 Aug, 11 Aug, 10 Sep" down a column with a sort arrow on
-    // it. Urgency is signalled on the row, not by its position.
+  it("sorts without regard to priority — the pin is groupActivities' job", () => {
     const rows = [
       activity({ id: "urgent-late", dueAt: "2026-09-10T09:00:00Z", priority: "urgent" }),
       activity({ id: "normal-soon", dueAt: "2026-08-11T09:00:00Z" }),
-      activity({ id: "urgent-mid", dueAt: "2026-08-17T09:00:00Z", priority: "urgent" }),
     ];
     expect(sortActivities(rows, "asc").map((a) => a.id)).toEqual([
       "normal-soon",
-      "urgent-mid",
       "urgent-late",
     ]);
   });
@@ -74,5 +68,49 @@ describe("sortActivities", () => {
     ];
     sortActivities(input, "asc");
     expect(input.map((a) => a.id)).toEqual(["b", "a"]);
+  });
+});
+
+describe("groupActivities", () => {
+  const rows = () => [
+    activity({ id: "urgent-late", dueAt: "2026-09-10T09:00:00Z", priority: "urgent" }),
+    activity({ id: "normal-soon", dueAt: "2026-08-11T09:00:00Z" }),
+    activity({ id: "urgent-soon", dueAt: "2026-08-17T09:00:00Z", priority: "urgent" }),
+    activity({ id: "normal-late", dueAt: "2026-09-02T09:00:00Z" }),
+  ];
+
+  it("pins urgent above the rest, each block in date order", () => {
+    const { urgent, rest } = groupActivities(rows(), "asc", true);
+    expect(urgent.map((a) => a.id)).toEqual(["urgent-soon", "urgent-late"]);
+    expect(rest.map((a) => a.id)).toEqual(["normal-soon", "normal-late"]);
+  });
+
+  it("flips both blocks together", () => {
+    const { urgent, rest } = groupActivities(rows(), "desc", true);
+    expect(urgent.map((a) => a.id)).toEqual(["urgent-late", "urgent-soon"]);
+    expect(rest.map((a) => a.id)).toEqual(["normal-late", "normal-soon"]);
+  });
+
+  it("leaves one flat list when pinning is off — the archive", () => {
+    const { urgent, rest } = groupActivities(rows(), "asc", false);
+    expect(urgent).toEqual([]);
+    expect(rest.map((a) => a.id)).toEqual([
+      "normal-soon",
+      "urgent-soon",
+      "normal-late",
+      "urgent-late",
+    ]);
+  });
+
+  it("never pins a done activity, even if flagged urgent", () => {
+    // Priority answers "what do I do next", which finished work no longer
+    // has an answer to.
+    const list = [
+      activity({ id: "done-urgent", dueAt: "2026-09-01T09:00:00Z", priority: "urgent", done: true }),
+      activity({ id: "open-normal", dueAt: "2026-08-11T09:00:00Z" }),
+    ];
+    const { urgent, rest } = groupActivities(list, "asc", true);
+    expect(urgent).toEqual([]);
+    expect(rest.map((a) => a.id)).toEqual(["open-normal", "done-urgent"]);
   });
 });
