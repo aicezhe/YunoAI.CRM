@@ -7,35 +7,45 @@ import { DoneCheckbox } from "@/components/done-checkbox";
 import { ActivityIcon } from "@/components/ui/badges";
 import { SortHeader, SortPill, type SortDirection } from "@/components/ui/sort";
 import { Blank, Card, Cell, Row, RowLink, Table } from "@/components/ui/table";
-import { groupActivities } from "@/lib/activities-view";
+import { groupActivities, isOverdue, isUrgent } from "@/lib/activities-view";
 import type { ActivityRow } from "@/lib/data/types";
 import { formatDue } from "@/lib/format";
 
 /**
- * The urgent marker: an amber exclamation disc ahead of the subject, and a
- * light brand wash over the whole row (see urgentTint below).
+ * The mark before the subject: red for overdue, amber for urgent.
  *
- * Amber for the icon rather than the brand lavender, which is the colour of
- * every link and button here and so carries no urgency of its own. The row
- * tint is lavender on purpose though — it says "highlighted", while the
- * disc alone says "why".
+ * One mark, not two, when a row is both. Overdue outranks urgent because it
+ * is a fact rather than a label — the date has passed, and that is the more
+ * actionable half of "urgent and late". Stacking both discs would put two
+ * warning icons on the busiest rows and make neither read.
  *
- * Hidden once an activity is done — priority answers "what do I do next",
- * which is why the archive is not sorted by it either (see listActivities).
+ * Red only for overdue, and amber for urgent, rather than the brand
+ * lavender for either: lavender is the colour of every link and button
+ * here, so it carries no alarm of its own.
+ *
+ * Neither appears on finished work. A done activity that was late is not a
+ * thing to act on — the archive records what happened, not what is owed.
  */
-function UrgentMark({ activity }: { activity: ActivityRow }) {
-  if (!isUrgent(activity)) return null;
-  return (
-    <CircleAlert
-      className="h-4 w-4 shrink-0 fill-amber-400 text-white"
-      strokeWidth={2.25}
-      aria-label="Urgent"
-    />
-  );
-}
-
-function isUrgent(activity: ActivityRow): boolean {
-  return activity.priority === "urgent" && !activity.done;
+function ActivityMark({ activity, now }: { activity: ActivityRow; now: Date }) {
+  if (isOverdue(activity, now)) {
+    return (
+      <CircleAlert
+        className="h-4 w-4 shrink-0 fill-rose-500 text-white"
+        strokeWidth={2.25}
+        aria-label="Overdue"
+      />
+    );
+  }
+  if (isUrgent(activity)) {
+    return (
+      <CircleAlert
+        className="h-4 w-4 shrink-0 fill-amber-400 text-white"
+        strokeWidth={2.25}
+        aria-label="Urgent"
+      />
+    );
+  }
+  return null;
 }
 
 /**
@@ -91,6 +101,11 @@ export function ActivityTable({
 }) {
   const label = archived ? "Completed" : "Due";
 
+  // One clock for the whole list. Read per row, two activities either side
+  // of the current minute could disagree about what "now" is, and the
+  // useMemo below would not see the difference.
+  const now = useMemo(() => new Date(), []);
+
   // Open work reads soonest-first, the archive most-recently-finished first —
   // the order each list is actually read in, and the one the query already
   // applied. Clicking the header flips it from there.
@@ -141,7 +156,7 @@ export function ActivityTable({
 
               <RowLink href={`/activities/${activity.id}`}>
                 <span className="flex items-center gap-1.5">
-                  <UrgentMark activity={activity} />
+                  <ActivityMark activity={activity} now={now} />
                   <span className={"transition-colors duration-200 " + (activity.done ? "text-gray-400 line-through" : "")}>
                     {activity.subject}
                   </span>
@@ -182,7 +197,7 @@ export function ActivityTable({
               <div className="flex items-center justify-between gap-3">
                 <div className="flex min-w-0 items-center gap-3">
                   <ActivityIcon type={activity.type} />
-                  <UrgentMark activity={activity} />
+                  <ActivityMark activity={activity} now={now} />
                   <Link
                     href={`/activities/${activity.id}`}
                     className={

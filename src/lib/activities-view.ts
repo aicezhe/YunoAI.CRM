@@ -25,6 +25,22 @@ export function isUrgent(activity: ActivityRow): boolean {
   return activity.priority === "urgent" && !activity.done;
 }
 
+/**
+ * Past its due date and still not done.
+ *
+ * `now` is a parameter rather than read inside, so the rule can be tested
+ * against a fixed clock — the alternative is a test that passes today and
+ * fails on the day the fixture date goes by.
+ *
+ * An activity with no due date is never overdue: nothing was promised, so
+ * nothing was missed. Done work is never overdue either — it happened,
+ * whenever it happened.
+ */
+export function isOverdue(activity: ActivityRow, now: Date): boolean {
+  if (activity.done || activity.dueAt === null) return false;
+  return new Date(activity.dueAt) < now;
+}
+
 export function compareActivities(direction: SortDirection) {
   const sign = direction === "asc" ? 1 : -1;
 

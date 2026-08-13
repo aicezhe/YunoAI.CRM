@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { groupActivities, sortActivities } from "@/lib/activities-view";
+import { groupActivities, isOverdue, sortActivities } from "@/lib/activities-view";
 import type { ActivityRow } from "@/lib/data/types";
 
 function activity(over: Partial<ActivityRow>): ActivityRow {
@@ -112,5 +112,30 @@ describe("groupActivities", () => {
     const { urgent, rest } = groupActivities(list, "asc", true);
     expect(urgent).toEqual([]);
     expect(rest.map((a) => a.id)).toEqual(["open-normal", "done-urgent"]);
+  });
+});
+
+describe("isOverdue", () => {
+  const now = new Date("2026-08-13T12:00:00Z");
+
+  it("is true only for unfinished work whose date has passed", () => {
+    expect(isOverdue(activity({ dueAt: "2026-08-13T11:59:00Z" }), now)).toBe(true);
+    expect(isOverdue(activity({ dueAt: "2026-08-13T12:01:00Z" }), now)).toBe(false);
+  });
+
+  it("is never true for a finished activity", () => {
+    // Late and done is not something to act on — the archive records what
+    // happened, not what is owed.
+    expect(isOverdue(activity({ dueAt: "2026-08-01T09:00:00Z", done: true }), now)).toBe(false);
+  });
+
+  it("is never true without a due date", () => {
+    // Nothing was promised, so nothing was missed.
+    expect(isOverdue(activity({ dueAt: null }), now)).toBe(false);
+  });
+
+  it("does not depend on priority", () => {
+    expect(isOverdue(activity({ dueAt: "2026-08-01T09:00:00Z", priority: "urgent" }), now)).toBe(true);
+    expect(isOverdue(activity({ dueAt: "2026-09-01T09:00:00Z", priority: "urgent" }), now)).toBe(false);
   });
 });
