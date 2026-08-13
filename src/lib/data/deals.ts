@@ -185,3 +185,56 @@ export async function listStageTransitions(dealId: string): Promise<Result<Stage
     })),
   );
 }
+
+export type StageAdminRow = {
+  id: string;
+  name: string;
+  position: number;
+  /** Deals currently sitting on the stage — what blocks deletion outright. */
+  dealCount: number;
+  /** History entries touching the stage. RESTRICT on stage_transitions means
+   *  these block deletion too, even when the stage is empty of deals — and
+   *  the history is append-only on principle, so the answer is "keep the
+   *  stage", not "trim the log". */
+  transitionCount: number;
+};
+
+/**
+ * The Settings view of the pipeline: every stage with what hangs off it.
+ * Three cheap queries rather than one join — counts per stage over two
+ * tables in one statement is a GROUP BY across a double join that PostgREST
+ * does not express, and the lists involved are a handful of rows.
+ */
+export async function listStagesForAdmin(): Promise<Result<StageAdminRow[]>> {
+  const supabase = await createClient();
+
+  const [stages, deals, transitions] = await Promise.all([
+    supabase.from("pipeline_stages").select("id, name, position").order("position"),
+    supabase.from("deals").select("stage_id"),
+    supabase.from("stage_transitions").select("from_stage_id, to_stage_id"),
+  ]);
+
+  if (stages.error) return fail("listStagesForAdmin", stages.error.message);
+  if (deals.error) return fail("listStagesForAdmin", deals.error.message);
+  if (transitions.error) return fail("listStagesForAdmin", transitions.error.message);
+
+  const dealCounts = new Map<string, number>();
+  for (const d of deals.data as { stage_id: string | null }[]) {
+    if (d.stage_id) dealCounts.set(d.stage_id, (dealCounts.get(d.stage_id) ?? 0) + 1);
+  }
+
+  const transitionCounts = new Map<string, number>();
+  for (const t of transitions.data as { from_stage_id: string | null; to_stage_id: string }[]) {
+    if (t.from_stage_id)
+      transitionCounts.set(t.from_stage_id, (transitionCounts.get(t.from_stage_id) ?? 0) + 1);
+    transitionCounts.set(t.to_stage_id, (transitionCounts.get(t.to_stage_id) ?? 0) + 1);
+  }
+
+  return ok(
+    (stages.data as { id: string; name: string; position: number }[]).map((s) => ({
+      ...s,
+      dealCount: dealCounts.get(s.id) ?? 0,
+      transitionCount: transitionCounts.get(s.id) ?? 0,
+    })),
+  );
+}

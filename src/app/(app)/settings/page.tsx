@@ -2,15 +2,23 @@ import { PageHeader } from "@/components/ui/page-header";
 import { ErrorState } from "@/components/ui/states";
 import { RecordCard } from "@/components/ui/record";
 import { isAdmin, requireUser } from "@/lib/auth/current-user";
+import { listStagesForAdmin } from "@/lib/data/deals";
 import { listTeam } from "@/lib/data/users";
 import { ProfileNameForm } from "./profile-name-form";
 import { PasswordForm } from "./password-form";
+import { PipelineStages } from "./pipeline-stages";
 import { TeamRoster } from "./team-roster";
+
 
 export const metadata = { title: "Settings · YunoCRM" };
 
 export default async function SettingsPage() {
-  const [user, admin, team] = await Promise.all([requireUser(), isAdmin(), listTeam()]);
+  const [user, admin, team, stages] = await Promise.all([
+    requireUser(),
+    isAdmin(),
+    listTeam(),
+    listStagesForAdmin(),
+  ]);
 
   return (
     <main className="mx-auto max-w-3xl px-5 py-8 sm:px-8 sm:py-10">
@@ -51,7 +59,22 @@ export default async function SettingsPage() {
           <PasswordForm />
         </RecordCard>
 
-        <RecordCard title="Team" index={2}>
+        <RecordCard title="Pipeline" index={2}>
+          <p className="-mt-1 mb-4 text-sm text-gray-500">
+            {admin
+              ? "The stages every deal moves through. Renaming or reordering touches no deal — they point at the stage, not its name."
+              : "The stages every deal moves through."}
+          </p>
+          {!stages.ok ? (
+            <ErrorState message={stages.error} />
+          ) : stages.data.length === 0 ? (
+            <p className="py-4 text-sm text-gray-500">No stages configured yet.</p>
+          ) : (
+            <PipelineStages stages={stages.data} canManage={admin} />
+          )}
+        </RecordCard>
+
+        <RecordCard title="Team" index={3}>
           <p className="-mt-1 mb-4 text-sm text-gray-500">
             {admin ? "Everyone with access, and their role." : "Everyone with access."}
           </p>

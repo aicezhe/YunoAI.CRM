@@ -6,7 +6,7 @@ export default function SettingsLoading() {
     <div className="mx-auto max-w-3xl px-5 py-8 sm:px-8 sm:py-10">
       <HeaderSkeleton />
       <div className="mt-8">
-        <RecordSkeleton cards={3} rows={3} />
+        <RecordSkeleton cards={4} rows={3} />
       </div>
     </div>
   );
