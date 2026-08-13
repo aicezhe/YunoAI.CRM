@@ -44,8 +44,20 @@ export function formatTime(value: string): string {
   return TIME.format(new Date(value));
 }
 
-/** Due timestamps in lists: the time alone once it is today, the date
- *  otherwise — a bare "14:30" on a row three weeks out reads as urgent. */
+/**
+ * Due timestamps in lists.
+ *
+ * Today is named rather than left implicit. The first cut printed the bare
+ * time — "14:30" — on the theory that a date is noise when it is obviously
+ * now; that was wrong the moment the column became sortable. In a list
+ * ordered by date, a row reading "09:30" sitting between "11 Aug" and
+ * "14 Aug" looks misplaced, and the reader has no way to tell it is not:
+ * nothing on the row says which day it belongs to.
+ *
+ * "Today" keeps the signal the bare time was after — it is still the most
+ * prominent thing you can say about a due date — while putting the row back
+ * in a readable order.
+ */
 export function formatDue(value: string | null): string {
   if (!value) return "—";
   const d = new Date(value);
@@ -54,7 +66,7 @@ export function formatDue(value: string | null): string {
     d.getFullYear() === today.getFullYear() &&
     d.getMonth() === today.getMonth() &&
     d.getDate() === today.getDate();
-  return isToday ? TIME.format(d) : `${formatDate(value)}, ${TIME.format(d)}`;
+  return isToday ? `Today, ${TIME.format(d)}` : `${formatDate(value)}, ${TIME.format(d)}`;
 }
 
 /** "yesterday" / "3 days ago" for the overdue strip, naming the moment

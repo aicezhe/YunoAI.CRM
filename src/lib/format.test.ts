@@ -63,9 +63,11 @@ describe("formatDate", () => {
 });
 
 describe("formatDue", () => {
-  it("shows only the time for something due today", () => {
+  it("names today rather than printing a bare time", () => {
+    // A row reading "14:30" in a date-sorted column looks misplaced — nothing
+    // on it says which day it belongs to.
     pinNow("2026-08-11T09:00:00");
-    expect(formatDue("2026-08-11T14:30:00")).toBe("14:30");
+    expect(formatDue("2026-08-11T14:30:00")).toBe("Today, 14:30");
   });
 
   it("shows the date as well for any other day", () => {

@@ -131,10 +131,15 @@ async function main() {
     { type: "call", subject: "Allineamento su tempi di consegna", priority: "normal", deal_id: deal("MES linea assemblaggio"), person_id: person("Matteo Rossi"), org_id: org("Rossi Manifattura"), due_at: at(0, 14, 30), done: false, created_by: camillo },
     { type: "task", subject: "Preparare preventivo impianti", priority: "normal", deal_id: deal("Monitoraggio impianti fotovoltaici"), person_id: person("Elena Verdi"), org_id: org("Verdi Energia"), due_at: at(0, 17), done: false, created_by: marco },
 
-    // Upcoming.
+    // Upcoming — deliberately spread past the end of the month, so the date
+    // column has to render more than one month and the sort has something to
+    // sort. All relative to the run date: the demo never goes stale.
     { type: "meeting", subject: "Sopralluogo magazzino", priority: "normal", deal_id: deal("Integrazione ERP magazzino"), person_id: person("Giorgia Conti"), org_id: org("Foodtech Padana"), due_at: at(2, 9, 30), done: false, created_by: marco },
-    { type: "call", subject: "Primo contatto", priority: "normal", deal_id: deal("App mobile autisti"), person_id: person("Alessandro Riva"), org_id: org("Marelli Logistica"), due_at: at(3, 15), done: false, created_by: giulia },
-    { type: "task", subject: "Raccogliere requisiti formazione", priority: "urgent", deal_id: deal("Formazione team commerciale"), person_id: person("Chiara Neri"), org_id: org("Bellani Costruzioni"), due_at: at(5, 11), done: false, created_by: anna },
+    { type: "call", subject: "Primo contatto", priority: "normal", deal_id: deal("App mobile autisti"), person_id: person("Alessandro Riva"), org_id: org("Marelli Logistica"), due_at: at(9, 15), done: false, created_by: giulia },
+    { type: "task", subject: "Raccogliere requisiti formazione", priority: "urgent", deal_id: deal("Formazione team commerciale"), person_id: person("Chiara Neri"), org_id: org("Bellani Costruzioni"), due_at: at(4, 11), done: false, created_by: anna },
+
+    { type: "meeting", subject: "Revisione trimestrale contratto", priority: "normal", deal_id: deal("Rinnovo licenze annuale"), person_id: person("Sara Marelli"), org_id: org("Marelli Logistica"), due_at: at(20, 10), done: false, created_by: anna },
+    { type: "task", subject: "Preparare offerta rinnovo", priority: "normal", deal_id: deal("Monitoraggio impianti fotovoltaici"), person_id: person("Elena Verdi"), org_id: org("Verdi Energia"), due_at: at(28, 14, 30), done: false, created_by: giulia },
 
     // Done, and notes with no due date at all.
     { type: "call", subject: "Chiamata di qualifica", priority: "normal", deal_id: deal("Rinnovo licenze annuale"), person_id: person("Sara Marelli"), org_id: org("Marelli Logistica"), due_at: at(-4, 10), done: true, created_by: anna, completed_by: anna, completed_at: at(-4, 11) },
