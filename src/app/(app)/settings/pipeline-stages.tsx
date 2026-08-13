@@ -17,10 +17,11 @@ import type { StageAdminRow } from "@/lib/data/deals";
  * implied: stages live in their own table with a position precisely so the
  * team can reshape them without touching a single deal.
  *
- * Members see the list read-only, the same choice the Team card makes: the
- * pipeline is the shape everyone works inside, so hiding it would be
- * strange, but only admins reshape it — enforced here, in every action, and
- * by pipeline_stages_write_admin in RLS.
+ * Rendered for admins only — Settings shows what you can act on, and a
+ * member meets the pipeline where they use it, as the stepper on a deal.
+ * canManage stays a real prop all the same: the actions behind it check
+ * isAdmin() themselves and RLS (pipeline_stages_write_admin) checks again,
+ * so hiding the card is presentation, not the permission.
  *
  * Won and Lost render locked. resolveStage() derives deals.status from
  * those two names, so renaming/moving/deleting them would change how deals

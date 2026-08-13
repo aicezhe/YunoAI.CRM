@@ -13,12 +13,10 @@ import { TeamRoster } from "./team-roster";
 export const metadata = { title: "Settings · YunoCRM" };
 
 export default async function SettingsPage() {
-  const [user, admin, team, stages] = await Promise.all([
-    requireUser(),
-    isAdmin(),
-    listTeam(),
-    listStagesForAdmin(),
-  ]);
+  const [user, admin, team] = await Promise.all([requireUser(), isAdmin(), listTeam()]);
+  // Fetched only when the card below will render — three queries for a list
+  // the page is not going to show would be pure waste.
+  const stages = admin ? await listStagesForAdmin() : null;
 
   return (
     <main className="mx-auto max-w-3xl px-5 py-8 sm:px-8 sm:py-10">
@@ -59,22 +57,27 @@ export default async function SettingsPage() {
           <PasswordForm />
         </RecordCard>
 
-        <RecordCard title="Pipeline" index={2}>
-          <p className="-mt-1 mb-4 text-sm text-gray-500">
-            {admin
-              ? "The stages every deal moves through. Renaming or reordering touches no deal — they point at the stage, not its name."
-              : "The stages every deal moves through."}
-          </p>
-          {!stages.ok ? (
-            <ErrorState message={stages.error} />
-          ) : stages.data.length === 0 ? (
-            <p className="py-4 text-sm text-gray-500">No stages configured yet.</p>
-          ) : (
-            <PipelineStages stages={stages.data} canManage={admin} />
-          )}
-        </RecordCard>
+        {/* Admin-only, the whole card: a member cannot change the pipeline,
+            and a list of stages with zero controls answers no question they
+            have — they see the stages every day as the stepper on any deal.
+            Settings shows what you can act on. */}
+        {admin && stages && (
+          <RecordCard title="Pipeline" index={2}>
+            <p className="-mt-1 mb-4 text-sm text-gray-500">
+              The stages every deal moves through. Renaming or reordering touches no deal — they
+              point at the stage, not its name.
+            </p>
+            {!stages.ok ? (
+              <ErrorState message={stages.error} />
+            ) : stages.data.length === 0 ? (
+              <p className="py-4 text-sm text-gray-500">No stages configured yet.</p>
+            ) : (
+              <PipelineStages stages={stages.data} canManage />
+            )}
+          </RecordCard>
+        )}
 
-        <RecordCard title="Team" index={3}>
+        <RecordCard title="Team" index={admin ? 3 : 2}>
           <p className="-mt-1 mb-4 text-sm text-gray-500">
             {admin ? "Everyone with access, and their role." : "Everyone with access."}
           </p>
