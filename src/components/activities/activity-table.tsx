@@ -81,10 +81,9 @@ function relatedTo(activity: ActivityRow): { label: string; href: string } | nul
 export function ActivityTable({
   activities,
   /** Changes the date column's heading — "Due" is wrong for work that is
-   *  already finished — and, with it, the two rules that differ between the
-   *  lists: the archive reads newest-first and does not pin urgent work.
-   *  Passed explicitly rather than inferred from the first row, which would
-   *  silently mislabel a mixed list. */
+   *  already finished — and the direction it opens in. Passed explicitly
+   *  rather than inferred from the first row, which would silently mislabel
+   *  a mixed list. */
   archived = false,
 }: {
   activities: ActivityRow[];
@@ -98,10 +97,7 @@ export function ActivityTable({
   const [direction, setDirection] = useState<SortDirection>(archived ? "desc" : "asc");
   const toggle = () => setDirection((d) => (d === "asc" ? "desc" : "asc"));
 
-  const rows = useMemo(
-    () => sortActivities(activities, direction, !archived),
-    [activities, direction, archived],
-  );
+  const rows = useMemo(() => sortActivities(activities, direction), [activities, direction]);
 
   return (
     <>

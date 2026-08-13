@@ -1,5 +1,4 @@
 import "server-only";
-import { sortByPriority } from "@/lib/activity-order";
 import { createClient } from "@/lib/supabase/server";
 import { fail, ok, type ActivityRow, type Result } from "./types";
 
@@ -60,12 +59,6 @@ export async function listActivities(done: boolean): Promise<Result<ActivityRow[
   if (error) return fail("listActivities", error.message);
 
   const rows = (data as unknown as RawActivity[]).map(toActivityRow);
-
-  // Urgent floats to the top of the open list (see sortByPriority for why it
-  // is ranked in TypeScript rather than ordered in SQL). Not applied to the
-  // archive: priority answers "what do I do next", which a finished activity
-  // no longer has an answer to.
-  if (!done) sortByPriority(rows);
 
   return ok(rows);
 }

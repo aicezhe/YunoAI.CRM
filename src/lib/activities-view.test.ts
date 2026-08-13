@@ -26,8 +26,8 @@ describe("sortActivities", () => {
       activity({ id: "late", dueAt: "2026-09-01T09:00:00Z" }),
       activity({ id: "soon", dueAt: "2026-08-11T09:00:00Z" }),
     ];
-    expect(sortActivities(rows, "asc", false).map((a) => a.id)).toEqual(["soon", "late"]);
-    expect(sortActivities(rows, "desc", false).map((a) => a.id)).toEqual(["late", "soon"]);
+    expect(sortActivities(rows, "asc").map((a) => a.id)).toEqual(["soon", "late"]);
+    expect(sortActivities(rows, "desc").map((a) => a.id)).toEqual(["late", "soon"]);
   });
 
   it("keeps activities with no due date last in both directions", () => {
@@ -38,62 +38,33 @@ describe("sortActivities", () => {
       activity({ id: "soon", dueAt: "2026-08-11T09:00:00Z" }),
       activity({ id: "late", dueAt: "2026-09-01T09:00:00Z" }),
     ];
-    expect(sortActivities(rows, "asc", false).map((a) => a.id)).toEqual(["soon", "late", "none"]);
-    expect(sortActivities(rows, "desc", false).map((a) => a.id)).toEqual(["late", "soon", "none"]);
+    expect(sortActivities(rows, "asc").map((a) => a.id)).toEqual(["soon", "late", "none"]);
+    expect(sortActivities(rows, "desc").map((a) => a.id)).toEqual(["late", "soon", "none"]);
   });
 
-  it("pins urgent to the top whichever way the dates run", () => {
+  it("does not lift urgent work out of date order", () => {
+    // The regression this exists for: urgent rows used to be pinned to the
+    // top whatever the dates said, which made a sorted column read as
+    // broken — "17 Aug, 11 Aug, 10 Sep" down a column with a sort arrow on
+    // it. Urgency is signalled on the row, not by its position.
     const rows = [
+      activity({ id: "urgent-late", dueAt: "2026-09-10T09:00:00Z", priority: "urgent" }),
       activity({ id: "normal-soon", dueAt: "2026-08-11T09:00:00Z" }),
-      activity({ id: "urgent-late", dueAt: "2026-09-01T09:00:00Z", priority: "urgent" }),
+      activity({ id: "urgent-mid", dueAt: "2026-08-17T09:00:00Z", priority: "urgent" }),
     ];
-    // The flag is a pin, not a sort key: reversing the order must not drop
-    // urgent work down the page.
-    expect(sortActivities(rows, "asc", true).map((a) => a.id)).toEqual([
-      "urgent-late",
+    expect(sortActivities(rows, "asc").map((a) => a.id)).toEqual([
       "normal-soon",
-    ]);
-    expect(sortActivities(rows, "desc", true).map((a) => a.id)).toEqual([
+      "urgent-mid",
       "urgent-late",
-      "normal-soon",
     ]);
   });
 
-  it("sorts within the urgent block too", () => {
+  it("treats done and open activities the same way", () => {
     const rows = [
-      activity({ id: "u-late", dueAt: "2026-09-01T09:00:00Z", priority: "urgent" }),
-      activity({ id: "u-soon", dueAt: "2026-08-11T09:00:00Z", priority: "urgent" }),
-      activity({ id: "normal", dueAt: "2026-08-01T09:00:00Z" }),
+      activity({ id: "done-late", dueAt: "2026-09-01T09:00:00Z", done: true }),
+      activity({ id: "open-soon", dueAt: "2026-08-11T09:00:00Z" }),
     ];
-    expect(sortActivities(rows, "asc", true).map((a) => a.id)).toEqual([
-      "u-soon",
-      "u-late",
-      "normal",
-    ]);
-  });
-
-  it("does not pin a done activity, even if flagged urgent", () => {
-    // Priority answers "what do I do next", which finished work no longer
-    // has an answer to.
-    const rows = [
-      activity({ id: "done-urgent", dueAt: "2026-09-01T09:00:00Z", priority: "urgent", done: true }),
-      activity({ id: "open-normal", dueAt: "2026-08-11T09:00:00Z" }),
-    ];
-    expect(sortActivities(rows, "asc", true).map((a) => a.id)).toEqual([
-      "open-normal",
-      "done-urgent",
-    ]);
-  });
-
-  it("ignores priority entirely when pinning is off (the archive)", () => {
-    const rows = [
-      activity({ id: "normal-soon", dueAt: "2026-08-11T09:00:00Z" }),
-      activity({ id: "urgent-late", dueAt: "2026-09-01T09:00:00Z", priority: "urgent" }),
-    ];
-    expect(sortActivities(rows, "asc", false).map((a) => a.id)).toEqual([
-      "normal-soon",
-      "urgent-late",
-    ]);
+    expect(sortActivities(rows, "asc").map((a) => a.id)).toEqual(["open-soon", "done-late"]);
   });
 
   it("does not reorder the array it was given", () => {
@@ -101,7 +72,7 @@ describe("sortActivities", () => {
       activity({ id: "b", dueAt: "2026-09-01T09:00:00Z" }),
       activity({ id: "a", dueAt: "2026-08-01T09:00:00Z" }),
     ];
-    sortActivities(input, "asc", false);
+    sortActivities(input, "asc");
     expect(input.map((a) => a.id)).toEqual(["b", "a"]);
   });
 });
