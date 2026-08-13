@@ -87,6 +87,8 @@ erDiagram
 
 - **The stage history is append-only in the database, not just in the app.** `stage_transitions` grants SELECT and INSERT to signed-in users and nothing else — no UPDATE, no DELETE, and TRUNCATE revoked (TRUNCATE bypasses RLS entirely). When a deal entered Won is what commission gets argued over, a log its subject can edit is not evidence. Rows still disappear with their deal: a foreign-key cascade is performed by the system and passes through neither policy nor grant.
 
+- **Deleting a deal is admin-only.** Members create, edit, move and close deals; only an admin can delete one. Deleting destroys the stage history along with it (`ON DELETE CASCADE`), and a deal that went nowhere is closed as Lost — an outcome that keeps its history and its reason. Enforced by an RLS policy, which is the only layer that matters here: the app has no delete path for deals at all, so the route being closed is a direct API call.
+
 - **Constraints live in the database.** `lost_reason` is required when a deal is lost and must be empty otherwise; a deal must point to at least an organization or a person; an activity must be linked to at least one record. Enforced by CHECK constraints, so a bug in the app or a hand-written SQL statement cannot write a contradictory row.
 
 ## Demo data
