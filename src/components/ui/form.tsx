@@ -56,6 +56,7 @@ export function SelectField({
   required,
   optional,
   options,
+  groups,
   placeholder,
   onValueChange,
 }: {
@@ -66,6 +67,12 @@ export function SelectField({
   required?: boolean;
   optional?: boolean;
   options: { value: string; label: string }[];
+  /** Optional <optgroup>s rendered above `options`. Used by the deal form to
+   *  float the chosen company's own people to the top of the contact picker:
+   *  a native optgroup rather than a custom listbox, because the browser's
+   *  own select is keyboard- and screen-reader-correct for free, and this
+   *  needs grouping, not a new widget. */
+  groups?: { label: string; options: { value: string; label: string }[] }[];
   /** The first, unselectable option — for fields with no sensible default of
    *  their own (an owner, a counterparty). A field that defaults to a real
    *  choice (a deal's stage, defaulted to the first one) has no need for
@@ -96,6 +103,15 @@ export function SelectField({
             {placeholder}
           </option>
         )}
+        {groups?.map((group) => (
+          <optgroup key={group.label} label={group.label}>
+            {group.options.map((o) => (
+              <option key={o.value} value={o.value}>
+                {o.label}
+              </option>
+            ))}
+          </optgroup>
+        ))}
         {options.map((o) => (
           <option key={o.value} value={o.value}>
             {o.label}

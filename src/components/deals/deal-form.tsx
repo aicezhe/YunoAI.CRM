@@ -87,6 +87,39 @@ export function DealForm({
   const lostStageId = stages.find((s) => s.name === "Lost")?.id;
   const isLost = Boolean(lostStageId) && stageId === lostStageId;
 
+  // The counterparty pair, watched so the two pickers can help each other as
+  // they change. Deliberately only *help*: picking someone from another
+  // company stays possible and saveable. A consultant representing a client,
+  // somebody who changed jobs last week, a broker — all real, and a hard rule
+  // would block them to prevent a mistake that a sentence of text prevents
+  // just as well.
+  const [orgId, setOrgId] = useState(values.orgId);
+  const [personId, setPersonId] = useState(values.personId);
+
+  const person = persons.find((p) => p.id === personId);
+  const org = organizations.find((o) => o.id === orgId);
+
+  // The chosen company's own people float to the top of the picker; everyone
+  // else stays reachable below. Grouping, not filtering — see above.
+  const sameOrg = orgId ? persons.filter((p) => p.organizationId === orgId) : [];
+  const others = orgId ? persons.filter((p) => p.organizationId !== orgId) : persons;
+  const toOption = (p: PersonRow) => ({ value: p.id, label: p.name });
+
+  // Stated as a fact, not raised as an error: the person may well be the
+  // right one.
+  const mismatch =
+    person && orgId && person.organizationId !== orgId && person.organizationName
+      ? `${person.name} works at ${person.organizationName}.`
+      : null;
+
+  // The other direction — a contact picked while Organization is still
+  // empty. Offered rather than applied: silently filling a field the person
+  // did not touch is how forms end up saying things nobody typed.
+  const suggestedOrg =
+    person && !orgId && person.organizationId && person.organizationName
+      ? { id: person.organizationId, name: person.organizationName }
+      : null;
+
   return (
     <form action={formAction} noValidate className={FORM_CARD_CLASS}>
       <Field id="title" label="Title">
@@ -105,24 +138,56 @@ export function DealForm({
           list shows the person under the org when there's both). The schema
           only demands at least one; the form doesn't ask for more than that. */}
       <SelectField
+        key={`org-${orgId}`}
         id="orgId"
         name="orgId"
         label="Organization"
         optional
-        defaultValue={values.orgId}
+        defaultValue={orgId}
         placeholder="No organization"
         options={organizations.map((o) => ({ value: o.id, label: o.name }))}
+        onValueChange={setOrgId}
       />
 
-      <SelectField
-        id="personId"
-        name="personId"
-        label="Contact"
-        optional
-        defaultValue={values.personId}
-        placeholder="No contact"
-        options={persons.map((p) => ({ value: p.id, label: p.name }))}
-      />
+      <div>
+        <SelectField
+          id="personId"
+          name="personId"
+          label="Contact"
+          optional
+          defaultValue={values.personId}
+          placeholder="No contact"
+          groups={
+            sameOrg.length > 0 && org
+              ? [
+                  { label: org.name, options: sameOrg.map(toOption) },
+                  { label: "Other contacts", options: others.map(toOption) },
+                ]
+              : undefined
+          }
+          options={sameOrg.length > 0 && org ? [] : others.map(toOption)}
+          onValueChange={setPersonId}
+        />
+
+        {mismatch && (
+          <p className="mt-1.5 text-sm text-gray-500">
+            <span className="font-medium text-gray-600">{mismatch}</span> Keep it if that is right.
+          </p>
+        )}
+
+        {suggestedOrg && (
+          <p className="mt-1.5 text-sm text-gray-500">
+            {person?.name} works at {suggestedOrg.name}.{" "}
+            <button
+              type="button"
+              onClick={() => setOrgId(suggestedOrg.id)}
+              className="font-medium text-brand-600 transition-colors hover:text-brand-500 hover:underline"
+            >
+              Use it as the organization
+            </button>
+          </p>
+        )}
+      </div>
 
       <SelectField
         id="stageId"
