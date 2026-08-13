@@ -20,7 +20,7 @@ Next.js 16 (App Router) · TypeScript · Tailwind v4 · Supabase (Postgres + Aut
 
 These are demo accounts on a demo database; the passwords are checked in deliberately so the app is reviewable without a separate handover.
 
-To compare the two views, open **Settings**. An admin sees each teammate's role and can change it; a member sees the same roster without roles and without controls. Everything else — deals, contacts, activities, contracts — is shared: any signed-in user can read and edit any record, which is the intended model for a team this size.
+To compare the two views, open **Settings**. An admin sees each teammate's role and can change it; a member sees the same roster without roles and without controls. Everything else — deals, contacts, activities, contracts — is shared: any signed-in user can read and edit any record, which is the intended model for a team this size. The one exception is editing a recorded contract: anyone can create one, but corrections are admin-only — a signed amount is bookkeeping, and rewriting it is an accountable act (enforced in the UI, the action and an RLS policy).
 
 ## Running locally
 

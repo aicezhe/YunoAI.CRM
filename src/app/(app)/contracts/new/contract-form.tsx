@@ -1,14 +1,25 @@
 "use client";
 
 import { useActionState } from "react";
-import { type ContractFormState, createContract } from "@/lib/data/actions/contracts";
+import {
+  type ContractFormState,
+  createContract,
+  updateContract,
+} from "@/lib/data/actions/contracts";
 import { Field, FIELD_CLASS, FormActions, FORM_CARD_CLASS, SelectField } from "@/components/ui/form";
-import type { DealRow } from "@/lib/data/types";
+import type { ContractRow, DealRow } from "@/lib/data/types";
 
+/**
+ * Shared by "Add contract" and "Edit contract", the same shape PersonForm
+ * and DealForm use: passing `contract` switches to edit mode, which changes
+ * the action, the Cancel target and the submit label. In edit mode the deal
+ * is never a choice — see updateContract for why.
+ */
 export function ContractForm({
   deals,
   today,
   deal,
+  contract,
 }: {
   deals: DealRow[];
   today: string;
@@ -17,17 +28,33 @@ export function ContractForm({
    *  and re-picking it from a list of every deal in the pipeline is a step
    *  backwards. */
   deal?: DealRow;
+  /** Omitted when creating. Edit is admin-only — the page enforces it, the
+   *  action re-checks it, and RLS backs both (0018). */
+  contract?: ContractRow;
 }) {
   const initial: ContractFormState = {
     error: null,
-    values: { dealId: deal?.id ?? "", signedDate: today, value: "", notes: "" },
+    values: contract
+      ? {
+          dealId: contract.dealId,
+          signedDate: contract.signedDate,
+          value: contract.value === null ? "" : String(contract.value),
+          notes: contract.notes ?? "",
+        }
+      : { dealId: deal?.id ?? "", signedDate: today, value: "", notes: "" },
   };
-  const [state, formAction, pending] = useActionState(createContract, initial);
+  const action = contract ? updateContract.bind(null, contract.id) : createContract;
+  const [state, formAction, pending] = useActionState(action, initial);
   const { values } = state;
 
   return (
     <form action={formAction} noValidate className={FORM_CARD_CLASS}>
-      {deal ? (
+      {contract ? (
+        <div>
+          <span className="mb-1.5 block text-sm font-medium text-gray-700">Deal</span>
+          <p className="px-1 py-2.5 text-sm text-gray-900">{contract.dealTitle ?? "Deal"}</p>
+        </div>
+      ) : deal ? (
         <div>
           <span className="mb-1.5 block text-sm font-medium text-gray-700">Deal</span>
           {/* Inert, and the id travels in a hidden input rather than a
@@ -95,8 +122,8 @@ export function ContractForm({
       <FormActions
         error={state.error}
         pending={pending}
-        cancelHref="/contracts"
-        submitLabel="Add contract"
+        cancelHref={contract ? `/contracts/${contract.id}` : deal ? `/deals/${deal.id}` : "/contracts"}
+        submitLabel={contract ? "Save changes" : "Add contract"}
       />
     </form>
   );

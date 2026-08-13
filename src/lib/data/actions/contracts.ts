@@ -3,6 +3,7 @@
 import { redirect } from "next/navigation";
 import { revalidatePath } from "next/cache";
 import { createClient } from "@/lib/supabase/server";
+import { isAdmin } from "@/lib/auth/current-user";
 
 /**
  * Server Action for recording a signed contract against a deal.
@@ -73,4 +74,61 @@ export async function createContract(
   // Outside the error check on purpose: redirect() signals by throwing, and
   // catching it here would report a phantom save failure.
   redirect("/contracts");
+}
+
+/**
+ * Corrects a recorded contract — admin-only, and the app's first permission
+ * drawn between the roles outside of Settings.
+ *
+ * Why the asymmetry: creating a contract is part of closing a deal and stays
+ * open to everyone, but a signed contract's value is the number revenue
+ * would be reconciled against. Correcting bookkeeping is an accountable act,
+ * which is what the admin role is — a member who spots a wrong amount asks,
+ * an admin fixes and answers for it. Enforced three deep, like roles: the
+ * Edit button only renders for admins, this action refuses non-admins, and
+ * the contracts UPDATE policy requires is_admin() (0018), so even a direct
+ * PostgREST call cannot slip past.
+ *
+ * The deal link is deliberately not editable. Re-attaching a contract to a
+ * different deal is not a correction, it is a different contract — and every
+ * screen that shows this row reaches it through the deal it hangs off.
+ */
+export async function updateContract(
+  id: string,
+  _prevState: ContractFormState,
+  formData: FormData,
+): Promise<ContractFormState> {
+  const signedDate = String(formData.get("signedDate") ?? "");
+  const rawValue = String(formData.get("value") ?? "").trim();
+  const notes = String(formData.get("notes") ?? "").trim();
+
+  const values: ContractFormValues = { dealId: "", signedDate, value: rawValue, notes };
+
+  if (!(await isAdmin())) {
+    return { error: "Only an admin can edit a recorded contract.", values };
+  }
+
+  if (!signedDate) return { error: "Enter the date it was signed.", values };
+
+  let value: number | null = null;
+  if (rawValue) {
+    value = Number(rawValue);
+    if (!Number.isFinite(value) || value < 0) {
+      return { error: "Value must be a positive number.", values };
+    }
+  }
+
+  const supabase = await createClient();
+  const { error } = await supabase
+    .from("contracts")
+    .update({ signed_date: signedDate, value, notes: notes || null })
+    .eq("id", id);
+
+  if (error) {
+    console.error("[contracts] update failed:", error.message);
+    return { error: "Could not save your changes. Try again.", values };
+  }
+
+  revalidatePath("/", "layout");
+  redirect(`/contracts/${id}`);
 }
