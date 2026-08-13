@@ -115,6 +115,12 @@ async function main() {
   // them in. Two are urgent on purpose: one overdue and one due furthest
   // out, so the open list demonstrates both halves of its sort — urgent
   // first, and by due date inside each group.
+  // Only the finished rows carry completed_by/completed_at. A bulk insert
+  // unions its keys, so the rows that omit them send an explicit NULL —
+  // which is exactly right here (an open activity must have neither, and
+  // activities_completion_matches_done enforces it). Worth stating because
+  // that same union broke this seed once, when the omitted column had a
+  // NOT NULL default rather than accepting null.
   const activities = [
     // Overdue.
     { type: "call", subject: "Richiamare per conferma budget", priority: "urgent", deal_id: deal("Gestionale cantieri — 40 postazioni"), person_id: person("Luca Bellani"), org_id: org("Bellani Costruzioni"), due_at: at(-2, 11), done: false, created_by: anna },
@@ -131,11 +137,11 @@ async function main() {
     { type: "task", subject: "Raccogliere requisiti formazione", priority: "urgent", deal_id: deal("Formazione team commerciale"), person_id: person("Chiara Neri"), org_id: org("Bellani Costruzioni"), due_at: at(5, 11), done: false, created_by: anna },
 
     // Done, and notes with no due date at all.
-    { type: "call", subject: "Chiamata di qualifica", priority: "normal", deal_id: deal("Rinnovo licenze annuale"), person_id: person("Sara Marelli"), org_id: org("Marelli Logistica"), due_at: at(-4, 10), done: true, created_by: anna },
-    { type: "meeting", subject: "Kickoff progetto", priority: "normal", deal_id: deal("Manutenzione evolutiva 2026"), person_id: person("Matteo Rossi"), org_id: org("Rossi Manifattura"), due_at: at(-15, 9), done: true, created_by: camillo },
+    { type: "call", subject: "Chiamata di qualifica", priority: "normal", deal_id: deal("Rinnovo licenze annuale"), person_id: person("Sara Marelli"), org_id: org("Marelli Logistica"), due_at: at(-4, 10), done: true, created_by: anna, completed_by: anna, completed_at: at(-4, 11) },
+    { type: "meeting", subject: "Kickoff progetto", priority: "normal", deal_id: deal("Manutenzione evolutiva 2026"), person_id: person("Matteo Rossi"), org_id: org("Rossi Manifattura"), due_at: at(-15, 9), done: true, created_by: camillo, completed_by: camillo, completed_at: at(-15, 10) },
     { type: "note", subject: "Preferiscono fatturazione trimestrale", priority: "normal", deal_id: deal("Tracciabilità lotti produzione"), person_id: person("Davide Fontana"), org_id: org("Foodtech Padana"), due_at: null, done: false, created_by: marco },
     { type: "note", subject: "Contatto arrivato da referral", priority: "normal", deal_id: null, person_id: person("Federica Lombardi"), org_id: null, due_at: null, done: false, created_by: anna },
-    { type: "email", subject: "Follow-up post demo", priority: "normal", deal_id: deal("Portale clienti studio legale"), person_id: person("Avv. Paolo Ferrari"), org_id: org("Studio Ferrari & Partners"), due_at: at(-6, 12), done: true, created_by: giulia },
+    { type: "email", subject: "Follow-up post demo", priority: "normal", deal_id: deal("Portale clienti studio legale"), person_id: person("Avv. Paolo Ferrari"), org_id: org("Studio Ferrari & Partners"), due_at: at(-6, 12), done: true, created_by: giulia, completed_by: marco, completed_at: at(-5, 9) },
   ];
   const { error: activityError } = await db.from("activities").insert(activities);
   if (activityError) throw new Error(`activities: ${activityError.message}`);

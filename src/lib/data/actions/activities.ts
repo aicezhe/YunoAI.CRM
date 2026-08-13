@@ -20,9 +20,22 @@ import { requireUser } from "@/lib/auth/current-user";
  * own feed, and ticking it in one place must not leave the others stale.
  */
 export async function setActivityDone(id: string, done: boolean): Promise<void> {
+  const user = await requireUser();
   const supabase = await createClient();
 
-  const { error } = await supabase.from("activities").update({ done }).eq("id", id);
+  // Unticking clears the pair rather than leaving a stale name behind:
+  // activities_completion_matches_done (0021) refuses a row that is not done
+  // but still claims a completer, and the constraint is right — "finished by
+  // Anna" on something back in the open list would be a lie the UI would
+  // have to explain away.
+  const { error } = await supabase
+    .from("activities")
+    .update({
+      done,
+      completed_by: done ? user.id : null,
+      completed_at: done ? new Date().toISOString() : null,
+    })
+    .eq("id", id);
 
   if (error) {
     console.error("[activities] toggle failed:", error.message);

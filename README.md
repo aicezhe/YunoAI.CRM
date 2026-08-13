@@ -72,7 +72,7 @@ erDiagram
 | `persons` | Individuals, each optionally employed by an organization. |
 | `deals` | An opportunity: value, expected close, current stage, and open/won/lost. |
 | `stage_transitions` | Append-only log of every stage change on a deal, with who moved it and when. |
-| `activities` | Calls, meetings, emails, tasks and notes, attached to a deal, a person or a company. |
+| `activities` | Calls, meetings, emails, tasks and notes, attached to a deal, a person or a company. Records who logged it and, once ticked, who finished it. |
 | `contracts` | What was actually signed against a deal — date, value, terms. |
 
 ## Key decisions
@@ -93,7 +93,7 @@ erDiagram
 
 ## Demo data
 
-The database ships populated — 6 organizations, 10 people, 12 deals, 13 activities, 2 contracts — so every screen has something in it. The edge states are seeded too: one deal is won and one is lost with a recorded reason, one deal has a person but no company, and two activities are flagged urgent.
+The database ships populated — 6 organizations, 10 people, 12 deals, 13 activities, 2 contracts — so every screen has something in it. The edge states are seeded too: one deal is won and one is lost with a recorded reason, one deal has a person but no company, two activities are flagged urgent, and one archived activity was logged by one person and completed by another.
 
 Run `npm run seed:demo` to reset to exactly that set.
 

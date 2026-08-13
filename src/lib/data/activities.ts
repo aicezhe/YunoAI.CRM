@@ -83,16 +83,44 @@ export async function countActivities(): Promise<{ open: number; archived: numbe
   return { open: open.count ?? 0, archived: archived.count ?? 0 };
 }
 
-export async function getActivity(id: string): Promise<Result<ActivityRow | null>> {
+/** The record page's shape: everything a row has, plus who finished it. */
+export type ActivityDetail = ActivityRow & {
+  completedByName: string | null;
+  completedAt: string | null;
+};
+
+/**
+ * One activity, with the completion carried alongside.
+ *
+ * The extra join lives here rather than in ACTIVITY_SELECT because only this
+ * screen asks the question — adding a users join to the shared select would
+ * make every list pay for a name none of them render.
+ */
+export async function getActivity(id: string): Promise<Result<ActivityDetail | null>> {
   const supabase = await createClient();
   const { data, error } = await supabase
     .from("activities")
-    .select(ACTIVITY_SELECT)
+    .select(
+      `${ACTIVITY_SELECT},
+       completed_at,
+       completed_by_user:users!activities_completed_by_fkey(name)`,
+    )
     .eq("id", id)
     .maybeSingle();
 
   if (error) return fail("getActivity", error.message);
-  return ok(data ? toActivityRow(data as unknown as RawActivity) : null);
+  if (!data) return ok(null);
+
+  const raw = data as unknown as RawActivity & {
+    completed_at: string | null;
+    completed_by_user: { name: string } | null;
+  };
+
+  return ok({
+    ...toActivityRow(raw),
+    completedByName: raw.completed_by_user?.name ?? null,
+    completedAt: raw.completed_at,
+  });
 }
 
 /**

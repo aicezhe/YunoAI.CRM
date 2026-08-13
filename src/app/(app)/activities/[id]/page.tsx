@@ -60,6 +60,20 @@ export default async function ActivityPage({ params }: PageProps<"/activities/[i
             <Field label="Due">
               {a.dueAt ? `${formatDate(a.dueAt)}, ${formatTime(a.dueAt)}` : <Missing />}
             </Field>
+            {/* Only on finished work, and only when it was actually recorded:
+                everything archived before 0021 is done with nobody named, and
+                a row of dashes on every one of those would read as a bug
+                rather than as history that predates the column. */}
+            {a.done && a.completedByName && (
+              <Field label="Completed by">
+                {a.completedByName}
+                {a.completedAt && (
+                  <span className="ml-2 font-normal text-gray-400">
+                    {formatDate(a.completedAt)}, {formatTime(a.completedAt)}
+                  </span>
+                )}
+              </Field>
+            )}
             <Field label="Deal">
               {a.dealId ? (
                 <RecordLink href={`/deals/${a.dealId}`}>
