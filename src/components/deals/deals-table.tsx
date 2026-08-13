@@ -2,8 +2,9 @@
 
 import Link from "next/link";
 import { useMemo, useState } from "react";
-import { ChevronDown, ChevronUp, Handshake } from "lucide-react";
+import { Handshake } from "lucide-react";
 import { StageBadge, StatusBadge } from "@/components/ui/badges";
+import { SortHeader, SortPill } from "@/components/ui/sort";
 import { EmptyState } from "@/components/ui/states";
 import { Blank, CardLink, Cell, Row, RowLink, Table } from "@/components/ui/table";
 import type { DealRow } from "@/lib/data/types";
@@ -14,7 +15,6 @@ import {
   visibleDeals,
   weekOut,
   type Sort,
-  type SortDirection,
   type SortKey,
 } from "@/lib/deals-view";
 import { formatDate, formatMoney } from "@/lib/format";
@@ -227,65 +227,6 @@ export function DealsTable({ deals, currentUserId }: { deals: DealRow[]; current
         </div>
       )}
     </>
-  );
-}
-
-function SortHeader({
-  label,
-  active,
-  direction,
-  onClick,
-}: {
-  label: string;
-  active: boolean;
-  direction: SortDirection;
-  onClick: () => void;
-}) {
-  const Arrow = direction === "asc" ? ChevronUp : ChevronDown;
-  return (
-    <button
-      type="button"
-      onClick={onClick}
-      className="inline-flex cursor-pointer items-center gap-1 text-xs font-semibold tracking-wide text-gray-500 uppercase transition-colors hover:text-brand-600"
-    >
-      {label}
-      {active && <Arrow className="h-3 w-3 text-brand-500" strokeWidth={2.5} aria-hidden />}
-    </button>
-  );
-}
-
-/** The card list's own sort trigger — same pill shape as FilterChip (active
- *  = filled) so the two read as one control language, plus the direction
- *  arrow SortHeader shows on desktop. md:hidden: above md the table's own
- *  column headers do this job, and a second control for the same thing
- *  would just be clutter there. */
-function SortPill({
-  label,
-  active,
-  direction,
-  onClick,
-}: {
-  label: string;
-  active: boolean;
-  direction: SortDirection;
-  onClick: () => void;
-}) {
-  const Arrow = direction === "asc" ? ChevronUp : ChevronDown;
-  return (
-    <button
-      type="button"
-      onClick={onClick}
-      aria-pressed={active}
-      className={
-        "inline-flex min-h-9 shrink-0 items-center gap-1 rounded-full px-4 text-sm font-medium whitespace-nowrap transition-colors md:hidden " +
-        (active
-          ? "bg-brand-500 text-white shadow-sm shadow-brand-500/25"
-          : "border border-brand-200/70 bg-white text-gray-600 hover:bg-brand-100/60")
-      }
-    >
-      {label}
-      {active && <Arrow className="h-3.5 w-3.5" strokeWidth={2.5} aria-hidden />}
-    </button>
   );
 }
 

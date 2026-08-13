@@ -13,8 +13,10 @@ import type { DealRow } from "@/lib/data/types";
  */
 
 export type SortKey = "value" | "expectedClose" | "stage";
-export type SortDirection = "asc" | "desc";
-export type Sort = { key: SortKey; direction: SortDirection };
+// Re-exported rather than redeclared: the sort controls own this type, and
+// two identical unions in two files are one rename away from disagreeing.
+export type { SortDirection } from "@/components/ui/sort";
+export type Sort = { key: SortKey; direction: "asc" | "desc" };
 
 export type DealFilters = {
   openOnly: boolean;
@@ -25,7 +27,7 @@ export type DealFilters = {
 // The direction a first click on each column should produce: value leads
 // with the biggest deals (what to prioritize), expected close leads with the
 // soonest (what's burning). Stage never toggles — see stageRank below.
-export const DEFAULT_DIRECTION: Record<SortKey, SortDirection> = {
+export const DEFAULT_DIRECTION: Record<SortKey, "asc" | "desc"> = {
   value: "desc",
   expectedClose: "asc",
   stage: "asc",
@@ -51,7 +53,7 @@ export function stageRank(deal: DealRow): [number, number] {
   return [0, deal.stagePosition ?? Infinity];
 }
 
-export function compareDeals(key: SortKey, direction: SortDirection) {
+export function compareDeals(key: SortKey, direction: "asc" | "desc") {
   const sign = direction === "asc" ? 1 : -1;
   return (a: DealRow, b: DealRow): number => {
     if (key === "stage") {

@@ -1,8 +1,13 @@
+"use client";
+
+import { useMemo, useState } from "react";
 import Link from "next/link";
 import { CircleAlert } from "lucide-react";
 import { DoneCheckbox } from "@/components/done-checkbox";
 import { ActivityIcon } from "@/components/ui/badges";
+import { SortHeader, SortPill, type SortDirection } from "@/components/ui/sort";
 import { Blank, Card, Cell, Row, RowLink, Table } from "@/components/ui/table";
+import { sortActivities } from "@/lib/activities-view";
 import type { ActivityRow } from "@/lib/data/types";
 import { formatDue } from "@/lib/format";
 
@@ -75,21 +80,50 @@ function relatedTo(activity: ActivityRow): { label: string; href: string } | nul
  */
 export function ActivityTable({
   activities,
-  /** Only changes the date column's heading — "Due" is wrong for work that is
-   *  already finished. Passed explicitly rather than inferred from the first
-   *  row, which would silently mislabel a mixed list. */
+  /** Changes the date column's heading — "Due" is wrong for work that is
+   *  already finished — and, with it, the two rules that differ between the
+   *  lists: the archive reads newest-first and does not pin urgent work.
+   *  Passed explicitly rather than inferred from the first row, which would
+   *  silently mislabel a mixed list. */
   archived = false,
 }: {
   activities: ActivityRow[];
   archived?: boolean;
 }) {
+  const label = archived ? "Completed" : "Due";
+
+  // Open work reads soonest-first, the archive most-recently-finished first —
+  // the order each list is actually read in, and the one the query already
+  // applied. Clicking the header flips it from there.
+  const [direction, setDirection] = useState<SortDirection>(archived ? "desc" : "asc");
+  const toggle = () => setDirection((d) => (d === "asc" ? "desc" : "asc"));
+
+  const rows = useMemo(
+    () => sortActivities(activities, direction, !archived),
+    [activities, direction, archived],
+  );
+
   return (
     <>
-      <Table columns={["Type", "Subject", "Related to", archived ? "Completed" : "Due", "Done"]}>
-        {activities.map((activity, i) => {
+      {/* Below md the table's headers are gone, so the card list carries its
+          own trigger — same pill the deals list uses. */}
+      <div className="mb-3 flex md:hidden">
+        <SortPill label={label} active direction={direction} onClick={toggle} />
+      </div>
+
+      <Table
+        columns={[
+          "Type",
+          "Subject",
+          "Related to",
+          <SortHeader key="due" label={label} active direction={direction} onClick={toggle} />,
+          "Done",
+        ]}
+      >
+        {rows.map((activity, i) => {
           const related = relatedTo(activity);
           return (
-            <Row key={activity.id} index={i} count={activities.length} className={urgentTint(activity)}>
+            <Row key={activity.id} index={i} count={rows.length} className={urgentTint(activity)}>
               <Cell className="w-16">
                 <ActivityIcon type={activity.type} />
               </Cell>
@@ -126,10 +160,10 @@ export function ActivityTable({
       </Table>
 
       <div className="space-y-3 md:hidden">
-        {activities.map((activity, i) => {
+        {rows.map((activity, i) => {
           const related = relatedTo(activity);
           return (
-            <Card key={activity.id} index={i} count={activities.length} className={urgentTint(activity)}>
+            <Card key={activity.id} index={i} count={rows.length} className={urgentTint(activity)}>
               <div className="flex items-center justify-between gap-3">
                 <div className="flex min-w-0 items-center gap-3">
                   <ActivityIcon type={activity.type} />
